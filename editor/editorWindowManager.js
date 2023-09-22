@@ -47,7 +47,6 @@ class EditorWindowFlex extends EditorWindowBase {
         else
             this.windows.splice(index, 0, window);
         return window;
-
     }
 
     /**
@@ -55,8 +54,18 @@ class EditorWindowFlex extends EditorWindowBase {
      * @returns EditorWindowFlex
      */
     registerFlex(flex) {
+        return this.registerFlexAtIndex(flex, this.windows.length);
+    }
+    /**
+     * @param {EditorWindowFlex} flex 
+     * @returns EditorWindowFlex
+     */
+    registerFlexAtIndex(flex, index) {
         flex.setParentInit(this);
-        this.windows.push(flex);
+        if(index == this.windows.length)
+            this.windows.push(flex);
+        else
+            this.windows.splice(index, 0, flex);
         return flex;
     }
 
@@ -90,7 +99,19 @@ class EditorWindowFlex extends EditorWindowBase {
         let index = this.windows.indexOf(child);
         if(index == -1) return;
 
-        this.registerWindowAtIndex(this.windows[index].clone(), index+1);
+        console.log(this.type, splitX, splitY);
+        if((this.type == "col" && splitY == 0) || (this.type == "row" && splitX == 0)) {
+            let window = this.registerWindowAtIndex(this.windows[index].clone(), index+1);
+            window.percentWidth = splitX;
+            window.percentHeight = splitY;
+        } else {
+            let myWindow = this.windows[index];
+            this.windows.splice(index, 1);
+            let flex = this.registerFlexAtIndex(new EditorWindowFlex(this.type == "row" ? "col" : "row", child.percentWidth, child.percentHeight), index);
+            flex.registerWindow(myWindow);
+            flex.registerWindow(myWindow.clone());
+        }
+
 
         this.windows
     }
@@ -139,16 +160,25 @@ class EditorWindowFlex extends EditorWindowBase {
     render(x1, y1, x2, y2) {
         let soFar = { x: x1, y: y1 };
 
+        let renderedSpaces = [];
         for (let i = 0; i < this.windows.length; i++) {
             let window = this.windows[i];
 
             let windowSpace = this.calculatePercentSpace(soFar.x, soFar.y, x2, y2, 
                 (x2-x1), (y2-y1), window.percentWidth, window.percentHeight);
 
+            renderedSpaces.push(windowSpace);
+
             window.render(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2 - windowSpace.x1, windowSpace.y2 - windowSpace.x1);
 
             soFar.x += windowSpace.offsetX;
             soFar.y += windowSpace.offsetY;
+        }
+
+        for(let i = 0; i < this.windows.length; i++) {
+            let space = renderedSpaces[i];
+
+            UI_LIBRARY.drawRectCoords(space.x1-5, space.y1, space.x1+5, space.y2, 0, new DrawShapeOption("black"));
         }
     }
 }

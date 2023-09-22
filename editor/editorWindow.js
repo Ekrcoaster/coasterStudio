@@ -12,6 +12,6 @@ class EditorWindow extends EditorWindowBase {
     }
 
     clone() {
-        return new EditorWindow(this.name, this.percentWidth, this.percentHeight);
+        return new EditorWindow("orange", this.percentWidth, this.percentHeight);
     }
 }
