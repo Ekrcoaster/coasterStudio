@@ -27,7 +27,7 @@ const UI_LIBRARY = {
      * @param {Filter[]} filters 
      */
     drawRectCoords: function (x1, y1, x2, y2, rotation, shape, filters = []) {
-        this.drawPolygon([
+        return this.drawPolygon([
             {x: x1, y: y1},
             {x: x2, y: y1},
             {x: x2, y: y2},
@@ -64,5 +64,38 @@ const UI_LIBRARY = {
 
         if(shape.shouldFill())
             ctx.fill();
+    }
+}
+
+/**
+ * @typedef {function(number, number, number, number, number, number)} GizmoRender
+ */
+
+class Gizmo {
+    id;
+    x1;
+    y1;
+    x2;
+    y2;
+
+    /**@type {GizmoRender} */
+    onRender;
+
+    /**
+     * 
+     * @param {String} id 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     * @param {GizmoRender} onRender 
+     */
+    constructor(id, x1, y1, x2, y2, onRender) {
+        this.id = id;
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+        this.onRender = onRender;
     }
 }

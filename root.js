@@ -8,6 +8,7 @@ var editor;
 var engine;
 
 window.onload = Initalize;
+let needsRendering = true;
 function Initalize() {
 
     editor = new Editor();
@@ -16,7 +17,8 @@ function Initalize() {
     updateCanvasSize();
     setInterval(() => {
         Tick();
-        Render();
+        if(needsRendering)
+            Render();
     }, 1);
 }
 
@@ -29,6 +31,8 @@ function Render() {
     UI_LIBRARY.drawRectCoords(0, 0, canvas.width, canvas.height, 0, new DrawShapeOption("black"));
     if(editor) editor.render(0, 0, canvas.width, canvas.height);
     engine.render(0, 0, canvas.width, canvas.height);
+
+    needsRendering = false;
 }
 
 ///
@@ -40,4 +44,8 @@ function updateCanvasSize() {
 
 window.onresize = () => {
     updateCanvasSize();
+}
+
+document.onmousemove = (ev) => {
+    needsRendering = true;
 }
