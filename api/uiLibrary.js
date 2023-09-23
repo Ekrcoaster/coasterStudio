@@ -67,35 +67,68 @@ const UI_LIBRARY = {
     }
 }
 
-/**
- * @typedef {function(number, number, number, number, number, number)} GizmoRender
- */
+const UI_UTILITY = {
+    isInside: function (x, y, x1, y1, x2, y2, padding = 0) {
+        if(x2 < x1) throw "x2 is less than x1 when trying to calculate isInside";
+        if(y2 < y1) throw "y2 is less than y1 when trying to calculate isInside";
 
-class Gizmo {
-    id;
-    x1;
-    y1;
-    x2;
-    y2;
+        return x >= x1-padding && x <= x2 + padding &&
+                y >= y1-padding && y <= y2 + padding;
+    }
+}
 
-    /**@type {GizmoRender} */
-    onRender;
-
+const UI_WIDGET = {
     /**
-     * 
-     * @param {String} id 
-     * @param {Number} x1 
-     * @param {Number} y1 
-     * @param {Number} x2 
-     * @param {Number} y2 
-     * @param {GizmoRender} onRender 
+     * @param {string} id this is what will be assigned to the gizmo
+     * @param {("x-axis"|"y-axis")} type 
+     * @param {Number} axis the main axis, for example: y-axis would mean x
+     * @param {Number} start the cross to the main axis, for example: y-axis would be y1
+     * @param {Number} end the cross to the main axis, for example: y-axis would be y2
+     * @param {Number} wholeSpaceMin the starting value of the current window
+     * @param {Number} wholeSpaceMax the ending value of the current window
      */
-    constructor(id, x1, y1, x2, y2, onRender) {
-        this.id = id;
-        this.x1 = x1;
-        this.y1 = y1;
-        this.x2 = x2;
-        this.y2 = y2;
-        this.onRender = onRender;
+    windowResize: function(id, type, axis, start, end, wholeSpaceMin, wholeSpaceMax, mouseOffset) {
+        let width = 5;
+        let length = 30;
+        let avg = (start + end)/2;
+        let x1 = axis-width;
+        let x2 = axis+width;
+        let y1 = avg - length;
+        let y2 = avg + length;
+
+        if(type == "x-axis") {
+            x1 = avg - length;
+            x2 = avg + length;
+            y1 = axis-width;
+            y2 = axis+width;
+        }
+
+        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 10, id);
+        let down = mouse.isToolDown(id) && hover;
+
+        let color = new DrawShapeOption("black");
+        if(down) {
+            color = new DrawShapeOption("white");
+            mouse.setActiveTool(id, {ogWholeSpaceMin: wholeSpaceMin, ogWholeSpaceMax: wholeSpaceMax});
+        } else if(mouse.isHoveringOver(x1, y1, x2, y2, 10) && (mouse.activeTool == id || mouseOffset.activeTool == null)) {
+            color = new DrawShapeOption("gray");
+        } else {
+            mouse.removeActiveTool(id);
+        }
+
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, color);
+
+        let newPercent = 0;
+        if(down) {
+            newPercent = ((type == "x-axis" ? mouse.y-mouseOffset : mouse.x-mouseOffset) - mouse.activeToolInitData.ogWholeSpaceMin) / (mouse.activeToolInitData.ogWholeSpaceMax-mouse.activeToolInitData.ogWholeSpaceMin);
+            if(newPercent > 1) newPercent = 1;
+            if(newPercent < 0) newPercent = 0;
+        }
+
+        return {
+            hover: hover,
+            isDown: down,
+            newPercent: newPercent
+        }
     }
 }

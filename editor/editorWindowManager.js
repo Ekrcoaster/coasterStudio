@@ -77,6 +77,7 @@ class EditorWindowFlex extends EditorWindowBase {
         // then if we are not the last child
         if(index < this.windows.length - 1) {
             let neighbor = this.windows[index+1];
+            if((this.type == "col" && neighbor.percentWidth + changeX < neighbor.MIN_WINDOW_SIZE) || (this.type == "row" && neighbor.percentHeight + changeY < neighbor.MIN_WINDOW_SIZE)) return false;
             neighbor.resizeWithoutNotify(neighbor.percentWidth + changeX, neighbor.percentHeight + changeY);
 
             if(this.type == "col") {
@@ -92,6 +93,7 @@ class EditorWindowFlex extends EditorWindowBase {
                     this.resize(changeX, 0);
             }
         }
+        return true;
     }
 
     onSplit(child, splitX, splitY) {
@@ -175,10 +177,24 @@ class EditorWindowFlex extends EditorWindowBase {
             soFar.y += windowSpace.offsetY;
         }
 
-        for(let i = 0; i < this.windows.length; i++) {
+        for(let i = 0; i < this.windows.length-1; i++) {
             let space = renderedSpaces[i];
 
-            UI_LIBRARY.drawRectCoords(space.x1-5, space.y1, space.x1+5, space.y2, 0, new DrawShapeOption("black"));
+            if(this.type == "row" || this.windows[i].myself == "flex") {
+                // handle resizing vertically
+                let result = UI_WIDGET.windowResize("windowResizeX" + i + this.id, "x-axis", space.y2, space.x1, space.x2, y1, y2, space.y1);
+                if(result.isDown) {
+                    this.windows[i].resize(1, result.newPercent);
+                }
+            }
+            
+            if(this.type == "col" || this.windows[i].myself == "flex") {
+                // handle resizing horizntally
+                let hresult = UI_WIDGET.windowResize("windowResizeY" + i + this.id, "y-axis", space.x2, space.y1, space.y2, x1, x2, space.x1);
+                if(hresult.isDown) {
+                    this.windows[i].resize(hresult.newPercent, 1);
+                }
+            }
         }
     }
 }

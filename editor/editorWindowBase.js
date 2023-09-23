@@ -5,14 +5,14 @@ class EditorWindowBase {
     percentWidth = 1;
     percentHeight = 1;
 
-    /**@type {Gizmo[]} */
-    gizmos;
+    MIN_WINDOW_SIZE = 0.1;
+
+    id;
 
     constructor(percentWidth, percentHeight) {
         this.percentWidth = percentWidth;
         this.percentHeight = percentHeight;
-        
-        this.gizmos = [];
+        this.id = UTILITY.generateCode(14);
     }
 
     /**
@@ -23,26 +23,27 @@ class EditorWindowBase {
     }
 
     resize(newPercentWidth, newPercentHeight) {
+        if(newPercentWidth < this.MIN_WINDOW_SIZE || newPercentHeight < this.MIN_WINDOW_SIZE)
+            return false;
+
         let oldX = this.percentWidth;
         let oldY = this.percentHeight;
         this.resizeWithoutNotify(newPercentWidth, newPercentHeight);
+        let allowed = true;
         if(this.parent)
-            this.parent.onResized(this, oldX - newPercentWidth, oldY -newPercentHeight);
+            allowed = this.parent.onResized(this, oldX - newPercentWidth, oldY -newPercentHeight);
+
+        if(!allowed) {
+            this.percentWidth = oldX;
+            this.percentHeight = oldY;
+            return false;
+        }
+        return true;
     }
 
     resizeWithoutNotify(newPercentWidth, newPercentHeight) {
         this.percentWidth = newPercentWidth;
         this.percentHeight = newPercentHeight;
-    }
-
-    /**
-     * Adds a new gizmo to be rendered
-     * @param {Gizmo} gizmo 
-     * @returns 
-     */
-    registerGizmo(gizmo) {
-        this.gizmos.push(gizmo);
-        return gizmo;
     }
 
     split(splitPercentWidth, splitPercentHeight) {
@@ -55,9 +56,4 @@ class EditorWindowBase {
     }
 
     render(x1, y1, x2, y2, width, height) {}
-    renderGizmos(x1, y1, x2, y2) {
-        this.gizmos.forEach(gizmo => {
-            gizmo.render(gizmo.x1 + x1, gizmo.y1 + y1, gizmo.x2 + x2, gizmo.y2 + y2, gizmo.x2-gizmo.x1, gizmo.y2-gizmo.y1);
-        });
-    }
 }
