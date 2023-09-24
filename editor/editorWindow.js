@@ -1,17 +1,15 @@
-class EditorWindow extends EditorWindowBase {
+class EditorWindow {
     name;
+    /**@type {EditorWindowContainer} */
+    container;
 
-    constructor(name, percentWidth, percentHeight) {
-        super(percentWidth, percentHeight);
+    constructor(name) {
         this.name = name;
-        this.myself = "window";
     }
+
+    initSetContainer(container) {this.container = container;}
 
     render(x1, y1, x2, y2, width, height) {
         UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption(this.name, "", 0));
-    }
-
-    clone() {
-        return new EditorWindow("orange", this.percentWidth, this.percentHeight);
     }
 }

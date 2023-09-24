@@ -29,16 +29,16 @@ class EditorWindowFlex extends EditorWindowBase {
     }
 
     /**
-     * @param {EditorWindow} window 
-     * @returns EditorWindow
+     * @param {EditorWindowContainer} window 
+     * @returns EditorWindowContainer
      */
     registerWindow(window) {
         return this.registerWindowAtIndex(window, this.windows.length);
     }
 
     /**
-     * @param {EditorWindow} window 
-     * @returns EditorWindow
+     * @param {EditorWindowContainer} window 
+     * @returns EditorWindowContainer
      */
     registerWindowAtIndex(window, index) {
         window.setParentInit(this);

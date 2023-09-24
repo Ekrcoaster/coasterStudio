@@ -33,7 +33,6 @@ function Tick() {
 }
 
 function Render() {
-    UI_LIBRARY.drawRectCoords(0, 0, canvas.width, canvas.height, 0, new DrawShapeOption("black"));
     if(editor) editor.render(0, 0, canvas.width, canvas.height);
     engine.render(0, 0, canvas.width, canvas.height);
 
