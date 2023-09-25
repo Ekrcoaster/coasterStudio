@@ -9,6 +9,8 @@ class EditorWindowBase {
 
     id;
 
+    lastScreenPos = {x1: 0, y1: 0, x2: 0, y2: 0}
+
     constructor(percentWidth, percentHeight) {
         this.percentWidth = percentWidth;
         this.percentHeight = percentHeight;
@@ -46,6 +48,15 @@ class EditorWindowBase {
         this.percentHeight = newPercentHeight;
     }
 
+    isInsideLastScreenPos(x, y) {
+        return UI_UTILITY.isInside(x, y, this.lastScreenPos.x1, this.lastScreenPos.y1, this.lastScreenPos.x2, this.lastScreenPos.y2);
+    }
+    
+    /**
+     * @returns {EditorWindowContainer}
+     */
+    getWindowContainerAtScreenPos(x, y) {}
+
     split(splitPercentWidth, splitPercentHeight) {
         let ogWidth = this.percentWidth;
         let ogHeight = this.percentHeight;
@@ -55,5 +66,7 @@ class EditorWindowBase {
             this.parent.onSplit(this, (1-splitPercentWidth) * ogWidth, (1-splitPercentHeight)* ogHeight);
     }
 
-    render(x1, y1, x2, y2, width, height) {}
+    render(x1, y1, x2, y2, width, height) {
+        this.lastScreenPos = {x1: x1, y1: y1, x2: x2, y2: y2};
+    }
 }

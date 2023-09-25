@@ -41,6 +41,53 @@ class DrawShapeOption {
     }
 }
 
+class DrawTextOption {
+    /**@typedef {("default")} FontTypes */
+    /**@typedef {("left"|"center"|"right")} HorizontalAlignTypes */
+    /**@typedef {("top"|"center"|"bottom")} VerticalAlignTypes */
+    size;
+    /**@type {FontTypes} */
+    font;
+
+    fillColor;
+    
+    /**@type {HorizontalAlignTypes} */
+    horizontalAlign;
+    /**@type {VerticalAlignTypes} */
+    verticalAlign;
+
+    debugBoxes = false;
+
+    /**
+     * @param {FontTypes} font 
+     * @param {HorizontalAlignTypes} horizontalAlign
+     * @param {VerticalAlignTypes} verticalAlign
+     * */
+    constructor(size, font, fillColor, horizontalAlign, verticalAlign) {
+        this.size = size;
+        this.font = font;
+        this.fillColor = fillColor;
+        this.horizontalAlign = horizontalAlign;
+        this.verticalAlign = verticalAlign;
+        this.debugBoxes = false;
+    }
+
+    drawDebug() {
+        this.debugBoxes = true;
+        return this;
+    }
+
+    getFont() {
+        if(this.font == "default")
+            return "Courier";
+        return this.font;
+    }
+
+    getFontForCTX() {
+        return this.size + "px " + this.getFont();
+    }
+}
+
 class Filter { }
 
 const UI_LIBRARY = {
@@ -191,6 +238,46 @@ const UI_LIBRARY = {
             
                 ctx.closePath()
             }
+    },
+    /**
+     * 
+     * @param {String} text 
+     * @param {Number} x 
+     * @param {Number} y 
+     * @param {DrawTextOption} draw 
+     */
+    drawText: function(text, x1, y1, x2, y2, draw) {
+        if(draw == null) throw "Draw cannot be null for text!";
+        let space = UI_UTILITY.measureText(text, draw);
+
+        // draw the space box
+        if(draw.debugBoxes) {
+            ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+            ctx.fillRect(x1, y1, x2-x1, y2-y1);
+        }
+
+        let xOffset = 0;
+        let yOffset = 0;
+
+        if(draw.horizontalAlign == "center")
+            xOffset = Math.max(0, ((x2-x1) - space.width)/2);
+        else if(draw.horizontalAlign == "right")
+            xOffset = Math.max(0, ((x2-x1) - space.width));
+
+        if(draw.verticalAlign == "center")
+            yOffset = Math.max(0, ((y2-y1) - space.height)/2);
+        else if(draw.verticalAlign == "bottom")
+            yOffset = Math.max(0, ((y2-y1) - space.height));
+
+        // draw the text box
+        if(draw.debugBoxes) {
+            ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+            ctx.fillRect(xOffset+x1, y1+yOffset, x2-x1-xOffset*2, y2-y1-yOffset*2);
+        }
+
+        ctx.font = draw.getFontForCTX();
+        ctx.fillStyle = draw.fillColor;
+        ctx.fillText(text, x1+xOffset, y1+yOffset, x2-x1);
     }
 }
 
@@ -201,6 +288,20 @@ const UI_UTILITY = {
 
         return x >= x1 - padding && x <= x2 + padding &&
             y >= y1 - padding && y <= y2 + padding;
+    },
+    /**
+    * @param {String} text 
+    * @param {DrawTextOption} draw 
+    */
+    measureText: function(text, draw) {
+        if(draw == null) throw "Draw cannot be null for text!";
+        ctx.font = draw.getFontForCTX();
+        let data = ctx.measureText(text);
+
+        return {
+            "width": data.width, 
+            "height": data.fontBoundingBoxDescent - data.fontBoundingBoxAscent
+        }
     }
 }
 
@@ -216,7 +317,7 @@ const UI_WIDGET = {
      */
     windowResize: function (id, type, axis, start, end, wholeSpaceMin, wholeSpaceMax, mouseOffset) {
         let width = 5;
-        let length = 30;
+        let length = 100;
         let avg = (start + end) / 2;
         let x1 = axis - width;
         let x2 = axis + width;
@@ -259,38 +360,61 @@ const UI_WIDGET = {
         }
     },
 
-    windowTabLabel: function (id, name, x1, y1, y2, active) {
-        let myLength = 100;
+    /**
+     * 
+     * @param {String} id 
+     * @param {String} name 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} y2 
+     * @param {("notActive"|"active"|"potential")} state 
+     * @returns 
+     */
+    windowTabLabel: function (id, name, x1, y1, y2, state) {
+        let size = UI_UTILITY.measureText(this.name, COLORS.windowTabLabel);
+        let myLength = Math.max(100, size.width);
         let x2 = x1 + myLength;
         let color = COLORS.windowTabDefault;
 
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 10, id);
-        let down = mouse.isToolDown(id) && hover;
+        let down = mouse.isToolFirstUp(id) && hover;
 
         if (hover)
             color = COLORS.windowTabHover;
-        if (down || active)
+        if (down || state == "active")
             color = COLORS.windowTabActive;
-
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2 + (active || down ? 20 : 0), 0, color);
-
+        if(state == "potential")
+            color = COLORS.windowTabPotential;
 
         return {
             hover: hover,
-            isDown: down,
-            myLength: myLength
+            setActive: down,
+            myLength: myLength,
+            downDistance: mouse.getDownDistance(),
+            render: () => {
+                UI_LIBRARY.drawRectCoords(x1, y1, x2, y2 + (state || down ? 5 : 10), 0, color);
+        
+                if(state)
+                    UI_LIBRARY.drawRectCoords(x1, y2, x2, y2+5+color.outlineWidth, 0, new DrawShapeOption(color.fillColor));
+
+                UI_LIBRARY.drawText(name, x1, y1, x2, y2, COLORS.windowTabLabel);
+            }
         }
     }
 }
 
 const COLORS = {
-    background: "#131313",
+    background: "#282828",
 
     windowResizeHandleDefault: new DrawShapeOption("#07070731"),
     windowResizeHandleHover: new DrawShapeOption("#3b3b3bfe"),
     windowResizeHandlePress: new DrawShapeOption("#b0b0b0fe"),
 
+    windowBackground: new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10),
+    windowTabLabel: new DrawTextOption(25, "default", "#979797", "center", "center"),
+
     windowTabDefault: new DrawShapeOption("#363636", "#c5c5c5", 3).setRoundedCorners(10),
     windowTabHover: new DrawShapeOption("#636363", "#c5c5c5", 3).setRoundedCorners(10),
-    windowTabActive: new DrawShapeOption("#9e9e9e", "#4c4c4c", 3).setRoundedCorners(10, 10, 0, 0),
+    windowTabActive: new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10, 10, 0, 0),
+    windowTabPotential: new DrawShapeOption("#2986ea5e").setRoundedCorners(10)
 }

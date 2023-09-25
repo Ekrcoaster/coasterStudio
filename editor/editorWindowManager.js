@@ -10,6 +10,10 @@ class EditorWindowManager {
     render(x1, y1, x2, y2) {
         this.span.render(x1, y1, x2, y2);
     }
+
+    getWindowContainerAtScreenPos(x, y) {
+        return this.span.getWindowContainerAtScreenPos(x, y);
+    }
 }
 
 class EditorWindowFlex extends EditorWindowBase {
@@ -159,7 +163,8 @@ class EditorWindowFlex extends EditorWindowBase {
         return space;
     }
 
-    render(x1, y1, x2, y2) {
+    render(x1, y1, x2, y2, width, height) {
+        super.render(x1, y1, x2, y2, width, height);
         let soFar = { x: x1, y: y1 };
 
         let renderedSpaces = [];
@@ -196,5 +201,20 @@ class EditorWindowFlex extends EditorWindowBase {
                 }
             }
         }
+    }
+
+    /**
+     * @returns {EditorWindowContainer}
+     */
+    getWindowContainerAtScreenPos(x, y) {
+        if(!this.isInsideLastScreenPos(x, y))
+            return null;
+        let result = null;
+        for(let i = 0; i < this.windows.length; i++) {
+            let r = this.windows[i].getWindowContainerAtScreenPos(x, y);
+            if(r != null)
+                result = r;
+        }
+        return result;
     }
 }

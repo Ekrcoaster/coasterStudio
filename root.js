@@ -23,21 +23,28 @@ function Initalize() {
         Tick();
         if(needsRendering)
             Render();
+        PostTick();
     }, 0);
 }
 
 function Tick() {
     if(editor) editor.tick();
     engine.tick();
-    mouse.tick();
+}
+
+function PostTick() {
+    if(mouse.tick())
+        needsRendering = true;
 }
 
 function Render() {
     if(editor) editor.render(0, 0, canvas.width, canvas.height);
     engine.render(0, 0, canvas.width, canvas.height);
-
+    mouse.render();
     needsRendering = false;
 }
+
+function NeedsReRendering() {needsRendering = true;}
 
 ///
 
@@ -95,24 +102,55 @@ class Mouse {
     lastY = 0;
 
     down = false;
+    downX = 0;
+    downY = 0;
     timeDown = 0;
     clickDown = false;
     clickUp = false;
+    sawClickDown;
+    sawClickUp;
 
     activeTool;
     activeToolInitData;
 
-    tick() {
-        if(this.clickDown)
-            this.clickDown = false;
+    /**@type {MouseDrag} */
+    mouseDrag;
 
-        if(this.clickUp)
+    tick() {
+        let reRenderFromMouse = false;
+
+        if(this.clickDown) this.sawClickDown = true;
+        if(this.sawClickDown) {
+            this.clickDown = false;
+            this.sawClickDown = false;
+            reRenderFromMouse = true;
+        }
+
+        if(this.clickUp) this.sawClickUp = true;
+        if(this.sawClickUp) {
             this.clickUp = false;
+            this.sawClickUp = false;
+            reRenderFromMouse = true;
+        }
+
+        // mouse drag release
+        if(this.mouseDrag != null && !this.down) {
+            this.mouseDrag.onPlace(this.x, this.y, this.mouseDrag.data, this.mouseDrag.id);
+            this.removeActiveTool(this.mouseDrag.id);
+            this.mouseDrag = null;
+            reRenderFromMouse = true;
+        }
         
         if(this.down)
             this.timeDown++;
         else
             this.timeDown = 0;
+        
+        return reRenderFromMouse;
+    }
+
+    render() {
+        if(this.mouseDrag != null) this.mouseDrag.onRender(this.x, this.y, this.mouseDrag.data, this.mouseDrag.id);
     }
 
     updatePosition(x, y) {
@@ -139,10 +177,20 @@ class Mouse {
      * @returns 
      */
     isToolDown(id) {
+        if(this.mouseDrag != null) return false;
         if(this.down == false) return false;
         if(id == this.activeTool) return true;
         else if(this.activeTool == null) return this.down;
         return false;
+    }
+
+    /** When given a tool ID, check if the tool is being used or it is free to start being used
+     * @param {String} id 
+     * @returns 
+     */
+    isToolFirstUp(id) {
+        if(this.mouseDrag != null) return false;
+        return this.clickUp && (this.activeTool == null || this.activeTool == id);
     }
 
     setActiveTool(id, initData) {
@@ -163,5 +211,60 @@ class Mouse {
         this.down = down;
         this.clickDown = down;
         this.clickUp = !down;
+        if(down) {
+            this.downX = this.x;
+            this.downY = this.y;
+        }
+    }
+
+    getDownDistance() {
+        if(!this.down) return 0;
+        return Math.sqrt(((this.y - this.downY) ** 2) + ((this.x - this.downX) ** 2));
+    }
+
+    /**
+     * 
+     * @param {MouseDrag} mouseDrag 
+     */
+    startDragging(mouseDrag) {
+        if(this.mouseDrag != null) return false;
+        this.mouseDrag = mouseDrag;
+        this.activeTool = mouseDrag.id;
+        return true;
+    }
+}
+
+class MouseDrag {
+    /**
+     * @callback OnMouseDragRender
+     * @param {Number} x
+     * @param {Number} y
+     * @param {Object} data
+     * @param {String} id
+     */
+    /**
+     * @callback OnMousePlace
+     * @param {Number} x
+     * @param {Number} y
+     * @param {Object} data
+     * @param {String} id
+     */
+
+    id;
+    /**@type {OnMouseDragRender} */
+    onRender;
+    /**@type {OnMousePlace} */
+    onPlace;
+    data;
+
+    /**
+     * @param {OnMouseDragRender} onRender
+     * @param {OnMousePlace} onPlace
+     * */
+    constructor(id, onRender, onPlace, data) {
+        this.id = id;
+        this.onRender = onRender;
+        this.onPlace = onPlace;
+        this.data = data;
     }
 }
