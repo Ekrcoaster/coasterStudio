@@ -70,7 +70,6 @@ canvas.addEventListener('mousemove', function(evt) {
         };
       }
 }, false);
-
     
 canvas.addEventListener("mousedown", function (evt) {
     if(evt.button == 0) {
