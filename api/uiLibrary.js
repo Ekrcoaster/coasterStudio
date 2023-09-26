@@ -316,17 +316,17 @@ const UI_WIDGET = {
      * @param {Number} wholeSpaceMax the ending value of the current window
      */
     windowResize: function (id, type, axis, start, end, wholeSpaceMin, wholeSpaceMax, mouseOffset) {
-        let width = 5;
-        let length = 100;
-        let avg = (start + end) / 2;
+        let width = 3;
+        //let length = (end-start)/2;
+        //let avg = (start + end) / 2;
         let x1 = axis - width;
         let x2 = axis + width;
-        let y1 = avg - length;
-        let y2 = avg + length;
+        let y1 = start;
+        let y2 = end;
 
         if (type == "x-axis") {
-            x1 = avg - length;
-            x2 = avg + length;
+            x1 = start;
+            x2 = end;
             y1 = axis - width;
             y2 = axis + width;
         }
@@ -367,7 +367,7 @@ const UI_WIDGET = {
      * @param {Number} x1 
      * @param {Number} y1 
      * @param {Number} y2 
-     * @param {("notActive"|"active"|"potential")} state 
+     * @param {("notActive"|"active"|"potential"|"moving")} state 
      * @returns 
      */
     windowTabLabel: function (id, name, x1, y1, y2, state) {
@@ -385,6 +385,8 @@ const UI_WIDGET = {
             color = COLORS.windowTabActive;
         if(state == "potential")
             color = COLORS.windowTabPotential;
+        if(state == "moving")
+            color = COLORS.windowTabMoving;
 
         return {
             hover: hover,
@@ -406,7 +408,7 @@ const UI_WIDGET = {
 const COLORS = {
     background: "#282828",
 
-    windowResizeHandleDefault: new DrawShapeOption("#07070731"),
+    windowResizeHandleDefault: new DrawShapeOption("#07070700"),
     windowResizeHandleHover: new DrawShapeOption("#3b3b3bfe"),
     windowResizeHandlePress: new DrawShapeOption("#b0b0b0fe"),
 
@@ -416,5 +418,7 @@ const COLORS = {
     windowTabDefault: new DrawShapeOption("#363636", "#c5c5c5", 3).setRoundedCorners(10),
     windowTabHover: new DrawShapeOption("#636363", "#c5c5c5", 3).setRoundedCorners(10),
     windowTabActive: new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10, 10, 0, 0),
-    windowTabPotential: new DrawShapeOption("#2986ea5e").setRoundedCorners(10)
+    windowTabPotential: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
+    windowTabMoving: new DrawShapeOption("#6b75802b").setRoundedCorners(10),
+    windowTabInsert: new DrawShapeOption("#2986ea5e").setRoundedCorners(10)
 }
