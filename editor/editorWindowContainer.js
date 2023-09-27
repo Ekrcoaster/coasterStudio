@@ -20,9 +20,9 @@ class EditorWindowContainer extends EditorWindowBase {
         headerInsertWidth: 5,
         headerInsertPadding: 10
     }
-
-    constructor(percentWidth, percentHeight) {
-        super(percentWidth, percentHeight);
+    /**@param {Direction} insideDirection */
+    constructor(percent, insideDirection) {
+        super(percent, insideDirection);
         this.myself = "container";
         this.windows = [];
         this.activeWindowIndex = 0;
@@ -257,26 +257,29 @@ class EditorWindowContainer extends EditorWindowBase {
     }
 
     clone() {
-        return new EditorWindowContainer(this.percentWidth, this.percentHeight);
+        return new EditorWindowContainer(this.getWidthPercent(), this.getHeightPercent());
     }
 
     windowDroppedOnMe(x, y, window) {
         this.newWindowHoveringOverMe = null;
         let type = this.windowDropPositionType(x, y);
-        console.log(type)
         if(type == "tab") {
             let droppedIndex = this.calculateWindowDropIndex(x, y, true);
             this.activeWindowIndex = droppedIndex == -1 ? this.windows.length : droppedIndex;
             this.registerWindow(window, droppedIndex);
         } else if(type.startsWith("split")) {
+
+            let parent = new EditorWindowContainer(1, this.insideDirection);
+            parent.registerWindow(window);
+            
             if(type == "splitN")
-                this.split(1, 0.5, false, window);
+                this.split(0.5, "vertical", false, parent);
             else if(type == "splitE")
-                this.split(0.5, 1, true, window);
+                this.split(0.5, "horizontal", true, parent);
             else if(type == "splitS")
-                    this.split(1, 0.5, true, window);
+                    this.split(0.5, "vertical", true, parent);
             else if(type == "splitW")
-                this.split(0.5, 1, false, window);
+                this.split(0.5, "horizontal", false, parent);
         }
     }
 
@@ -286,7 +289,7 @@ class EditorWindowContainer extends EditorWindowBase {
      */
     windowDropPositionType(x, y) {
         if(y > this.lastScreenPos.y1 + this.headerHeight + 50) {
-            // calculate the best direction to split
+            // calculate the best insideDirection to split
             // do this based on which axis the point is closest to
             let centerX = (this.lastScreenPos.x1 + this.lastScreenPos.x2) / 2;
             let centerY = (this.lastScreenPos.y1 + this.lastScreenPos.y2) / 2;

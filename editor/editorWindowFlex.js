@@ -6,11 +6,10 @@ class EditorWindowFlex extends EditorWindowBase {
     /**@type {Direction} */
     type = "";
 
-    /**@param {Direction} type */
-    constructor(type, percentWidth, percentHeight) {
-        super(percentWidth, percentHeight);
+    /**@param {Direction} insideDirection */
+    constructor(percent, insideDirection) {
+        super(percent, insideDirection);
         this.myself = "flex";
-        this.type = type;
         this.windows = [];
     }
 
@@ -55,7 +54,7 @@ class EditorWindowFlex extends EditorWindowBase {
         return flex;
     }
 
-    onResized(child, changeX, changeY) {
+    onResized(child, change) {
         // first figure out what child we are
         let index = this.windows.indexOf(child);
         if(index == -1) return;
@@ -63,62 +62,46 @@ class EditorWindowFlex extends EditorWindowBase {
         // then if we are not the last child
         if(index < this.windows.length - 1) {
             let neighbor = this.windows[index+1];
-            if((this.type == "horizontal" && neighbor.percentWidth + changeX < neighbor.MIN_WINDOW_SIZE) || (this.type == "vertical" && neighbor.percentHeight + changeY < neighbor.MIN_WINDOW_SIZE)) return false;
-            neighbor.resizeWithoutNotify(neighbor.percentWidth + changeX, neighbor.percentHeight + changeY);
-
-            if(this.type == "horizontal") {
-
-                // if the y was changed, we gotta resize the parent!
-                if(changeY != 0)
-                    this.resize(0, changeY);
-            } 
-            else if(this.type == "vertical") {
-
-                // if the y was changed, we gotta resize the parent!
-                if(changeX != 0)
-                    this.resize(changeX, 0);
-            }
+            if(neighbor.percent + change < neighbor.MIN_WINDOW_SIZE) return false;
+            neighbor.percent += change;
         }
+
         return true;
     }
 
-    onSplit(child, newSplitX, newSplitY, spaceX, spaceY, after, newWindow) {
+    /**
+     * 
+     * @param {EditorWindowBase} child 
+     * @param {Direction} direction 
+     * @param {EditorWindow|EditorWindowBase} newWindow 
+     */
+    onSplit(child, percent, direction, insertNewWindowAfter, newWindow) {
         // first figure out what child we are
         let index = this.windows.indexOf(child);
         if(index == -1) return;
 
-        if(newWindow instanceof EditorWindow) {
-            let parent = new EditorWindowContainer(newSplitX, newSplitY);
-            parent.registerWindow(newWindow);
-            newWindow = parent;
-        }
-
-        console.log(child, newSplitX, newSplitY, spaceX, spaceY, after, newWindow, this.type);
-
-        if((this.type == "horizontal" && (newSplitY == 0 || newSplitY == 1)) || (this.type == "vertical" && (newSplitX == 0 || newSplitX == 1))) {
-            let window = this.registerWindowAtIndex(newWindow, index+(after ? 1 : 0));
-            window.percentWidth = newSplitX;
-            window.percentHeight = newSplitY;
+        // if we are splitting in the same direction as our parent, then just resize and insert into myself!
+        if(this.insideDirection == direction) {
+            let ogChild = child.percent
+            child.percent = child.percent * percent;
+            let window = this.registerWindowAtIndex(newWindow, index+(insertNewWindowAfter ? 1 : 0));
+            window.percent = (1-percent) * ogChild;
         } else {
-            let myWindow = this.windows[index];
+            // pluck the child out of the space
             this.windows.splice(index, 1);
-            let flex = this.registerFlexAtIndex(new EditorWindowFlex(this.type == "vertical" ? "horizontal" : "vertical", spaceX, spaceY), index);
-            flex.registerWindow(myWindow);
+
+            // create the new flex space
+            let flex = this.registerFlexAtIndex(new EditorWindowFlex(child.percent, direction), index);
+            child.percent = 0.5;
+            flex.registerWindow(child);
+            newWindow.percent = 0.5;
             flex.registerWindow(newWindow);
-
-            if(newSplitX != 1) {
-                myWindow.percentWidth = 0.5;
-                newWindow.percentWidth = 0.5;
-            } else {
-                myWindow.percentHeight = 0.5;
-                newWindow.percentHeight = 0.5;
-            }
         }
-
-
-        this.windows
     }
 
+    /**
+     * @param {EditorWindowBase} child 
+     */
     onCollapse(child) {
         // first figure out what child we are
         let index = this.windows.indexOf(child);
@@ -135,11 +118,25 @@ class EditorWindowFlex extends EditorWindowBase {
             if(this.parent == null) return;
             this.parent.onCollapse(this);
         } else {
-            if(this.type == "horizontal")
-                this.windows[nextChild].percentWidth += child.percentWidth;
-            else
-                this.windows[nextChild].percentHeight += child.percentHeight;
+            // otherwise, add our percentages
+            this.windows[nextChild].percent += child.percent;
             this.windows.splice(index, 1);
+        }
+
+        editor.windowManager.flex.cleanFlexTree(null);
+    }
+
+    cleanFlexTree() {
+        if(this.windows.length == 1 && this.windows[0] instanceof EditorWindowFlex) {
+            let child = this.windows[0];
+            this.percent = 1;
+            this.insideDirection = child.insideDirection;
+            this.windows = child.windows;
+        } else {
+            for(let i = 0; i < this.windows.length; i++) {
+                if(this.windows[i] instanceof EditorWindowFlex)
+                    this.windows[i].cleanFlexTree(this);
+            }
         }
     }
 
@@ -154,7 +151,7 @@ class EditorWindowFlex extends EditorWindowBase {
         }
 
         // modify if row
-        if(this.type == "vertical") {
+        if(this.insideDirection == "vertical") {
             space.x2 = ax2;
             space.y2 = ay1 + individualSpaceY;
             space.offsetX = 0;
@@ -174,7 +171,7 @@ class EditorWindowFlex extends EditorWindowBase {
         }
 
         // modify if row
-        if(this.type == "vertical") {
+        if(this.insideDirection == "vertical") {
             space.x2 = ax2;
             space.y2 = ay1 + totalHeight * windowPercentHeight;
             space.offsetX = 0;
@@ -193,7 +190,7 @@ class EditorWindowFlex extends EditorWindowBase {
             let window = this.windows[i];
 
             let windowSpace = this.calculatePercentSpace(soFar.x, soFar.y, x2, y2, 
-                (x2-x1), (y2-y1), window.percentWidth, window.percentHeight);
+                (x2-x1), (y2-y1), window.getWidthPercent(), window.getHeightPercent());
 
             renderedSpaces.push(windowSpace);
 
@@ -203,22 +200,23 @@ class EditorWindowFlex extends EditorWindowBase {
             soFar.y += windowSpace.offsetY;
         }
 
+        // draw the resize handles
         for(let i = 0; i < this.windows.length-1; i++) {
             let space = renderedSpaces[i];
 
-            if(this.type == "vertical" || this.windows[i].myself == "flex") {
+            if(this.insideDirection == "vertical" || this.windows[i].myself == "flex") {
                 // handle resizing vertically
                 let result = UI_WIDGET.windowResize("windowResizeX" + i + this.id, "x-axis", space.y2, space.x1, space.x2, y1, y2, space.y1);
                 if(result.isDown) {
-                    this.windows[i].resize(1, result.newPercent);
+                    this.windows[i].resize(result.newPercent);
                 }
             }
             
-            if(this.type == "horizontal" || this.windows[i].myself == "flex") {
+            if(this.insideDirection == "horizontal" || this.windows[i].myself == "flex") {
                 // handle resizing horizntally
                 let hresult = UI_WIDGET.windowResize("windowResizeY" + i + this.id, "y-axis", space.x2, space.y1, space.y2, x1, x2, space.x1);
                 if(hresult.isDown) {
-                    this.windows[i].resize(hresult.newPercent, 1);
+                    this.windows[i].resize(hresult.newPercent);
                 }
             }
         }
@@ -240,7 +238,7 @@ class EditorWindowFlex extends EditorWindowBase {
     }
 
     print(depth = 0) {
-        let builder = `${super.print(depth)} [${this.type}]\n`;
+        let builder = `${super.print(depth)} [${this.insideDirection}]\n`;
 
         for(let i = 0; i < this.windows.length; i++) {
             builder += this.windows[i].print(depth + 1) + "\n";
@@ -254,12 +252,12 @@ class EditorWindowFlex extends EditorWindowBase {
         let color = new DrawShapeOption("#00000000","#2863ab42", 10);
         if(mouse.isHoveringOver(x1, y1, x2, y2))
             color = new DrawShapeOption("#2863ab42")
-        if(this.type == "horizontal") {
+        if(this.insideDirection == "horizontal") {
             let avg = (y2+y1)/2;
             UI_LIBRARY.drawRectCoords(x1, avg-height/3, x2, avg+height/3, 0, color);
             UI_LIBRARY.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(25, "default", "black", "center", "center"));
         }
-        if(this.type == "vertical") {
+        if(this.insideDirection == "vertical") {
             let avg = (x2+x1)/2;
             UI_LIBRARY.drawRectCoords(avg-width/3, y1, avg+width/3, y2, 0, color);
             UI_LIBRARY.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(25, "default", "red", "center", "center"));
@@ -269,7 +267,7 @@ class EditorWindowFlex extends EditorWindowBase {
         for(let i = 0; i < this.windows.length; i++) {
             let window = this.windows[i];
             let windowSpace = this.calculatePercentSpace(soFar.x, soFar.y, x2, y2, 
-                (x2-x1), (y2-y1), window.percentWidth, window.percentHeight);
+                (x2-x1), (y2-y1), window.getWidthPercent(), window.getHeightPercent());
 
             window.debugRender(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2 - windowSpace.x1, windowSpace.y2 - windowSpace.y1, depth+1, maxDepth);
 

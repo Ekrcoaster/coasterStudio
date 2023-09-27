@@ -196,7 +196,6 @@ class Mouse {
         if(id == this.activeTool) return;
         this.activeTool = id;
         this.activeToolInitData = initData;
-        console.log(this.activeTool)
     }
 
     removeActiveTool(id) {
