@@ -23,7 +23,7 @@ class EditorWindowContainer extends EditorWindowBase {
 
     constructor(percentWidth, percentHeight) {
         super(percentWidth, percentHeight);
-        this.myself = "window";
+        this.myself = "container";
         this.windows = [];
         this.activeWindowIndex = 0;
     }
@@ -85,7 +85,7 @@ class EditorWindowContainer extends EditorWindowBase {
         let startDragging = -1;
 
         // draw the other non active tabs
-        drawTabs(false, this.calculateWindowDropIndex(mouse.x || 0, mouse.y || 0));
+        drawTabs(false, tabWindowDropIndex);
 
         // figure out what the active window to draw is
         let windowToDraw = this.activeWindowIndex;
@@ -95,7 +95,10 @@ class EditorWindowContainer extends EditorWindowBase {
             this.windows[windowToDraw].render(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2- windowSpace.x1, windowSpace.y2 - windowSpace.y1);
         
         // draw the ACTIVE tab
-        drawTabs(true, this.calculateWindowDropIndex(mouse.x || 0, mouse.y || 0));
+        drawTabs(true, tabWindowDropIndex);
+
+        if(t.newWindowHoveringOverMe != null)
+            drawHoverSplit(tabWindowDropType);
 
         // set the selected tab
         this.activeWindowIndex = toSelect;
@@ -164,6 +167,22 @@ class EditorWindowContainer extends EditorWindowBase {
                     offset += t.headerPadding.headerInsertPadding - t.headerPadding.headerInsertWidth/2;
                     UI_LIBRARY.drawRectCoords(x1+offset, y1 + t.headerPadding.top, x1+offset+t.headerPadding.headerInsertWidth, y1+t.headerHeight-t.headerPadding.bottom, 0, COLORS.windowTabInsert);
                 }
+            }
+        }
+
+        function drawHoverSplit(type) {
+            if(type == "splitN") {
+                draw(x1, y1+t.headerHeight, x2, y1+height/2);
+            } else if(type == "splitE") {
+                draw(x1+width/2, y1+t.headerHeight, x2, y2);
+            } else if(type == "splitS") {
+                draw(x1, y1+height/2, x2, y2);
+            } else if(type == "splitW") {
+                draw(x1, y1+t.headerHeight, x1+width/2, y2);
+            }
+
+            function draw(x1, y1, x2, y2) {
+                UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.windowTabInsert);
             }
         }
         
@@ -244,22 +263,40 @@ class EditorWindowContainer extends EditorWindowBase {
     windowDroppedOnMe(x, y, window) {
         this.newWindowHoveringOverMe = null;
         let type = this.windowDropPositionType(x, y);
+        console.log(type)
         if(type == "tab") {
             let droppedIndex = this.calculateWindowDropIndex(x, y, true);
             this.activeWindowIndex = droppedIndex == -1 ? this.windows.length : droppedIndex;
             this.registerWindow(window, droppedIndex);
-        } else if(type == "split") {
-
+        } else if(type.startsWith("split")) {
+            if(type == "splitN")
+                this.split(1, 0.5, false, window);
+            else if(type == "splitE")
+                this.split(0.5, 1, true, window);
+            else if(type == "splitS")
+                    this.split(1, 0.5, true, window);
+            else if(type == "splitW")
+                this.split(0.5, 1, false, window);
         }
     }
 
     /**
      * Figures out how to handle a window drop
-     * @returns {("tab"|"split")}
+     * @returns {("tab"|"splitN"|"splitE"|"splitS"|"splitW")}
      */
     windowDropPositionType(x, y) {
-        if(this.cacheWindowTabPositions.length > 0 && this.cacheWindowTabPositions[0].y2 + 100) {
-            return "split";   
+        if(y > this.lastScreenPos.y1 + this.headerHeight + 50) {
+            // calculate the best direction to split
+            // do this based on which axis the point is closest to
+            let centerX = (this.lastScreenPos.x1 + this.lastScreenPos.x2) / 2;
+            let centerY = (this.lastScreenPos.y1 + this.lastScreenPos.y2) / 2;
+            let differenceX = centerX - x;
+            let differenceY = centerY - y;
+            if(Math.abs(differenceX) > Math.abs(differenceY)) {
+                return differenceX > 0 ? "splitW" : "splitE";
+            } else {
+                return differenceY > 0 ? "splitN" : "splitS";
+            }
         }
         return "tab";
     }
@@ -274,5 +311,24 @@ class EditorWindowContainer extends EditorWindowBase {
                 highest = i;
         }
         return highest+1;
+    }
+
+    print(depth = 0) {
+        let builder = `${super.print(depth)} <`;
+
+        for(let i = 0; i < this.windows.length; i++) {
+            builder += this.windows[i].name + ", ";
+        }
+
+        builder = builder.substring(0, builder.length - 2);
+
+        builder += ">";
+
+        return builder;
+    }
+
+    debugRender(x1, y1, x2, y2, width, height, depth, maxDepth) {
+        if(depth >= maxDepth) return;
+        UI_LIBRARY.drawRectCoords(x1+50, y1+50, x2-50, y2-50, 0, new DrawShapeOption("#ffffff00", "#ab28281f", 10));
     }
 }

@@ -57,13 +57,16 @@ class EditorWindowBase {
      */
     getWindowContainerAtScreenPos(x, y) {}
 
-    split(splitPercentWidth, splitPercentHeight) {
+    split(splitPercentWidth, splitPercentHeight, after, window) {
+        console.log("desired split", splitPercentWidth, splitPercentHeight);
+        console.log("current space size",this.percentWidth, this.percentHeight, this.id);
         let ogWidth = this.percentWidth;
         let ogHeight = this.percentHeight;
+        console.log("new og size", splitPercentWidth * this.percentWidth, splitPercentHeight * this.percentHeight, this.id);
         this.resizeWithoutNotify(splitPercentWidth * this.percentWidth, splitPercentHeight * this.percentHeight);
-
+        console.log("newWindowSize", ogWidth - (splitPercentWidth * this.percentWidth), ogHeight - (splitPercentHeight * this.percentHeight), window)
         if(this.parent)
-            this.parent.onSplit(this, (1-splitPercentWidth) * ogWidth, (1-splitPercentHeight)* ogHeight);
+            this.parent.onSplit(this, ogWidth - (this.percentWidth), ogHeight - (this.percentHeight), ogWidth, ogHeight, after, window);
     }
 
     collapse() {
@@ -73,4 +76,17 @@ class EditorWindowBase {
     render(x1, y1, x2, y2, width, height) {
         this.lastScreenPos = {x1: x1, y1: y1, x2: x2, y2: y2};
     }
+
+    print(depth = 0) {
+        return `${space(depth)}${this.myself}: ${this.id} (${this.percentWidth}  ${this.percentHeight})`;
+
+        function space(dep) {
+            let b = "";
+            for(let i = 0; i < dep; i++)
+                b += "     ";
+            return b;
+        }
+    }
+
+    debugRender(x1, y1, x2, y2, width, height, depth, maxDepth) {}
 }

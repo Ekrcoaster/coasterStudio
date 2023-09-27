@@ -406,7 +406,7 @@ const UI_WIDGET = {
 }
 
 const COLORS = {
-    background: "#282828",
+    background: "#1c1c1c",
 
     windowResizeHandleDefault: new DrawShapeOption("#07070700"),
     windowResizeHandleHover: new DrawShapeOption("#3b3b3bfe"),
