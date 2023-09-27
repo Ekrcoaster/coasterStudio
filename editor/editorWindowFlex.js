@@ -127,7 +127,7 @@ class EditorWindowFlex extends EditorWindowBase {
     }
 
     cleanFlexTree() {
-        if(this.windows.length == 1 && this.windows[0] instanceof EditorWindowFlex) {
+        if(this.windows.length == 1 && this.windows[0] instanceof EditorWindowFlex && this.windows[0].windows.length == 1) {
             let child = this.windows[0];
             this.percent = 1;
             this.insideDirection = child.insideDirection;
