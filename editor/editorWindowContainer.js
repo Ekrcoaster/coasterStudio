@@ -91,9 +91,12 @@ class EditorWindowContainer extends EditorWindowBase {
         let windowToDraw = this.activeWindowIndex;
         
         // draw the active window
-        if(windowToDraw < this.windows.length && windowToDraw > -1)
+        if(windowToDraw < this.windows.length && windowToDraw > -1) {
+            this.windows[windowToDraw].preRender(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2- windowSpace.x1, windowSpace.y2 - windowSpace.y1);
             this.windows[windowToDraw].render(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2- windowSpace.x1, windowSpace.y2 - windowSpace.y1);
-        
+            this.windows[windowToDraw].postRender();
+        }
+            
         // draw the ACTIVE tab
         drawTabs(true, tabWindowDropIndex);
 
@@ -134,6 +137,9 @@ class EditorWindowContainer extends EditorWindowBase {
                     UI_LIBRARY.drawRectCoords(x1+offset, y1 + t.headerPadding.top, x1+offset+t.headerPadding.headerInsertWidth, y1+t.headerHeight-t.headerPadding.bottom, 0, COLORS.windowTabInsert);
                     offset += t.headerPadding.headerInsertPadding;
                 }
+
+                // if the tab is out of bounds, dont render it
+                if(offset >= x2) continue;
 
                 // calculate the tab and add the offset based on the length 
                 let result = UI_WIDGET.windowTabLabel("tabLabel " + t.id + i, t.windows[i].name, x1 + offset, y1 + t.headerPadding.top, y1+t.headerHeight-t.headerPadding.bottom, tabState);
@@ -217,7 +223,9 @@ class EditorWindowContainer extends EditorWindowBase {
 
                 // render the active window, then the header
                 let tempWindowSpace = calculateWindowSpace(x-3, y+t.headerHeight, windowX2, windowY2);
+                d.window.preRender(tempWindowSpace.x1, tempWindowSpace.y1, tempWindowSpace.x2, tempWindowSpace.y2, tempWindowSpace.x2- tempWindowSpace.x1, tempWindowSpace.y2 - tempWindowSpace.y1);
                 d.window.render(tempWindowSpace.x1, tempWindowSpace.y1, tempWindowSpace.x2, tempWindowSpace.y2, tempWindowSpace.x2- tempWindowSpace.x1, tempWindowSpace.y2 - tempWindowSpace.y1);
+                d.window.postRender();
                 res.render();
 
                 // tell the current hovering window that its being hovered

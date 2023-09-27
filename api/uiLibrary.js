@@ -6,12 +6,15 @@ class DrawShapeOption {
     roundedCorners = [];
     highQualityRendering = true;
 
+    isMask;
+
     constructor(fillColor = "", outlineColor = "", outlineWidth = 0) {
         this.fillColor = fillColor;
         this.outlineColor = outlineColor;
         this.outlineWidth = outlineWidth || 0;
         this.roundedCorners = [];
         this.highQualityRendering = true;
+        this.isMask = false;
     }
 
     /**@param {...Number} radius*/
@@ -25,6 +28,11 @@ class DrawShapeOption {
 
     makeLowQuality() {
         this.highQualityRendering = false;
+        return this;
+    }
+
+    makeMask() {
+        this.isMask = true;
         return this;
     }
 
@@ -127,18 +135,24 @@ const UI_LIBRARY = {
         //for (let i = 0; i < points.length; i++)
         //    ctx.lineTo(points[i].x, points[i].y);
 
-        drawRoundPoly(0);
+        let path = drawRoundPoly();
 
         // if we are drawing an outline, then go back to the first point and draw a line (so all sides have a line)
         if (shape.shouldStroke()) {
             //ctx.lineTo(points[0].x, points[0].y);
-            ctx.stroke();
+            ctx.stroke(path);
         }
 
         if (shape.shouldFill())
-            ctx.fill();
-
-        function drawRoundPoly(t) {
+            ctx.fill(path);
+        
+        if(shape.isMask) {
+            ctx.save();
+            ctx.clip(path);
+        }
+            
+        function drawRoundPoly() {
+            let path = new Path2D();
             const lerp = (a, b, x) => {
                 if(x > 1) x = 1;
                 if(x < 0) x = 0;
@@ -148,11 +162,10 @@ const UI_LIBRARY = {
             const lerp2D = (p1, p2, t) => ({
                 x: lerp(p1.x, p2.x, t),
                 y: lerp(p1.y, p2.y, t)
-            })
+            });
 
-            ctx.moveTo(points[0].x, points[0].y);
-            ctx.beginPath();
-
+            path.moveTo(points[0].x, points[0].y);
+            
             let allRadiuses = shape.getRoundedCorners();
             let skipRounding = allRadiuses.length == 1 && allRadiuses[0] == 0;
 
@@ -163,7 +176,7 @@ const UI_LIBRARY = {
             let lastIndex = points.length - 1;
             for (let i = 0; i < points.length; i++) {
                 if(skipRounding) {
-                    ctx.lineTo(points.x, points.y);
+                    path.lineTo(points[i].x, points[i].y);
                 }
                 // find the radius
                 let radius = allRadiuses[Math.min(allRadiuses.length - 1, i)];
@@ -179,18 +192,19 @@ const UI_LIBRARY = {
 
                 // draw
                 if(highQuality) {
-                    ctx.lineTo(lastLerp.x, lastLerp.y);
-                    ctx.bezierCurveTo(points[i].x, points[i].y, points[i].x, points[i].y, nextLerp.x, nextLerp.y);
-                    ctx.lineTo(nextLerp.x, nextLerp.y);
+                    path.lineTo(lastLerp.x, lastLerp.y);
+                    path.bezierCurveTo(points[i].x, points[i].y, points[i].x, points[i].y, nextLerp.x, nextLerp.y);
+                    path.lineTo(nextLerp.x, nextLerp.y);
                 } else {
-                    ctx.lineTo(lastLerp.x, lastLerp.y);
-                    ctx.lineTo(nextLerp.x, nextLerp.y);
+                    path.lineTo(lastLerp.x, lastLerp.y);
+                    path.lineTo(nextLerp.x, nextLerp.y);
                 }
 
                 last = points[i];
                 lastIndex = i;
             }
-            ctx.closePath();
+            path.closePath();
+            return path;
         }
 
             function myRoundPolly(radius) {
@@ -278,6 +292,9 @@ const UI_LIBRARY = {
         ctx.font = draw.getFontForCTX();
         ctx.fillStyle = draw.fillColor;
         ctx.fillText(text, x1+xOffset, y1+yOffset, x2-x1);
+    },
+    restore() {
+        ctx.restore();
     }
 }
 
@@ -412,7 +429,7 @@ const COLORS = {
     windowResizeHandleHover: new DrawShapeOption("#3b3b3bfe"),
     windowResizeHandlePress: new DrawShapeOption("#b0b0b0fe"),
 
-    windowBackground: new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10),
+    windowBackground: ()=>{ return new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10)},
     windowTabLabel: new DrawTextOption(25, "default", "#979797", "center", "center"),
 
     windowTabDefault: new DrawShapeOption("#363636", "#c5c5c5", 3).setRoundedCorners(10),
