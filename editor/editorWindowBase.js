@@ -66,6 +66,10 @@ class EditorWindowBase {
             this.parent.onSplit(this, (1-splitPercentWidth) * ogWidth, (1-splitPercentHeight)* ogHeight);
     }
 
+    collapse() {
+        this.parent.onCollapse(this);
+    }
+
     render(x1, y1, x2, y2, width, height) {
         this.lastScreenPos = {x1: x1, y1: y1, x2: x2, y2: y2};
     }

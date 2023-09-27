@@ -16,7 +16,9 @@ class EditorWindowContainer extends EditorWindowBase {
         top: 5,
         bottom: 5,
         tabStartingOffset: 3,
-        tabSpacing: 15
+        tabSpacing: 15,
+        headerInsertWidth: 5,
+        headerInsertPadding: 10
     }
 
     constructor(percentWidth, percentHeight) {
@@ -50,6 +52,11 @@ class EditorWindowContainer extends EditorWindowBase {
         return true;
     }
 
+    checkForCollapse() {
+        if(this.windows.length == 0)
+            this.collapse();
+    }
+
     /**
      *  This will render the container and the active window inside of it.
      * 
@@ -61,8 +68,7 @@ class EditorWindowContainer extends EditorWindowBase {
         const t = this;
 
         // ensure we don't draw any windows outside of the range
-        if(this.activeWindowIndex >= this.windows.length)
-            this.activeWindowIndex = this.windows.length - 1;
+        this.activeWindowIndex = Math.max(0, Math.min(this.activeWindowIndex, this.windows.length - 1));
 
         // calculate the window space
         let windowSpace = calculateWindowSpace(x1, y1, x2, y2);
@@ -70,26 +76,26 @@ class EditorWindowContainer extends EditorWindowBase {
         // make sure the window won't overlap with the header
         windowSpace.y1 += t.headerHeight;
 
+        let tabWindowDropIndex = -1;
+        let tabWindowDropType = this.windowDropPositionType(mouse.x, mouse.y);
+        if(tabWindowDropType == "tab") tabWindowDropIndex = this.calculateWindowDropIndex(mouse.x, mouse.y);
+
         // actions
         let toSelect = this.activeWindowIndex;
         let startDragging = -1;
 
         // draw the other non active tabs
-        drawTabs(false, this.calculateWindowDropIndex(mouse.x || 0));
+        drawTabs(false, this.calculateWindowDropIndex(mouse.x || 0, mouse.y || 0));
 
         // figure out what the active window to draw is
         let windowToDraw = this.activeWindowIndex;
-        // if the active window happens to be the window that I'm dragging, then draw the next window
-        if(mouse.mouseDrag?.id == this.id + windowToDraw) {
-            windowToDraw++;
-        }
         
         // draw the active window
         if(windowToDraw < this.windows.length && windowToDraw > -1)
             this.windows[windowToDraw].render(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2- windowSpace.x1, windowSpace.y2 - windowSpace.y1);
         
         // draw the ACTIVE tab
-        drawTabs(true);
+        drawTabs(true, this.calculateWindowDropIndex(mouse.x || 0, mouse.y || 0));
 
         // set the selected tab
         this.activeWindowIndex = toSelect;
@@ -110,32 +116,32 @@ class EditorWindowContainer extends EditorWindowBase {
          */
         function drawTabs(active, insertIndex = -1) {
             let offset = t.headerPadding.tabStartingOffset;
-            t.cacheWindowTabPositions = [];
-            for(let i = 0; i < t.windows.length; i++) {
+            if(t.newWindowHoveringOverMe == null) {
+                t.cacheWindowTabPositions = [];
+            }
 
+            for(let i = 0; i < t.windows.length; i++) {
                 let tabState = "active";
                 if(i != t.activeWindowIndex)
                     tabState = "notActive";
 
-                if(mouse.mouseDrag?.id == t.id + i)
-                    tabState = "moving";
-                
-
                 // if there is a window being dragged and it is going to be inserted, then draw the insert
-                if(!active && t.newWindowHoveringOverMe != null && i-1 == insertIndex) {
-                    offset += 5;
-                    UI_LIBRARY.drawRectCoords(offset, y1 + t.headerPadding.top, offset+5, y1+t.headerHeight-t.headerPadding.bottom, 0, COLORS.windowTabInsert);
-                    offset += 15;
+                if(t.newWindowHoveringOverMe != null && i == insertIndex) {
+                    offset += t.headerPadding.headerInsertPadding - t.headerPadding.headerInsertWidth/2;
+                    UI_LIBRARY.drawRectCoords(x1+offset, y1 + t.headerPadding.top, x1+offset+t.headerPadding.headerInsertWidth, y1+t.headerHeight-t.headerPadding.bottom, 0, COLORS.windowTabInsert);
+                    offset += t.headerPadding.headerInsertPadding;
                 }
 
                 // calculate the tab and add the offset based on the length 
                 let result = UI_WIDGET.windowTabLabel("tabLabel " + t.id + i, t.windows[i].name, x1 + offset, y1 + t.headerPadding.top, y1+t.headerHeight-t.headerPadding.bottom, tabState);
-                t.cacheWindowTabPositions.push({
-                    x1: offset, y1: 
-                    y1 + t.headerPadding.top,
-                    x2: offset+result.myLength,
-                    y2: y1+t.headerHeight-t.headerPadding.bottom
-                });
+                if(t.newWindowHoveringOverMe == null) {
+                    t.cacheWindowTabPositions.push({
+                        x1: x1+offset, y1: 
+                        y1 + t.headerPadding.top,
+                        x2: x1+offset+result.myLength,
+                        y2: y1+t.headerHeight-t.headerPadding.bottom
+                    });
+                }
                 offset += result.myLength + t.headerPadding.tabSpacing;
 
                 
@@ -154,9 +160,9 @@ class EditorWindowContainer extends EditorWindowBase {
 
             // finally, if we are not drawing active tabs (drawing in the background) and theres a window hovering over me, draw the hovering tab
             if(!active && t.newWindowHoveringOverMe != null) {
-                if(insertIndex >= t.windows.length - 1) {
-                    let result = UI_WIDGET.windowTabLabel("tabLabel " + t.id + 99999, t.newWindowHoveringOverMe.name, x1 + offset, y1 + t.headerPadding.top, y1+t.headerHeight-t.headerPadding.bottom, "potential");
-                    result.render();
+                if(insertIndex >= t.windows.length) {
+                    offset += t.headerPadding.headerInsertPadding - t.headerPadding.headerInsertWidth/2;
+                    UI_LIBRARY.drawRectCoords(x1+offset, y1 + t.headerPadding.top, x1+offset+t.headerPadding.headerInsertWidth, y1+t.headerHeight-t.headerPadding.bottom, 0, COLORS.windowTabInsert);
                 }
             }
         }
@@ -192,12 +198,12 @@ class EditorWindowContainer extends EditorWindowBase {
 
                 // render the active window, then the header
                 let tempWindowSpace = calculateWindowSpace(x-3, y+t.headerHeight, windowX2, windowY2);
-                t.windows[d.index].render(tempWindowSpace.x1, tempWindowSpace.y1, tempWindowSpace.x2, tempWindowSpace.y2, tempWindowSpace.x2- tempWindowSpace.x1, tempWindowSpace.y2 - tempWindowSpace.y1);
+                d.window.render(tempWindowSpace.x1, tempWindowSpace.y1, tempWindowSpace.x2, tempWindowSpace.y2, tempWindowSpace.x2- tempWindowSpace.x1, tempWindowSpace.y2 - tempWindowSpace.y1);
                 res.render();
 
                 // tell the current hovering window that its being hovered
                 let hoverOverWindow = editor.windowManager.getWindowContainerAtScreenPos(x, y);
-                if(hoverOverWindow != null) hoverOverWindow.newWindowHoveringOverMe = t.windows[d.index];
+                if(hoverOverWindow != null) hoverOverWindow.newWindowHoveringOverMe = d.window;
                 
             }, (x, y, d) => {
                 // when its dropped, figure out the hovering window 
@@ -205,17 +211,20 @@ class EditorWindowContainer extends EditorWindowBase {
                 if(hoverOverWindow == null) return;
 
                 // then swap the tabs
-                let window = t.windows[d.index];
-                t.unregisterWindow(t.windows[d.index]);
-                hoverOverWindow.windowDroppedOnMe(x, y, window);
+                hoverOverWindow.windowDroppedOnMe(x, y, d.window);
+                d.ogContainer.checkForCollapse();
             }, {
                 active: index == t.activeWindowIndex,
+                window: t.windows[index],
                 name: t.windows[index].name,
                 height: t.headerHeight-t.headerPadding.bottom,
                 index: index,
                 ogWindowWidth: windowSpace.x2 - windowSpace.x1,
-                ogWindowHeight: windowSpace.y2 - windowSpace.y1
+                ogWindowHeight: windowSpace.y2 - windowSpace.y1,
+                ogContainer: t
             }));
+
+            t.unregisterWindow(t.windows[index]);
         }
     }
 
@@ -234,21 +243,36 @@ class EditorWindowContainer extends EditorWindowBase {
 
     windowDroppedOnMe(x, y, window) {
         this.newWindowHoveringOverMe = null;
-        let droppedIndex = this.calculateWindowDropIndex(x, true);
-        this.activeWindowIndex = droppedIndex == -1 ? this.windows.length : droppedIndex;
-        this.registerWindow(window, droppedIndex);
+        let type = this.windowDropPositionType(x, y);
+        if(type == "tab") {
+            let droppedIndex = this.calculateWindowDropIndex(x, y, true);
+            this.activeWindowIndex = droppedIndex == -1 ? this.windows.length : droppedIndex;
+            this.registerWindow(window, droppedIndex);
+        } else if(type == "split") {
+
+        }
     }
 
-    calculateWindowDropIndex(x, force = false) {
+    /**
+     * Figures out how to handle a window drop
+     * @returns {("tab"|"split")}
+     */
+    windowDropPositionType(x, y) {
+        if(this.cacheWindowTabPositions.length > 0 && this.cacheWindowTabPositions[0].y2 + 100) {
+            return "split";   
+        }
+        return "tab";
+    }
+
+    calculateWindowDropIndex(x, y, force = false) {
         if(this.newWindowHoveringOverMe == null && !force) return -1;
 
-        let highest = 0;
+        let highest = -1;
         for(let i = 0; i < this.cacheWindowTabPositions.length; i++) {
-            if(x >= this.cacheWindowTabPositions[i].x1)
+            let middle = (this.cacheWindowTabPositions[i].x1+this.cacheWindowTabPositions[i].x2 ) /2;
+            if(x >= middle)
                 highest = i;
-            if(x >= this.cacheWindowTabPositions[i].x2)
-                highest = i+1;
         }
-        return highest;
+        return highest+1;
     }
 }

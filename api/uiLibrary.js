@@ -419,6 +419,6 @@ const COLORS = {
     windowTabHover: new DrawShapeOption("#636363", "#c5c5c5", 3).setRoundedCorners(10),
     windowTabActive: new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10, 10, 0, 0),
     windowTabPotential: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
-    windowTabMoving: new DrawShapeOption("#6b75802b").setRoundedCorners(10),
+    windowTabMoving: new DrawShapeOption("#6b758012").setRoundedCorners(10),
     windowTabInsert: new DrawShapeOption("#2986ea5e").setRoundedCorners(10)
 }

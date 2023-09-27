@@ -122,6 +122,30 @@ class EditorWindowFlex extends EditorWindowBase {
         this.windows
     }
 
+    onCollapse(child) {
+        // first figure out what child we are
+        let index = this.windows.indexOf(child);
+        if(index == -1) return;
+
+        let nextChild = index+1;
+        // if there was no right sibling, then merge with the left sibling
+        if(index+1 >= this.windows.length)
+            nextChild = index-1;
+
+        // if there is no left sibling, delete myself too
+        if(index < 0) {
+            // dont allow deleting myself if i have no parent
+            if(this.parent == null) return;
+            this.parent.onCollapse(this);
+        } else {
+            if(this.type == "col")
+                this.windows[nextChild].percentWidth += child.percentWidth;
+            else
+                this.windows[nextChild].percentHeight += child.percentHeight;
+            this.windows.splice(index, 1);
+        }
+    }
+
     calculateFlexSpace(ax1, ay1, ax2, ay2, individualSpaceX, individualSpaceY) {
         let space = {
             x1: ax1,
