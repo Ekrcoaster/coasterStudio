@@ -7,7 +7,7 @@ class EditorWindowManager {
     debugRenderMaxDepth = -1;
 
     constructor() {
-        this.flex = new EditorWindowFlex("row", 1, 1);
+        this.flex = new EditorWindowFlex("vertical", 1, 1);
         this.debugRender = false;
         this.debugRenderMaxDepth = Infinity;
     }

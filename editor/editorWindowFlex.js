@@ -3,10 +3,10 @@ class EditorWindowFlex extends EditorWindowBase {
     /**@type {EditorWindowBase[]} */
     windows = [];
 
-    /**@type {("row"|"col")} */
+    /**@type {Direction} */
     type = "";
 
-    /**@param {("row"|"col")} type */
+    /**@param {Direction} type */
     constructor(type, percentWidth, percentHeight) {
         super(percentWidth, percentHeight);
         this.myself = "flex";
@@ -63,16 +63,16 @@ class EditorWindowFlex extends EditorWindowBase {
         // then if we are not the last child
         if(index < this.windows.length - 1) {
             let neighbor = this.windows[index+1];
-            if((this.type == "col" && neighbor.percentWidth + changeX < neighbor.MIN_WINDOW_SIZE) || (this.type == "row" && neighbor.percentHeight + changeY < neighbor.MIN_WINDOW_SIZE)) return false;
+            if((this.type == "horizontal" && neighbor.percentWidth + changeX < neighbor.MIN_WINDOW_SIZE) || (this.type == "vertical" && neighbor.percentHeight + changeY < neighbor.MIN_WINDOW_SIZE)) return false;
             neighbor.resizeWithoutNotify(neighbor.percentWidth + changeX, neighbor.percentHeight + changeY);
 
-            if(this.type == "col") {
+            if(this.type == "horizontal") {
 
                 // if the y was changed, we gotta resize the parent!
                 if(changeY != 0)
                     this.resize(0, changeY);
             } 
-            else if(this.type == "row") {
+            else if(this.type == "vertical") {
 
                 // if the y was changed, we gotta resize the parent!
                 if(changeX != 0)
@@ -95,14 +95,14 @@ class EditorWindowFlex extends EditorWindowBase {
 
         console.log(child, newSplitX, newSplitY, spaceX, spaceY, after, newWindow, this.type);
 
-        if((this.type == "col" && (newSplitY == 0 || newSplitY == 1)) || (this.type == "row" && (newSplitX == 0 || newSplitX == 1))) {
+        if((this.type == "horizontal" && (newSplitY == 0 || newSplitY == 1)) || (this.type == "vertical" && (newSplitX == 0 || newSplitX == 1))) {
             let window = this.registerWindowAtIndex(newWindow, index+(after ? 1 : 0));
             window.percentWidth = newSplitX;
             window.percentHeight = newSplitY;
         } else {
             let myWindow = this.windows[index];
             this.windows.splice(index, 1);
-            let flex = this.registerFlexAtIndex(new EditorWindowFlex(this.type == "row" ? "col" : "row", spaceX, spaceY), index);
+            let flex = this.registerFlexAtIndex(new EditorWindowFlex(this.type == "vertical" ? "horizontal" : "vertical", spaceX, spaceY), index);
             flex.registerWindow(myWindow);
             flex.registerWindow(newWindow);
 
@@ -135,7 +135,7 @@ class EditorWindowFlex extends EditorWindowBase {
             if(this.parent == null) return;
             this.parent.onCollapse(this);
         } else {
-            if(this.type == "col")
+            if(this.type == "horizontal")
                 this.windows[nextChild].percentWidth += child.percentWidth;
             else
                 this.windows[nextChild].percentHeight += child.percentHeight;
@@ -154,7 +154,7 @@ class EditorWindowFlex extends EditorWindowBase {
         }
 
         // modify if row
-        if(this.type == "row") {
+        if(this.type == "vertical") {
             space.x2 = ax2;
             space.y2 = ay1 + individualSpaceY;
             space.offsetX = 0;
@@ -174,7 +174,7 @@ class EditorWindowFlex extends EditorWindowBase {
         }
 
         // modify if row
-        if(this.type == "row") {
+        if(this.type == "vertical") {
             space.x2 = ax2;
             space.y2 = ay1 + totalHeight * windowPercentHeight;
             space.offsetX = 0;
@@ -206,7 +206,7 @@ class EditorWindowFlex extends EditorWindowBase {
         for(let i = 0; i < this.windows.length-1; i++) {
             let space = renderedSpaces[i];
 
-            if(this.type == "row" || this.windows[i].myself == "flex") {
+            if(this.type == "vertical" || this.windows[i].myself == "flex") {
                 // handle resizing vertically
                 let result = UI_WIDGET.windowResize("windowResizeX" + i + this.id, "x-axis", space.y2, space.x1, space.x2, y1, y2, space.y1);
                 if(result.isDown) {
@@ -214,7 +214,7 @@ class EditorWindowFlex extends EditorWindowBase {
                 }
             }
             
-            if(this.type == "col" || this.windows[i].myself == "flex") {
+            if(this.type == "horizontal" || this.windows[i].myself == "flex") {
                 // handle resizing horizntally
                 let hresult = UI_WIDGET.windowResize("windowResizeY" + i + this.id, "y-axis", space.x2, space.y1, space.y2, x1, x2, space.x1);
                 if(hresult.isDown) {
@@ -254,12 +254,12 @@ class EditorWindowFlex extends EditorWindowBase {
         let color = new DrawShapeOption("#00000000","#2863ab42", 10);
         if(mouse.isHoveringOver(x1, y1, x2, y2))
             color = new DrawShapeOption("#2863ab42")
-        if(this.type == "col") {
+        if(this.type == "horizontal") {
             let avg = (y2+y1)/2;
             UI_LIBRARY.drawRectCoords(x1, avg-height/3, x2, avg+height/3, 0, color);
             UI_LIBRARY.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(25, "default", "black", "center", "center"));
         }
-        if(this.type == "row") {
+        if(this.type == "vertical") {
             let avg = (x2+x1)/2;
             UI_LIBRARY.drawRectCoords(avg-width/3, y1, avg+width/3, y2, 0, color);
             UI_LIBRARY.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(25, "default", "red", "center", "center"));

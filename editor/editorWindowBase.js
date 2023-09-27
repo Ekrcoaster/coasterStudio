@@ -1,3 +1,5 @@
+/**@typedef {("horizontal"|"vertical")} Direction */
+
 class EditorWindowBase {
     myself = "";
     /**@type {EditorWindowFlex} */

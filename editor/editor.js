@@ -6,7 +6,7 @@ class Editor {
     constructor() {
         this.windowManager = new EditorWindowManager();
 
-        let row1 = this.windowManager.flex.registerFlex(new EditorWindowFlex("col", 1, 0.8));
+        let row1 = this.windowManager.flex.registerFlex(new EditorWindowFlex("horizontal", 1, 0.8));
         row1.registerWindow(new EditorWindowContainer(0.2, 1)
         .registerWindow(new EditorWindow("green"))
         .registerWindow(new EditorWindow("yellow"))
