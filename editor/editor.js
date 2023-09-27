@@ -3,8 +3,11 @@ class Editor {
     /**@type {EditorWindowManager} */
     windowManager;
 
+    fps = 0;
+
     constructor() {
         this.windowManager = new EditorWindowManager();
+        this.fps = 60;
 
         let row1 = this.windowManager.flex.registerFlex(new EditorWindowFlex(0.8, "horizontal"));
         row1.registerWindow(new EditorWindowContainer(0.2, "vertical")

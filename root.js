@@ -24,7 +24,7 @@ function Initalize() {
         if(needsRendering)
             Render();
         PostTick();
-    }, 0);
+    }, 1000 / editor.fps);
 }
 
 function Tick() {
