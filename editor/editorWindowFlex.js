@@ -131,11 +131,13 @@ class EditorWindowFlex extends EditorWindowBase {
             this.windows.splice(index, 1);
         }
 
+        // collapse if theres 2 editor window flexes inside of eachothers
         if(this.windows.length == 1 && this.windows[0] instanceof EditorWindowFlex) {
             this.insideDirection = this.windows[0].insideDirection;
             this.windows = this.windows[0].windows;
-        } else 
-        if(this.windows.length == 1 && this.parent != null ){
+
+        // collapse if this flex is empty (just join with the parent)
+        } else if(this.windows.length == 1 && this.parent != null ){
             let myIndex = this.parent.windows.indexOf(this);
             this.windows[0].percent = this.percent;
             this.parent.registerWindowAtIndex(this.windows[0], myIndex);
