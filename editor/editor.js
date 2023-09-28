@@ -5,13 +5,16 @@ class Editor {
 
     fps = 0;
 
+    /**@type {Scene} */
+    activeScene;
+
     constructor() {
         this.windowManager = new EditorWindowManager();
         this.fps = 60;
 
         let row1 = this.windowManager.flex.registerFlex(new EditorWindowFlex(0.8, "horizontal"));
         row1.registerWindow(new EditorWindowContainer(0.2, "vertical")
-            .registerWindow(new EditorWindow("green"))
+            .registerWindow(new HierarchyWindow())
             .registerWindow(new EditorWindow("yellow"))
             //.registerWindow(new EditorWindow("purple"))
             //.registerWindow(new EditorWindow("orange"))
@@ -24,6 +27,11 @@ class Editor {
 
         //let row1 = this.windowManager.flex.registerFlex(new EditorWindowFlex(1, "horizontal"));
         //row1.registerWindow(new EditorWindowContainer(0.5, "vertical").registerWindow(new EditorWindow("red")));
+    }
+
+    /**@type {Scene} */
+    setActiveScene(scene) {
+        this.activeScene = scene;
     }
 
     tick() {

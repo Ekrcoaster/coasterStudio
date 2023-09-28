@@ -1,6 +1,10 @@
 class Engine {
-    constructor() {
 
+    /**@type {Scene} */
+    activeScene;
+
+    constructor() {
+        
     }
 
     tick() {

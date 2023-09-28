@@ -16,6 +16,15 @@ function Initalize() {
 
     editor = new Editor();
     engine = new Engine();
+    engine.activeScene = new Scene("default");
+    editor.setActiveScene(engine.activeScene);
+
+    let obj = new GameObject(engine.activeScene, "test");
+    new GameObject(engine.activeScene, "test2");
+    new GameObject(engine.activeScene, "test1b").setParent(obj);
+    let t = new GameObject(engine.activeScene, "test1c").setParent(obj);
+    new GameObject(engine.activeScene, "test1d").setParent(t);
+
     mouse = new Mouse();
 
     updateCanvasSize();
