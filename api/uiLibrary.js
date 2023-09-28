@@ -419,6 +419,21 @@ const UI_WIDGET = {
                 UI_LIBRARY.drawText(name, x1, y1, x2, y2, COLORS.windowTabLabel);
             }
         }
+    },
+
+    hierarchyGameObject: function(id, obj, x1, y1, x2) {
+        let height = 30;
+
+        let hover = mouse.isHoveringOver(x1, y1, x2, y1+height, 0, id);
+        let click = mouse.isToolDown(id);
+
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, new DrawShapeOption("white"));
+        UI_LIBRARY.drawText(obj.name, x1, y1, x2, y1+height, new DrawTextOption(25, "default", "black", "left", "center"));
+        return {
+            height: height,
+            expand: click,
+            collapse: false
+        };
     }
 }
 
