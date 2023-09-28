@@ -54,6 +54,14 @@ class EditorWindowFlex extends EditorWindowBase {
         return flex;
     }
 
+    unRegisterWindow(window) {
+        let index = this.windows.indexOf(window);
+        if(index > -1) {
+            this.windows.splice(index, 1);
+            window.parent = null;
+        }
+    }
+
     onResized(child, change) {
         // first figure out what child we are
         let index = this.windows.indexOf(child);
@@ -123,20 +131,16 @@ class EditorWindowFlex extends EditorWindowBase {
             this.windows.splice(index, 1);
         }
 
-        editor.windowManager.flex.cleanFlexTree(null);
-    }
-
-    cleanFlexTree() {
-        if(this.windows.length == 1 && this.windows[0] instanceof EditorWindowFlex && this.windows[0].windows.length == 1) {
-            let child = this.windows[0];
-            this.percent = 1;
-            this.insideDirection = child.insideDirection;
-            this.windows = child.windows;
-        } else {
-            for(let i = 0; i < this.windows.length; i++) {
-                if(this.windows[i] instanceof EditorWindowFlex)
-                    this.windows[i].cleanFlexTree(this);
-            }
+        if(this.windows.length == 1 && this.windows[0] instanceof EditorWindowFlex) {
+            this.insideDirection = this.windows[0].insideDirection;
+            this.windows = this.windows[0].windows;
+        } else 
+        if(this.windows.length == 1 && this.parent != null ){
+            let myIndex = this.parent.windows.indexOf(this);
+            this.windows[0].percent = this.percent;
+            this.parent.registerWindowAtIndex(this.windows[0], myIndex);
+            this.parent.unRegisterWindow(this);
+            this.windows = [];
         }
     }
 
