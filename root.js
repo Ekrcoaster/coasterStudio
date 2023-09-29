@@ -382,6 +382,7 @@ class Keyboard {
         key = key.toUpperCase();
         if(key == "META") key = "CONTROL";
         if(key == "CONTROL") key = "CTRL";
+        if(key == "BACKSPACE") key = "DELETE";
         return key;
     }
 }

@@ -16,14 +16,14 @@ class Editor {
         this.fps = 60;
 
         let row1 = this.windowManager.flex.registerFlex(new EditorWindowFlex(0.8, "horizontal"));
-        row1.registerWindow(new EditorWindowContainer(0.2, "vertical")
+        row1.registerWindow(new EditorWindowContainer(0.1, "vertical")
             .registerWindow(new HierarchyWindow())
             .registerWindow(new EditorWindow("yellow"))
             //.registerWindow(new EditorWindow("purple"))
             //.registerWindow(new EditorWindow("orange"))
             //.registerWindow(new EditorWindow("pink"))
         );
-        row1.registerWindow(new EditorWindowContainer(0.6, "vertical").registerWindow(new EditorWindow("red")));
+        row1.registerWindow(new EditorWindowContainer(0.7, "vertical").registerWindow(new EditorWindow("red")));
         row1.registerWindow(new EditorWindowContainer(0.2, "vertical").registerWindow(new EditorWindow("blue")));
 
         this.windowManager.flex.registerWindow(new EditorWindowContainer(0.2, "horizontal").registerWindow(new EditorWindow("cyan")))
