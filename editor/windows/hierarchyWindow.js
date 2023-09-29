@@ -15,7 +15,7 @@ class HierarchyWindow extends EditorWindow {
             return;
         }
         
-        let y = y1+3;
+        let y = y1+5;
         for(let i = 0; i < scene.rootGameObjects.length; i++) {
             recurseDepth(scene.rootGameObjects[i], 0);
             //issue: update position on root: 71 (null)
@@ -26,11 +26,11 @@ class HierarchyWindow extends EditorWindow {
             let metaData = t.getMetaData(obj.id);
             let depth = (d * 20);
 
-            let data = UI_WIDGET.hierarchyGameObject("hierarchyWindow " + obj.id, obj, x1 + depth, y, x2);
+            let data = UI_WIDGET.hierarchyGameObject("hierarchyWindow " + obj.id, obj, metaData, x1 + depth, y, x2, obj.id == scene.header.id);
             y += data.height;
 
-            if(data.expand || data.collapse) {
-                metaData.drawChildren = data.expand;
+            if(data.newExpandValue != metaData.drawChildren) {
+                metaData.drawChildren = data.newExpandValue;
                 t.setMetaData(obj.id, metaData);
             }
 

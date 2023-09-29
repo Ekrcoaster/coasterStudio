@@ -1,6 +1,9 @@
 class Scene {
     id = "";
     name = "";
+
+    /**@type {GameObject} */
+    header;
     
     /**@type {GameObject[]} */
     rootGameObjects = [];
@@ -10,6 +13,8 @@ class Scene {
         this.name = name;
 
         this.rootGameObjects = [];
+
+        this.header = new GameObject(this, this.name);
     }
     
     _registerRootGameObject(obj) {

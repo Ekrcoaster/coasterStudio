@@ -421,19 +421,71 @@ const UI_WIDGET = {
         }
     },
 
-    hierarchyGameObject: function(id, obj, x1, y1, x2) {
-        let height = 30;
+    /**
+     * 
+     * @param {String} id 
+     * @param {GameObject} obj 
+     * @param {HierarchyWindowObjectMetadata} meta 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @returns 
+     */
+    hierarchyGameObject: function(id, obj, meta, x1, y1, x2, isScene) {
+        let height = isScene ? 40 : 30;
+
+        if(isScene)
+            UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSceneGameObjectBackground);
 
         let hover = mouse.isHoveringOver(x1, y1, x2, y1+height, 0, id);
-        let click = mouse.isToolDown(id);
+        let click = mouse.isToolFirstUp(id) && hover;
 
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, new DrawShapeOption("white"));
-        UI_LIBRARY.drawText(obj.name, x1, y1, x2, y1+height, new DrawTextOption(25, "default", "black", "left", "center"));
+        let change = meta.drawChildren;
+        let offset = isScene ? 2 : height+2;
+        if(obj.children.length > 0) {
+            change = this.dropdownHandle("handle"+id, x1, y1, x1+(height), y1+height, meta.drawChildren, COLORS.hierarchyWindowGameObjectNormalDropdownHandle, COLORS.hierarchyWindowGameObjectHoverDropdownHandle);
+        }
+
+        UI_LIBRARY.drawText(obj.name, x1+offset, y1, x2, y1+height, isScene ? COLORS.hierarchyWindowSceneGameObjectText : COLORS.hierarchyWindowGameObjectNormalText);
         return {
             height: height,
-            expand: click,
-            collapse: false
+            newExpandValue: change,
+            click: click
         };
+    },
+
+    /**
+     * @param {String} id 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     * @param {Boolean} isDown 
+     * @param {DrawShapeOption} normalColor 
+     * @param {DrawShapeOption} hoverColor 
+     */
+    dropdownHandle: function(id, x1, y1, x2, y2, isDown, normalColor, hoverColor) {
+        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
+        let click = mouse.isToolFirstUp(id) && hover;
+
+        let padding = 10;
+
+        let points = [];
+        if(isDown) {
+            points = [{x: x1+padding, y: y1+padding},
+                {x: x2-padding, y: y1+padding},
+                {x: (x1+x2)/2, y: y2-padding}]
+        } else {
+            points = [{x: x1+padding, y: y1+padding},
+                {x: x2-padding, y: (y1+y2)/2},
+                {x: x1+padding, y: y2-padding}]
+        }
+        
+        UI_LIBRARY.drawPolygon(points, hover ? hoverColor : normalColor);
+
+        if(click)
+            isDown = !isDown;
+        return isDown;
     }
 }
 
@@ -452,5 +504,12 @@ const COLORS = {
     windowTabActive: new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10, 10, 0, 0),
     windowTabPotential: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
     windowTabMoving: new DrawShapeOption("#6b758012").setRoundedCorners(10),
-    windowTabInsert: new DrawShapeOption("#2986ea5e").setRoundedCorners(10)
+    windowTabInsert: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
+
+    hierarchyWindowGameObjectNormalText: new DrawTextOption(28, "default", "white", "left", "center"),
+    hierarchyWindowGameObjectNormalDropdownHandle: new DrawShapeOption("gray"),
+    hierarchyWindowGameObjectHoverDropdownHandle: new DrawShapeOption("white"),
+    hierarchyWindowSceneGameObjectBackground: new DrawShapeOption("#33343489", "black", 2),
+    hierarchyWindowSceneGameObjectText: new DrawTextOption(28, "default", "#ffffff7d", "left", "center"),
+    hierarchyWindowSelect: new DrawShapeOption("#2986ea5e")
 }
