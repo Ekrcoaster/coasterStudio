@@ -431,11 +431,13 @@ const UI_WIDGET = {
      * @param {Number} x2 
      * @returns 
      */
-    hierarchyGameObject: function(id, obj, meta, x1, y1, x2, isScene) {
+    hierarchyGameObject: function(id, obj, meta, x1, y1, x2, isScene, isSelected) {
         let height = isScene ? 40 : 30;
 
         if(isScene)
             UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSceneGameObjectBackground);
+        else if(isSelected)
+            UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSelect);
 
         let hover = mouse.isHoveringOver(x1, y1, x2, y1+height, 0, id);
         let click = mouse.isToolFirstUp(id) && hover;
@@ -443,7 +445,10 @@ const UI_WIDGET = {
         let change = meta.drawChildren;
         let offset = isScene ? 2 : height+2;
         if(obj.children.length > 0) {
+            let old = change;
             change = this.dropdownHandle("handle"+id, x1, y1, x1+(height), y1+height, meta.drawChildren, COLORS.hierarchyWindowGameObjectNormalDropdownHandle, COLORS.hierarchyWindowGameObjectHoverDropdownHandle);
+            if(old != change)
+                click = false;
         }
 
         UI_LIBRARY.drawText(obj.name, x1+offset, y1, x2, y1+height, isScene ? COLORS.hierarchyWindowSceneGameObjectText : COLORS.hierarchyWindowGameObjectNormalText);

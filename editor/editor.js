@@ -8,6 +8,9 @@ class Editor {
     /**@type {Scene} */
     activeScene;
 
+    /**@type {Set<GameObject>} */
+    selectedGameObjects = new Set();
+
     constructor() {
         this.windowManager = new EditorWindowManager();
         this.fps = 60;
@@ -41,5 +44,37 @@ class Editor {
     render(x1, y1, x2, y2) {
         UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption(COLORS.background));
         this.windowManager.render(x1, y1, x2, y2);
+    }
+
+    /**
+     * sets a gameobject as selected
+     * @param {GameObject} obj 
+     * @param {Boolean} selected 
+     */
+    setSelected(obj, selected) {
+        if(selected)
+            this.selectedGameObjects.add(obj);
+        else
+            this.selectedGameObjects.delete(obj);
+    }
+
+    /**
+     * sets a gameobject as selected
+     * @param {GameObject} obj 
+     * @param {Boolean} selected 
+     */
+    setOnlySelected(obj, selected) {
+        this.selectedGameObjects = new Set();
+        if(selected)
+            this.selectedGameObjects.add(obj);
+    }
+
+    /**
+     * 
+     * @param {GameObject} obj 
+     * @returns 
+     */
+    isSelected(obj) {
+        return this.selectedGameObjects.has(obj);
     }
 }

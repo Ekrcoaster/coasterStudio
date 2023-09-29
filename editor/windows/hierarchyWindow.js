@@ -26,12 +26,16 @@ class HierarchyWindow extends EditorWindow {
             let metaData = t.getMetaData(obj.id);
             let depth = (d * 20);
 
-            let data = UI_WIDGET.hierarchyGameObject("hierarchyWindow " + obj.id, obj, metaData, x1 + depth, y, x2, obj.id == scene.header.id);
+            let data = UI_WIDGET.hierarchyGameObject("hierarchyWindow " + obj.id, obj, metaData, x1 + depth, y, x2, obj.id == scene.header.id, editor.isSelected(obj));
             y += data.height;
 
             if(data.newExpandValue != metaData.drawChildren) {
                 metaData.drawChildren = data.newExpandValue;
                 t.setMetaData(obj.id, metaData);
+            }
+
+            if(data.click) {
+                editor.setOnlySelected(obj, !editor.isSelected(obj));
             }
 
             if(metaData.drawChildren) {
