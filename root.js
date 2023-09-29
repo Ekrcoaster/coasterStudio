@@ -27,6 +27,21 @@ function Initalize() {
     let t = new GameObject(engine.activeScene, "test1c").setParent(obj);
     new GameObject(engine.activeScene, "test1d").setParent(t);
 
+    new GameObject(engine.activeScene, "a");
+    new GameObject(engine.activeScene, "b");
+    new GameObject(engine.activeScene, "c");
+    new GameObject(engine.activeScene, "d");
+    new GameObject(engine.activeScene, "e");
+
+    let a = new GameObject(engine.activeScene, "parent1");
+    a = new GameObject(engine.activeScene, "parent2").setParent(a);
+    a = new GameObject(engine.activeScene, "parent3").setParent(a);
+    a = new GameObject(engine.activeScene, "parent4").setParent(a);
+    a = new GameObject(engine.activeScene, "parent5").setParent(a);
+    a = new GameObject(engine.activeScene, "parent6").setParent(a);
+    a = new GameObject(engine.activeScene, "parent7").setParent(a);
+    a = new GameObject(engine.activeScene, "parent8").setParent(a);
+
     mouse = new Mouse();
     keyboard = new Keyboard();
 

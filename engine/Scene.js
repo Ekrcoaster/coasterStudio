@@ -18,11 +18,27 @@ class Scene {
     }
     
     _registerRootGameObject(obj) {
+        let index = this.rootGameObjects.indexOf(obj);
+        if(index > -1) return false;
         this.rootGameObjects.push(obj);
     }
 
     _unregisterRootGameObject(obj) {
         let index = this.rootGameObjects.indexOf(obj);
         if(index > -1) this.rootGameObjects.splice(index, 1);
+    }
+    /**
+     * @param {GameObject} child 
+     * @param {Number} index 
+     */
+    _setRootChildSiblingIndex(child, newIndex) {
+        let index = this.rootGameObjects.indexOf(child);
+        if(index == -1) return false;
+        
+        this.rootGameObjects.splice(index, 1);
+        if(newIndex > index)
+            newIndex--;
+
+        this.rootGameObjects.splice(newIndex, 0, child);
     }
 }

@@ -429,15 +429,26 @@ const UI_WIDGET = {
      * @param {Number} x1 
      * @param {Number} y1 
      * @param {Number} x2 
+     * @param {{parent: GameObject, after: GameObject, before: GameObject}} hoveringGameObject
      * @returns 
      */
-    hierarchyGameObject: function(id, obj, meta, x1, y1, x2, isScene, isSelected) {
+    hierarchyGameObject: function(id, obj, meta, x1, y1, x2, isScene, isSelected, hoveringGameObject) {
         let height = isScene ? 40 : 30;
 
         if(isScene)
             UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSceneGameObjectBackground);
         else if(isSelected)
             UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSelect);
+
+        if(hoveringGameObject?.parent?.id == obj.id) {
+            UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSelect);
+        }
+        if(hoveringGameObject?.before?.id == obj.id) {
+            UI_LIBRARY.drawRectCoords(x1, y1-3, x2, y1+3, 0, COLORS.hierarchyWindowSelect);
+        }
+        if(hoveringGameObject?.after?.id == obj.id) {
+            UI_LIBRARY.drawRectCoords(x1, y1+height-3, x2, y1+height+3, 0, COLORS.hierarchyWindowSelect);
+        }
 
         let hover = mouse.isHoveringOver(x1, y1, x2, y1+height, 0, id);
         let click = mouse.isToolFirstUp(id) && hover;
@@ -455,7 +466,8 @@ const UI_WIDGET = {
         return {
             height: height,
             newExpandValue: change,
-            click: click
+            click: click,
+            hover: hover
         };
     },
 
