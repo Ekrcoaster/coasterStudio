@@ -9,6 +9,8 @@ var editor;
 var engine;
 /**@type {Mouse} */
 var mouse;
+/**@type {Keyboard} */
+var keyboard;
 
 window.onload = Initalize;
 let needsRendering = true;
@@ -26,6 +28,7 @@ function Initalize() {
     new GameObject(engine.activeScene, "test1d").setParent(t);
 
     mouse = new Mouse();
+    keyboard = new Keyboard();
 
     updateCanvasSize();
     setInterval(() => {
@@ -43,6 +46,9 @@ function Tick() {
 
 function PostTick() {
     if(mouse.tick())
+        needsRendering = true;
+
+    if(keyboard.tick())
         needsRendering = true;
 }
 
@@ -92,6 +98,14 @@ canvas.addEventListener("mouseup", function (evt) {
     }
     needsRendering = true;
 });
+
+window.addEventListener('keydown',function(e) {
+    keyboard.onKey(e.key, true);
+},false);
+
+window.addEventListener('keyup',function(e) {
+    keyboard.onKey(e.key, false);
+},false);
 
 const UTILITY = {
     generateCode: function(length) {
@@ -273,5 +287,86 @@ class MouseDrag {
         this.onRender = onRender;
         this.onPlace = onPlace;
         this.data = data;
+    }
+}
+
+class Keyboard {
+    /**@typedef {("A"|"B"|"C"|"D"|"E"|"F"|"G"|"H"|"I"|"J"|"K"|"L"|"M"|"N"|"O"|"P"|"Q"|"R"|"S"|"T"|"U"|"V"|"W"|"X"|"Y"|"Z"|"0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"!"|"@"|"#"|"$"|"%"|"^"|"&"|"*"|"SPACE"|"SHIFT"|"CTRL"|"ALT")} KeyType */
+    
+    /**@type {Set<KeyType>} */
+    down = new Set();
+
+    /**@type {Set<KeyType>} */
+    downFirst = new Set();
+
+    /**@type {Set<KeyType>} */
+    upFirst = new Set();
+
+    isShiftDown;
+    isCtrlDown;
+    isAltDown;
+
+    deleteDownFirst = {};
+    deleteUpFirst = {};
+    constructor() {
+        this.down = new Set();
+        this.downFirst = new Set();
+        this.upFirst = new Set();
+
+        this.isShiftDown = false;
+        this.isCtrlDown = false;
+        this.isAltDown = false;
+        
+        this.deleteDownFirst = {};
+        this.deleteUpFirst = {};
+    }
+    
+
+    tick() {
+        let needsRendering = false;
+
+        // handle the down firsts, making sure they always exist for a single frame
+        this.downFirst.forEach(element => {
+            if(this.deleteDownFirst[element] == null)
+                this.deleteDownFirst[element] = true;
+            else 
+                this.downFirst.delete(element);
+        });
+
+        // handle the up firsts, making sure they always exist for a single frame
+        this.upFirst.forEach(element => {
+            if(this.deleteUpFirst[element] == null)
+                this.deleteUpFirst[element] = true;
+            else 
+                this.upFirst.delete(element);
+        });
+        
+        return needsRendering;
+    }
+
+    onKey(key, down) {
+        key = this.convertKey(key);
+
+        if(down) this.down.add(key);
+        else this.down.delete(key);
+        
+        if(key == "CTRL") this.isCtrlDown = down;
+        if(key == "ALT") this.isAltDown = down;
+        if(key == "SHIFT") this.isShiftDown = down;
+
+        if(down) {
+            this.downFirst.add(key);
+            delete this.deleteUpFirst[key];
+        } else {
+            delete this.deleteDownFirst[key];
+            this.upFirst.add(key);
+        }
+    }
+
+    convertKey(key) {
+        key = key.toUpperCase();
+        if(key == "META") key = "CONTROL";
+        if(key == "CONTROL") key = "CTRL";
+        return key;
     }
 }
