@@ -39,6 +39,8 @@ class HierarchyWindow extends EditorWindow {
             let data = UI_WIDGET.hierarchyGameObject("hierarchyWindow " + obj.id, obj, metaData, x1 + depth, y, x2, obj.id == scene.header.id, editor.isSelected(obj), hoveringGameObject);
             if(obj.id != scene.header.id)
                 newCache.push({obj: obj, x1: x1, y1: y, x2: x2, y2: y+data.height});
+            if(obj.name != data.newName)
+                obj.name = data.newName;
             y += data.height;
 
 

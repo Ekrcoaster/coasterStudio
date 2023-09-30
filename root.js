@@ -18,29 +18,19 @@ function Initalize() {
 
     editor = new Editor();
     engine = new Engine();
-    engine.activeScene = new Scene("default");
+    engine.activeScene = new Scene("testingScene");
     editor.setActiveScene(engine.activeScene);
 
     let obj = new GameObject(engine.activeScene, "test");
-    new GameObject(engine.activeScene, "test2");
-    new GameObject(engine.activeScene, "test1b").setParent(obj);
+    obj.addComponent(new Transform());
+    let obj2 = new GameObject(engine.activeScene, "test2");
+    obj2.addComponent(new Transform());
+    let obj3 = new GameObject(engine.activeScene, "test1b").setParent(obj);
+    obj3.addComponent(new Transform());
     let t = new GameObject(engine.activeScene, "test1c").setParent(obj);
-    new GameObject(engine.activeScene, "test1d").setParent(t);
-
-    new GameObject(engine.activeScene, "a");
-    new GameObject(engine.activeScene, "b");
-    new GameObject(engine.activeScene, "c");
-    new GameObject(engine.activeScene, "d");
-    new GameObject(engine.activeScene, "e");
-
-    let a = new GameObject(engine.activeScene, "parent1");
-    a = new GameObject(engine.activeScene, "parent2").setParent(a);
-    a = new GameObject(engine.activeScene, "parent3").setParent(a);
-    a = new GameObject(engine.activeScene, "parent4").setParent(a);
-    a = new GameObject(engine.activeScene, "parent5").setParent(a);
-    a = new GameObject(engine.activeScene, "parent6").setParent(a);
-    a = new GameObject(engine.activeScene, "parent7").setParent(a);
-    a = new GameObject(engine.activeScene, "parent8").setParent(a);
+    t.addComponent(new Transform());
+    let t2 = new GameObject(engine.activeScene, "test1d").setParent(t);
+    t2.addComponent(new Transform());
 
     mouse = new Mouse();
     keyboard = new Keyboard();
@@ -116,10 +106,15 @@ canvas.addEventListener("mouseup", function (evt) {
 
 window.addEventListener('keydown',function(e) {
     keyboard.onKey(e.key, true);
+    needsRendering = true;
+
+    keyboard.isCapsLockDown = e.getModifierState("CapsLock");
 },false);
 
 window.addEventListener('keyup',function(e) {
     keyboard.onKey(e.key, false);
+    needsRendering = true;
+    keyboard.isCapsLockDown = e.getModifierState("CapsLock");
 },false);
 
 const UTILITY = {
@@ -306,20 +301,21 @@ class MouseDrag {
 }
 
 class Keyboard {
-    /**@typedef {("A"|"B"|"C"|"D"|"E"|"F"|"G"|"H"|"I"|"J"|"K"|"L"|"M"|"N"|"O"|"P"|"Q"|"R"|"S"|"T"|"U"|"V"|"W"|"X"|"Y"|"Z"|"0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"!"|"@"|"#"|"$"|"%"|"^"|"&"|"*"|"SPACE"|"SHIFT"|"CTRL"|"ALT")} KeyType */
+    /**@typedef {("A"|"B"|"C"|"D"|"E"|"F"|"G"|"H"|"I"|"J"|"K"|"L"|"M"|"N"|"O"|"P"|"Q"|"R"|"S"|"T"|"U"|"V"|"W"|"X"|"Y"|"Z"|"0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"!"|"@"|"#"|"$"|"%"|"^"|"&"|"*"|"SPACE"|"SHIFT"|"CTRL"|"ALT"|"DELETE"|"ARROWLEFT"|"ARROWRIGHT"|"ARROWUP"|"ARROWDOWN"|"ENTER")} KeyboardKeyType */
     
-    /**@type {Set<KeyType>} */
+    /**@type {Set<KeyboardKeyType>} */
     down = new Set();
 
-    /**@type {Set<KeyType>} */
+    /**@type {Set<KeyboardKeyType>} */
     downFirst = new Set();
 
-    /**@type {Set<KeyType>} */
+    /**@type {Set<KeyboardKeyType>} */
     upFirst = new Set();
 
     isShiftDown;
     isCtrlDown;
     isAltDown;
+    isCapsLockDown;
 
     deleteDownFirst = {};
     deleteUpFirst = {};
@@ -331,6 +327,7 @@ class Keyboard {
         this.isShiftDown = false;
         this.isCtrlDown = false;
         this.isAltDown = false;
+        this.isCapsLockDown = false;
         
         this.deleteDownFirst = {};
         this.deleteUpFirst = {};
@@ -383,6 +380,20 @@ class Keyboard {
         if(key == "META") key = "CONTROL";
         if(key == "CONTROL") key = "CTRL";
         if(key == "BACKSPACE") key = "DELETE";
+        if(key == "RETURN") key = "ENTER";
+        return key;
+    }
+
+    getAlphabeticNumbericSymbolic(key) {
+        let allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()_+-=[]\\{}|;':\",./<>? ";
+        if(allowed.indexOf(key) == -1) {
+            if(key == "SPACE")
+                return " ";
+            return "";
+        }
+
+        if(!this.isShiftDown && !this.isCapsLockDown)
+            return key.toLowerCase();
         return key;
     }
 }

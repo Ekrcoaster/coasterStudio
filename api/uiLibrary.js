@@ -292,6 +292,16 @@ const UI_LIBRARY = {
         ctx.font = draw.getFontForCTX();
         ctx.fillStyle = draw.fillColor;
         ctx.fillText(text, x1+xOffset, y1+yOffset, x2-x1);
+
+        return {
+            width: space.width,
+            height: space.height,
+            xOffset: xOffset,
+            yOffset: yOffset,
+            getLocalXOffsetOfLetter: (index) => {
+                return UI_UTILITY.measureText(text.substring(0, index), draw).width + xOffset;
+            }
+        }
     },
     restore() {
         ctx.restore();
@@ -320,6 +330,10 @@ const UI_UTILITY = {
             "height": data.fontBoundingBoxDescent - data.fontBoundingBoxAscent
         }
     }
+}
+
+let widgetCacheData = {
+    
 }
 
 const UI_WIDGET = {
@@ -462,12 +476,16 @@ const UI_WIDGET = {
                 click = false;
         }
 
-        UI_LIBRARY.drawText(obj.name, x1+offset, y1, x2, y1+height, isScene ? COLORS.hierarchyWindowSceneGameObjectText : COLORS.hierarchyWindowGameObjectNormalText);
+        let newName = UI_WIDGET.editableText("edit"+id, obj.name, isSelected, x1+offset, y1, x2, y1+height, isScene ? COLORS.hierarchyWindowSceneGameObjectText : COLORS.hierarchyWindowGameObjectNormalText, ["NOT_EMPTY"]);
+        if(newName.meta.isActive)
+            click = false;
+
         return {
             height: height,
             newExpandValue: change,
             click: click,
-            hover: hover
+            hover: hover,
+            newName: newName?.text || obj.name
         };
     },
 
@@ -503,6 +521,182 @@ const UI_WIDGET = {
         if(click)
             isDown = !isDown;
         return isDown;
+    },
+
+    /**@param {Component} component */
+    inspectorComponent: function(id, x1, y1, x2, component) {
+        let height = 30;
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.inspectorComponentHeader);
+        UI_LIBRARY.drawText(component.name, x1, y1, x2, y1+height, COLORS.inspectorComponentHeaderText);
+        height += 50;
+        
+        return {
+            height: height
+        }
+    },
+
+    /**
+     * @param {DrawTextOption} draw
+     * @param {("...regexhere..."|"NUMBERS_ONLY"|"ALPHABET_ONLY"|"NOT_EMPTY")[]} rules
+     * */
+    editableText: function(id, text, isEditable, x1, y1, x2, y2, draw, rules = []) {
+        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
+        let click = mouse.isToolFirstUp(id) && isEditable;
+        let meta = widgetCacheData[id] || {};
+
+        let tempText = text;
+        if(meta.tempText != null) tempText = meta.tempText;
+
+        if(meta.isActive) {
+            keyboard.downFirst.forEach(element => {
+                let first = tempText.substring(0, meta.cursor);
+                let last = tempText.substring(meta.cursor);
+
+                // check for deletions
+                if(element == "DELETE") {
+                    // if theres a selection, delete it
+                    if(meta.select > -1) {
+                        deleteSelected();
+                    } else {
+                        // otherwise delete the cursor character
+                        tempText = first.substring(0, first.length - 1) + last;
+                        meta.cursor--;
+                        if(meta.cursor < 0) meta.cursor = 0;
+                    }
+
+                // alt + A shortcut
+                } else if(element == "A" && keyboard.isCtrlDown) {
+                    meta.select = 0;
+                    meta.cursor = tempText.length;
+                
+                // well, then type a character
+                } else {
+                    let character = keyboard.getAlphabeticNumbericSymbolic(element);
+                    // before we type a character, if there is an existing selection, delete it
+                    if(character != "" && meta.select > -1) {
+                        deleteSelected();
+                        first = tempText.substring(0, meta.cursor);
+                        last = tempText.substring(meta.cursor);
+                    }
+
+                    if(character != "") {
+                        tempText = first + character + last;
+                        meta.cursor++;
+                    }
+                }
+
+                // if the left arrow is being pressed, shift the cursor left
+                if(element == "ARROWLEFT") {
+                    // but if the user is holding shift, then mark the original point as the selection origin
+                    if(keyboard.isShiftDown) {
+                        if(meta.select == -1)
+                            meta.select = meta.cursor;
+                    } else {
+                        meta.select = -1;
+                    }
+                    meta.cursor--;
+                    if(meta.cursor < 0) meta.cursor = 0;
+                }
+
+                // if the right arrow is being pressed, shift the cursor right
+                if(element == "ARROWRIGHT") {
+                    // but if the user is holding shift, then mark the original point as the selection origin
+                    if(keyboard.isShiftDown) {
+                        if(meta.select == -1)
+                            meta.select = meta.cursor;
+                    } else {
+                        meta.select = -1;
+                    }
+                    meta.cursor++;
+                    if(meta.cursor >= tempText.length) meta.cursor = tempText.length;
+                }
+
+                function deleteSelected() {
+                    tempText = tempText.substring(0, Math.min(meta.cursor, meta.select)) + tempText.substring(Math.max(meta.cursor, meta.select));
+                    if(meta.cursor >= tempText.length) meta.cursor = tempText.length;
+
+                    if(meta.select < meta.cursor)
+                        meta.cursor -= meta.cursor - meta.select;
+                    meta.select = -1;
+                }
+            });
+        }
+        meta.tempText = tempText;
+
+        let space = UI_LIBRARY.drawText(tempText, x1, y1, x2, y2, draw);
+
+        if(click && hover) {
+            meta.isActive = true;
+            meta.cursor = Math.round(Math.max(0, Math.min(1, (mouse.x - x1) / ((x1+space.width)-x1))) * tempText.length);
+            if(meta.tempText == null) meta.tempText = text;
+            if(keyboard.isShiftDown) {
+                if(meta.select == -1)
+                    meta.select = meta.cursor;
+            } else {
+                meta.select = -1;
+            }
+        }
+
+        if(meta.isActive) {
+            let cursorOffset = x1 + space.getLocalXOffsetOfLetter(meta.cursor);
+            UI_LIBRARY.drawRectCoords(cursorOffset-1, y1, cursorOffset+1, y2, 0, COLORS.textCursor);
+            if(meta.select > -1) {
+                let smallest = Math.min(meta.cursor, meta.select);
+                let largest = Math.max(meta.cursor, meta.select);
+                UI_LIBRARY.drawRectCoords(x1 + space.getLocalXOffsetOfLetter(smallest), y1, x1 + space.getLocalXOffsetOfLetter(largest), y2, 0, COLORS.textSelect);
+            }
+
+            
+        }
+        
+        widgetCacheData[id] = meta;
+
+        if(meta.isActive ) {
+            if((click && !mouse.isHoveringOver(x1, y1, x2, y2)) || keyboard.downFirst.has("ENTER")) {
+                if(canSaveText(meta.tempText))
+                    text = meta.tempText;
+                delete widgetCacheData[id];
+            }
+        }
+
+        return {
+            hover: hover,
+            click: click,
+            meta: meta,
+            text: text
+        }
+
+        function canSaveText(tempText = "") {
+            for(let i = 0; i < rules.length; i++) {
+                switch(rules[i]) {
+                    default:
+                    if(!tempText.match(rules[i]))
+                        return false;
+                    break;
+
+                    case "NUMBERS_ONLY":
+                        let numbers = "0123456789";
+                        for(let c = 0; c < tempText.length; c++) {
+                            let index = numbers.indexOf(tempText[c]);
+                            if(index == -1) return false;
+                        }
+                    break;
+                    
+                    case "ALPHABET_ONLY":
+                        let alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+                        for(let c = 0; c < tempText.length; c++) {
+                            let index = alphabet.indexOf(tempText[c]);
+                            if(index == -1) return false;
+                        }
+                    break;
+                    case "NOT_EMPTY":
+                        if(tempText.length == "") return false;
+                    break;
+                }
+            }
+
+            return true;
+        }
     }
 }
 
@@ -528,5 +722,11 @@ const COLORS = {
     hierarchyWindowGameObjectHoverDropdownHandle: new DrawShapeOption("white"),
     hierarchyWindowSceneGameObjectBackground: new DrawShapeOption("#33343489", "black", 2),
     hierarchyWindowSceneGameObjectText: new DrawTextOption(28, "default", "#ffffff7d", "left", "center"),
-    hierarchyWindowSelect: new DrawShapeOption("#2986ea5e")
+    hierarchyWindowSelect: new DrawShapeOption("#2986ea5e"),
+
+    inspectorComponentHeader: new DrawShapeOption("#33343489", "#24242489", 3),
+    inspectorComponentHeaderText: new DrawTextOption(25, "default", "white", "left", "center"),
+
+    textCursor: new DrawShapeOption("white"),
+    textSelect: new DrawShapeOption("#2986ea5e"),
 }

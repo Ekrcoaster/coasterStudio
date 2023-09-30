@@ -11,6 +11,9 @@ class GameObject {
     /**@type {GameObject[]} */
     children = [];
 
+    /**@type {Component[]} */
+    components = [];
+
     constructor(scene, name) {
         this.scene = scene;
         this.id = UTILITY.generateCode(14);
@@ -18,6 +21,7 @@ class GameObject {
         this.parent = null;
         this.children = [];
         this.scene._registerRootGameObject(this);
+        this.components = [];
     }
 
     /**
@@ -54,6 +58,23 @@ class GameObject {
             return this.scene.rootGameObjects.indexOf(this)-1;
         else
             return this.parent.children.indexOf(this);
+    }
+
+    /**@param {Component} component*/
+    addComponent(component) {
+        let index = this.components.indexOf(component);
+        if(index > -1) return;
+
+        component.gameObject = this;
+        this.components.push(component);
+    }
+
+    /**@param {Component} component*/
+    removeComponent(component) {
+        let index = this.components.indexOf(component);
+        if(index > -1)
+            this.components.splice(index, 1);
+        component.gameObject = null;
     }
 
     _registerChild(child) {
