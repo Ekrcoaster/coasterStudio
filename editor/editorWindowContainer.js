@@ -93,12 +93,16 @@ class EditorWindowContainer extends EditorWindowBase {
         // draw the active window
         if(windowToDraw < this.windows.length && windowToDraw > -1) {
             this.windows[windowToDraw].preRender(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2- windowSpace.x1, windowSpace.y2 - windowSpace.y1);
-            this.windows[windowToDraw].render(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2- windowSpace.x1, windowSpace.y2 - windowSpace.y1);
-            this.windows[windowToDraw].postRender();
         }
             
         // draw the ACTIVE tab
         drawTabs(true, tabWindowDropIndex);
+
+        if(windowToDraw < this.windows.length && windowToDraw > -1) {
+            UI_LIBRARY.drawRectCoords(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, 0, new DrawShapeOption(COLORS.windowBackground().fillColor).setRoundedCorners(10).makeMask());
+            this.windows[windowToDraw].render(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2- windowSpace.x1, windowSpace.y2 - windowSpace.y1);
+            this.windows[windowToDraw].postRender();
+        }
 
         if(t.newWindowHoveringOverMe != null)
             drawHoverSplit(tabWindowDropType);

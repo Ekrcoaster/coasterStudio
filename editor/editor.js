@@ -8,8 +8,8 @@ class Editor {
     /**@type {Scene} */
     activeScene;
 
-    /**@type {Set<GameObject>} */
-    selectedGameObjects = new Set();
+    /**@type {GameObject[]} */
+    selectedGameObjects = [];
 
     constructor() {
         this.windowManager = new EditorWindowManager();
@@ -51,10 +51,15 @@ class Editor {
      * @param {Boolean} selected 
      */
     setSelected(obj, selected) {
-        if(selected)
-            this.selectedGameObjects.add(obj);
-        else
-            this.selectedGameObjects.delete(obj);
+        if(selected) {
+            if(this.selectedGameObjects.indexOf(obj) == -1)
+                this.selectedGameObjects.push(obj);
+        }
+        else {
+            let index = this.selectedGameObjects.indexOf(obj);
+            if(index > -1)
+                this.selectedGameObjects.splice(index, 1);
+        }
     }
 
     /**
@@ -63,9 +68,9 @@ class Editor {
      * @param {Boolean} selected 
      */
     setOnlySelected(obj, selected) {
-        this.selectedGameObjects = new Set();
-        if(selected)
-            this.selectedGameObjects.add(obj);
+        this.selectedGameObjects = [];
+        if(selected && obj != null)
+            this.selectedGameObjects.push(obj);
     }
 
     /**
@@ -74,6 +79,6 @@ class Editor {
      * @returns 
      */
     isSelected(obj) {
-        return this.selectedGameObjects.has(obj);
+        return this.selectedGameObjects.indexOf(obj) > -1;
     }
 }

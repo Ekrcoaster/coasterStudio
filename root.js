@@ -141,16 +141,21 @@ class Mouse {
     clickUp = false;
     sawClickDown;
     sawClickUp;
+    sawDoubleClick;
+
+    lastClick = 0;
+    doubleClickFirstDown = false;
 
     activeTool;
     activeToolInitData;
 
     /**@type {MouseDrag} */
     mouseDrag;
-
+    
     tick() {
         let reRenderFromMouse = false;
 
+        // click down
         if(this.clickDown) this.sawClickDown = true;
         if(this.sawClickDown) {
             this.clickDown = false;
@@ -158,10 +163,19 @@ class Mouse {
             reRenderFromMouse = true;
         }
 
+        // click up
         if(this.clickUp) this.sawClickUp = true;
         if(this.sawClickUp) {
             this.clickUp = false;
             this.sawClickUp = false;
+            reRenderFromMouse = true;
+        }
+
+        // handle double clicks
+        if(this.doubleClickFirstDown) this.sawDoubleClick = true;
+        if(this.sawDoubleClick) {
+            this.doubleClickFirstDown = false;
+            this.sawDoubleClick = false;
             reRenderFromMouse = true;
         }
 
@@ -225,6 +239,11 @@ class Mouse {
         return this.clickUp && (this.activeTool == null || this.activeTool == id);
     }
 
+    isToolDoubleClick(id) {
+        if(this.mouseDrag != null) return false;
+        return this.doubleClickFirstDown && (this.activeTool == null || this.activeTool == id);
+    }
+
     setActiveTool(id, initData) {
         if(id == this.activeTool) return;
         this.activeTool = id;
@@ -245,6 +264,9 @@ class Mouse {
         if(down) {
             this.downX = this.x;
             this.downY = this.y;
+            if(Date.now() - this.lastClick < 300)
+                this.doubleClickFirstDown = true;
+            this.lastClick = Date.now();
         }
     }
 

@@ -41,6 +41,7 @@ class DrawShapeOption {
 
     getStrokeStyle() { return this.outlineColor; }
     getStrokeWidth() { return this.outlineWidth; }
+    setStrokeWidth(width) {this.outlineWidth = width; }
     shouldStroke() { return this.outlineWidth > 0; }
     getRoundedCorners() {
         if(this.roundedCorners.length == 0)
@@ -428,7 +429,7 @@ const UI_WIDGET = {
                 UI_LIBRARY.drawRectCoords(x1, y1, x2, y2 + (state || down ? 5 : 10), 0, color);
         
                 if(state)
-                    UI_LIBRARY.drawRectCoords(x1, y2, x2, y2+5+color.outlineWidth, 0, new DrawShapeOption(color.fillColor));
+                    UI_LIBRARY.drawRectCoords(x1, y2, x2, y2+10+color.outlineWidth, 0, new DrawShapeOption(color.fillColor));
 
                 UI_LIBRARY.drawText(name, x1, y1, x2, y2, COLORS.windowTabLabel);
             }
@@ -476,9 +477,9 @@ const UI_WIDGET = {
                 click = false;
         }
 
-        let newName = UI_WIDGET.editableText("edit"+id, obj.name, isSelected, x1+offset, y1, x2, y1+height, isScene ? COLORS.hierarchyWindowSceneGameObjectText : COLORS.hierarchyWindowGameObjectNormalText, ["NOT_EMPTY"]);
-        if(newName.meta.isActive)
-            click = false;
+        let textColor = isScene ? COLORS.hierarchyWindowSceneGameObjectText : COLORS.hierarchyWindowGameObjectNormalText;
+        if(!obj.activeInHierarchy) textColor = COLORS.hierarchyWindowGameObjectDisabledText;
+        let newName = UI_WIDGET.editableText("edit"+id, obj.name, true, x1+offset, y1, x2, y1+height, textColor, ["NOT_EMPTY"], "doubleClick");
 
         return {
             height: height,
@@ -538,11 +539,15 @@ const UI_WIDGET = {
     /**
      * @param {DrawTextOption} draw
      * @param {("...regexhere..."|"NUMBERS_ONLY"|"ALPHABET_ONLY"|"NOT_EMPTY")[]} rules
+     * @param {("standard"|"doubleClick")} clickMethod
      * */
-    editableText: function(id, text, isEditable, x1, y1, x2, y2, draw, rules = []) {
+    editableText: function(id, text, isEditable, x1, y1, x2, y2, draw, rules = [], clickMethod = "standard") {
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
-        let click = mouse.isToolFirstUp(id) && isEditable;
         let meta = widgetCacheData[id] || {};
+
+        // even if we want a double click, if we are active we should still cancel from a single outside click
+        if(meta.isActive) clickMethod = "standard";
+        let click = (clickMethod == "standard" ? mouse.isToolFirstUp(id) : mouse.isToolDoubleClick(id)) && isEditable;
 
         let tempText = text;
         if(meta.tempText != null) tempText = meta.tempText;
@@ -646,12 +651,8 @@ const UI_WIDGET = {
                 UI_LIBRARY.drawRectCoords(x1 + space.getLocalXOffsetOfLetter(smallest), y1, x1 + space.getLocalXOffsetOfLetter(largest), y2, 0, COLORS.textSelect);
             }
 
-            
-        }
-        
-        widgetCacheData[id] = meta;
+            widgetCacheData[id] = meta;
 
-        if(meta.isActive ) {
             if((click && !mouse.isHoveringOver(x1, y1, x2, y2)) || keyboard.downFirst.has("ENTER")) {
                 if(canSaveText(meta.tempText))
                     text = meta.tempText;
@@ -663,7 +664,8 @@ const UI_WIDGET = {
             hover: hover,
             click: click,
             meta: meta,
-            text: text
+            text: text,
+            height: y2-y1
         }
 
         function canSaveText(tempText = "") {
@@ -697,6 +699,30 @@ const UI_WIDGET = {
 
             return true;
         }
+    },
+
+    /**
+     * @param {("...regexhere..."|"NUMBERS_ONLY"|"ALPHABET_ONLY"|"NOT_EMPTY")[]} rules
+     * */
+    stringEditor: function(id, text, isEditable, x1, y1, x2, y2, rules = []) {
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
+        return this.editableText(id, text, isEditable, x1+3, y1+3, x2-3, y2-3, COLORS.stringEditorText, ["NOT_EMPTY", ...rules]);
+    },
+
+    toggle: function(id, isOn, x1, y1, x2, y2) {
+        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
+        let click = mouse.isToolFirstUp(id);
+
+        if(click && hover)
+            isOn = !isOn;
+
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.toggleBoxEmpty);
+        if(isOn)
+            UI_LIBRARY.drawRectCoords(x1+2, y1+2, x2-2, y2-2, 0, COLORS.toggleBoxFull);
+
+        return {
+            isOn: isOn
+        };
     }
 }
 
@@ -708,6 +734,7 @@ const COLORS = {
     windowResizeHandlePress: new DrawShapeOption("#b0b0b0fe"),
 
     windowBackground: ()=>{ return new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10)},
+    windowDarkerBackground: () => { return new DrawShapeOption("#33343489", "#1a1a1a", 2).setRoundedCorners(10)},
     windowTabLabel: new DrawTextOption(25, "default", "#979797", "center", "center"),
 
     windowTabDefault: new DrawShapeOption("#363636", "#c5c5c5", 3).setRoundedCorners(10),
@@ -718,6 +745,7 @@ const COLORS = {
     windowTabInsert: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
 
     hierarchyWindowGameObjectNormalText: new DrawTextOption(28, "default", "white", "left", "center"),
+    hierarchyWindowGameObjectDisabledText: new DrawTextOption(28, "default", "#ffffff62", "left", "center"),
     hierarchyWindowGameObjectNormalDropdownHandle: new DrawShapeOption("gray"),
     hierarchyWindowGameObjectHoverDropdownHandle: new DrawShapeOption("white"),
     hierarchyWindowSceneGameObjectBackground: new DrawShapeOption("#33343489", "black", 2),
@@ -729,4 +757,10 @@ const COLORS = {
 
     textCursor: new DrawShapeOption("white"),
     textSelect: new DrawShapeOption("#2986ea5e"),
+
+    stringEditorText: new DrawTextOption(25, "default", "#ffffff", "left", "center"),
+    stringEditorTextBackground: new DrawShapeOption("#33343489", "black", 2).setRoundedCorners(5),
+
+    toggleBoxEmpty: new DrawShapeOption("#212121", "#6b758012", 2).setRoundedCorners(10),
+    toggleBoxFull: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
 }

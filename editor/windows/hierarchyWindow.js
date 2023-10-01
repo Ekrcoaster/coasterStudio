@@ -19,11 +19,17 @@ class HierarchyWindow extends EditorWindow {
 
         let newCache = [];
 
+
         let y = y1+5;
         for(let i = 0; i < scene.rootGameObjects.length; i++) {
             recurseDepth(scene.rootGameObjects[i], 0);
             //issue: update position on root: 71 (null)
         }
+
+        let deselect = mouse.clickDown && mouse.isHoveringOver(x1, y, x2, Math.max(y, y2));
+
+        if(deselect)
+            editor.setOnlySelected(null, true);
 
         this.cacheObjScreenPos = newCache;
         
@@ -79,7 +85,7 @@ class HierarchyWindow extends EditorWindow {
                 else {
                     if(result.before != null) {
                         data.obj.setParent(result.before.parent);
-                        data.obj.setSiblingIndex(result.before.getSiblingIndex()+1);
+                        data.obj.setSiblingIndex(result.before.getSiblingIndex());
                     } else if(result.after != null) {
                         data.obj.setParent(result.after.parent);
                         data.obj.setSiblingIndex(result.after.getSiblingIndex()+2);

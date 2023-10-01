@@ -1,6 +1,8 @@
 class GameObject {
     id = "";
     name = "";
+    isActive;
+    activeInHierarchy;
 
     /**@type {Scene} */
     scene;
@@ -18,6 +20,8 @@ class GameObject {
         this.scene = scene;
         this.id = UTILITY.generateCode(14);
         this.name = name;
+        this.isActive = true;
+        this.activeInHierarchy = true;
         this.parent = null;
         this.children = [];
         this.scene._registerRootGameObject(this);
@@ -43,7 +47,25 @@ class GameObject {
             this.scene._registerRootGameObject(this);
         else
             this.parent._registerChild(this);
+
+        // calculate if active in hierarchy
+        this._updateActiveInHierarchy(this.parent == null ? true : this.parent.activeInHierarchy);
+
         return this;
+    }
+
+    setActive(active) {
+        if(active == this.isActive) return;
+        this.isActive = active;
+
+        // calculate if active in hierarchy
+        this._updateActiveInHierarchy(this.parent == null ? true : this.parent.activeInHierarchy);
+    }
+
+    _updateActiveInHierarchy(parentActive) {
+        this.activeInHierarchy = parentActive && this.isActive;
+        for(let i = 0; i < this.children.length; i++)
+            this.children[i]._updateActiveInHierarchy(this.activeInHierarchy);
     }
 
     setSiblingIndex(newIndex) {
