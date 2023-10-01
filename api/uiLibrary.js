@@ -472,7 +472,7 @@ const UI_WIDGET = {
         let offset = isScene ? 2 : height+2;
         if(obj.children.length > 0) {
             let old = change;
-            change = this.dropdownHandle("handle"+id, x1, y1, x1+(height), y1+height, meta.drawChildren, COLORS.hierarchyWindowGameObjectNormalDropdownHandle, COLORS.hierarchyWindowGameObjectHoverDropdownHandle);
+            change = this.dropdownHandle("handle"+id, x1, y1, x1+(height), y1+height, meta.drawChildren, COLORS.normalDropdownHandle, COLORS.hoverDropdownHandle);
             if(old != change)
                 click = false;
         }
@@ -524,12 +524,25 @@ const UI_WIDGET = {
         return isDown;
     },
 
-    /**@param {Component} component */
-    inspectorComponent: function(id, x1, y1, x2, component) {
+    /**
+     * @param {Component} component 
+     * @param {EditorComponent} editor
+     * */
+    inspectorComponent: function(id, x1, y1, x2, component, editor) {
         let height = 30;
         UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.inspectorComponentHeader);
         UI_LIBRARY.drawText(component.name, x1, y1, x2, y1+height, COLORS.inspectorComponentHeaderText);
-        height += 50;
+
+        let expanded = this.dropdownHandle(id + "dropdown", x2-height, y1, x2, y1+height, editor.isExpanded, COLORS.normalDropdownHandle, COLORS.hoverDropdownHandle);
+        if(expanded != editor.isExpanded)
+            editor.isExpanded = expanded;
+
+        if(editor.isExpanded) {
+            let calculatedHeight = editor.calculateExpandedHeight();
+            UI_LIBRARY.drawRectCoords(x1, y1+height, x2, y1+height+calculatedHeight, 0, COLORS.inspectorComponentBox);
+            editor.onRender(x1+14, y1+height+2, x2-2, y1+height+calculatedHeight, (x2-2)-(x1+25), calculatedHeight-4);
+            height += calculatedHeight;
+        }
         
         return {
             height: height
@@ -545,6 +558,7 @@ const UI_WIDGET = {
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
         let meta = widgetCacheData[id] || {};
 
+        let appliedChange = false;
         // even if we want a double click, if we are active we should still cancel from a single outside click
         if(meta.isActive) clickMethod = "standard";
         let click = (clickMethod == "standard" ? mouse.isToolFirstUp(id) : mouse.isToolDoubleClick(id)) && isEditable;
@@ -657,6 +671,7 @@ const UI_WIDGET = {
                 if(canSaveText(meta.tempText))
                     text = meta.tempText;
                 delete widgetCacheData[id];
+                appliedChange = true;
             }
         }
 
@@ -665,7 +680,8 @@ const UI_WIDGET = {
             click: click,
             meta: meta,
             text: text,
-            height: y2-y1
+            height: y2-y1,
+            applied: appliedChange
         }
 
         function canSaveText(tempText = "") {
@@ -704,9 +720,44 @@ const UI_WIDGET = {
     /**
      * @param {("...regexhere..."|"NUMBERS_ONLY"|"ALPHABET_ONLY"|"NOT_EMPTY")[]} rules
      * */
-    stringEditor: function(id, text, isEditable, x1, y1, x2, y2, rules = []) {
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
-        return this.editableText(id, text, isEditable, x1+3, y1+3, x2-3, y2-3, COLORS.stringEditorText, ["NOT_EMPTY", ...rules]);
+    editorGUIString: function(id, label, text, isEditable, x1, y1, x2, y2, rules = []) {
+        let labelOffset = this.editorGUILabelPre(label, x1, y1, x2, y2);
+        
+        UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
+        return this.editableText(id, text, isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, ["NOT_EMPTY", ...rules]);
+    },
+    editorGUILabelPre: function(label, x1, y1, x2, y2, divide = 2) {
+        if(label) {
+            let labelOffset = (x2-x1)/divide;
+            UI_LIBRARY.drawText(label, x1, y1, x2+labelOffset, y2, COLORS.inspectorLabel);
+            return labelOffset;
+        }
+        return 0;
+    },
+    editorGUINumber: function(id, label, number, isEditable, x1, y1, x2, y2, rules = [], divide = 2) {
+        let labelOffset = this.editorGUILabelPre(label, x1, y1, x2, y2, divide);
+        
+        UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
+        let res = this.editableText(id, number + "", isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, ["NUMBERS_ONLY", ...rules]);
+        res.text = parseInt(res.text);
+        if(isNaN(res.text))
+            res.text = 0;
+        return res;
+    },
+    /**@param {Vector2} vector */
+    editorGUIVector2: function(id, label, vector, isEditable, x1, y1, x2, y2, rules = []) {
+        let spacing = 20;
+        let half = (x2-x1)/2-spacing;
+        let topSpacing = 0;
+        let leftSpacing = 0;
+        if(label) {
+            topSpacing = (y2-y1)/2
+            this.editorGUILabelPre(label, x1, y1, x2, y1+topSpacing*0.5, 1);
+            leftSpacing = 25;
+        }
+        vector.x = this.editorGUINumber(id + "x", "X", vector.x, isEditable, x1+leftSpacing, y1+topSpacing, x1+half, y2, rules, 4)?.text;
+        vector.y = this.editorGUINumber(id + "y", "Y", vector.y, isEditable, x1+half+spacing+leftSpacing, y1+topSpacing, x2, y2, rules, 4)?.text;
+        return vector;
     },
 
     toggle: function(id, isOn, x1, y1, x2, y2) {
@@ -746,20 +797,23 @@ const COLORS = {
 
     hierarchyWindowGameObjectNormalText: new DrawTextOption(28, "default", "white", "left", "center"),
     hierarchyWindowGameObjectDisabledText: new DrawTextOption(28, "default", "#ffffff62", "left", "center"),
-    hierarchyWindowGameObjectNormalDropdownHandle: new DrawShapeOption("gray"),
-    hierarchyWindowGameObjectHoverDropdownHandle: new DrawShapeOption("white"),
     hierarchyWindowSceneGameObjectBackground: new DrawShapeOption("#33343489", "black", 2),
     hierarchyWindowSceneGameObjectText: new DrawTextOption(28, "default", "#ffffff7d", "left", "center"),
     hierarchyWindowSelect: new DrawShapeOption("#2986ea5e"),
 
     inspectorComponentHeader: new DrawShapeOption("#33343489", "#24242489", 3),
     inspectorComponentHeaderText: new DrawTextOption(25, "default", "white", "left", "center"),
+    inspectorComponentBox: new DrawShapeOption("#40404089", "#333333", 2).setRoundedCorners(10),
+    inspectorLabel: new DrawTextOption(25, "default", "#ffffff7d", "left", "center"),
 
     textCursor: new DrawShapeOption("white"),
     textSelect: new DrawShapeOption("#2986ea5e"),
 
     stringEditorText: new DrawTextOption(25, "default", "#ffffff", "left", "center"),
     stringEditorTextBackground: new DrawShapeOption("#33343489", "black", 2).setRoundedCorners(5),
+
+    normalDropdownHandle: new DrawShapeOption("gray"),
+    hoverDropdownHandle: new DrawShapeOption("white"),
 
     toggleBoxEmpty: new DrawShapeOption("#212121", "#6b758012", 2).setRoundedCorners(10),
     toggleBoxFull: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
