@@ -4,11 +4,29 @@ class Transform extends Component {
     localAngle;
     localScale;
 
+    _worldPosition;
+
     constructor() {
         super("Transform");
         this.localPosition = new Vector2();
         this.localAngle = 0;
         this.localScale = new Vector2(1, 1);
+    }
+
+    /**@param {Vector2} position */
+    setLocalPosition(position) {
+        this.localPosition = position;
+        this._updateTransform();
+    }
+
+    setLocalAngle(angle) {
+        this.localAngle = angle;
+        this._updateTransform();
+    }
+    /**@param {Vector2} position */
+    setLocalScale(scale) {
+        this.localScale = scale;
+        this._updateTransform();
     }
 
     /**@param {Vector2} position */
@@ -34,7 +52,14 @@ class Transform extends Component {
         return transformed;
     }
 
-    getWorldSpace() {
-        return this.localToWorldSpace(new Vector2());
+    getWorldPosition() {
+        return this._worldPosition;
+    }
+
+    _updateTransform() {
+        this._worldPosition = this.localToWorldSpace(new Vector2());
+        // then make sure all of the children have been updated
+        for(let i = 0; i < this.gameObject.children.length; i++)
+            this.gameObject.children[i].transform._updateTransform();
     }
 }

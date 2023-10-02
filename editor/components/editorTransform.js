@@ -9,13 +9,13 @@ class EditorTransformComponent extends EditorComponent {
         /**@type {Transform} */
         let transform = this.target;
 
-        transform.localPosition = UI_WIDGET.editorGUIVector2(transform.gameObject.id + "pos", "Position", transform.localPosition, true, x1, y, x2, y+this.componentHeight*2);
+        transform.setLocalPosition(UI_WIDGET.editorGUIVector2(transform.gameObject.id + "pos", "Position", transform.localPosition, true, x1, y, x2, y+this.componentHeight*2));
         y += this.componentHeight*2 + this.componentMargin;
 
-        transform.localAngle = UI_WIDGET.editorGUINumber(transform.gameObject.id + "rot", "Rotation", transform.localAngle, true, x1, y, x2, y+this.componentHeight)?.text;
+        transform.setLocalAngle(UI_WIDGET.editorGUINumber(transform.gameObject.id + "rot", "Rotation", transform.localAngle, true, x1, y, x2, y+this.componentHeight)?.text);
         y += this.componentHeight + this.componentMargin;
 
-        transform.localScale = UI_WIDGET.editorGUIVector2(transform.gameObject.id + "scale", "Scale", transform.localScale, true, x1, y, x2, y+this.componentHeight*2);
+        transform.setLocalScale(UI_WIDGET.editorGUIVector2(transform.gameObject.id + "scale", "Scale", transform.localScale, true, x1, y, x2, y+this.componentHeight*2));
         y += this.componentHeight*2 + this.componentMargin;
     }
 
@@ -29,6 +29,6 @@ class EditorTransformComponent extends EditorComponent {
      * */
     onSceneRender(transform, tools) {
         if(transform.gameObject.id == editor.activeScene.header.id) return;
-        tools.text(transform.gameObject.name, transform.getWorldSpace().x, transform.getWorldSpace().y, 1, 0, new DrawTextOption(25));
+        tools.text(transform.gameObject.name, transform.getWorldPosition().x, transform.getWorldPosition().y, 1, 0, new DrawTextOption(25));
     }
 }

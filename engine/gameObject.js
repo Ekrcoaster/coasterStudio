@@ -32,6 +32,7 @@ class GameObject {
 
         this.transform = new Transform();
         this.addComponent(this.transform);
+        this.transform._updateTransform();
     }
 
     /**

@@ -25,13 +25,13 @@ function Initalize() {
     editor.setActiveScene(engine.activeScene);
 
     let obj = new GameObject(engine.activeScene, "test");
-    obj.transform.localAngle = 45;
+    obj.transform.setLocalAngle(45);
     let obj3 = new GameObject(engine.activeScene, "test1b").setParent(obj);
-    obj3.transform.localPosition = new Vector2(5, 2);
+    obj3.transform.setLocalPosition(new Vector2(5, 2));
     let t = new GameObject(engine.activeScene, "test1c").setParent(obj3);
-    t.transform.localPosition = new Vector2(0, -2);
+    t.transform.setLocalPosition(new Vector2(0, -2));
     let t2 = new GameObject(engine.activeScene, "test1d").setParent(t);
-    t2.transform.localPosition = new Vector2(0, -2);
+    t2.transform.setLocalPosition(new Vector2(0, -2));
 
     mouse = new Mouse();
     keyboard = new Keyboard();
@@ -291,6 +291,13 @@ class Mouse {
         return {
             x: this.x - this.lastX,
             y: this.y - this.lastY
+        }
+    }
+
+    getDownDistanceSeperate() {
+        return {
+            x: this.x - this.downX,
+            y: this.y - this.downY
         }
     }
 }
