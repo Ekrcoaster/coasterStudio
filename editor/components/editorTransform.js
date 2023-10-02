@@ -22,4 +22,13 @@ class EditorTransformComponent extends EditorComponent {
     calculateExpandedHeight() {
         return 10+this.calculateComponentHeightForExpandedHeight(3) + (this.componentHeight*2) +10;
     }
+
+    /**
+     * @param {Transform} transform 
+     * @param {SceneRendererTools} tools
+     * */
+    onSceneRender(transform, tools) {
+        if(transform.gameObject.id == editor.activeScene.header.id) return;
+        tools.text(transform.gameObject.name, transform.getWorldSpace().x, transform.getWorldSpace().y, 1, 0, new DrawTextOption(25));
+    }
 }

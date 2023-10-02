@@ -16,6 +16,9 @@ class GameObject {
     /**@type {Component[]} */
     components = [];
 
+    /**@type {Transform} */
+    transform;
+
     constructor(scene, name) {
         this.scene = scene;
         this.id = UTILITY.generateCode(14);
@@ -26,6 +29,9 @@ class GameObject {
         this.children = [];
         this.scene._registerRootGameObject(this);
         this.components = [];
+
+        this.transform = new Transform();
+        this.addComponent(this.transform);
     }
 
     /**
@@ -88,7 +94,12 @@ class GameObject {
         if(index > -1) return;
 
         component.gameObject = this;
+        component.transform  = this.transform;
         this.components.push(component);
+
+        // one day remove all references to the editor from the engine!
+        if(window.editor != null)
+            editor.createEditorComponent(component);
     }
 
     /**@param {Component} component*/
@@ -97,6 +108,10 @@ class GameObject {
         if(index > -1)
             this.components.splice(index, 1);
         component.gameObject = null;
+
+        // one day remove all references to the editor from the engine!
+        if(window.editor != null)
+            editor.removeEditorComponent(component);
     }
 
     _registerChild(child) {

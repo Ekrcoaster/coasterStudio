@@ -11,6 +11,14 @@ class Editor {
     /**@type {GameObject[]} */
     selectedGameObjects = [];
 
+    /**@type {Component[]} */
+    selectedComponentsCache = [];
+    /**@type {EditorComponent[]} */
+    selectedEditorComponentsCache = [];
+
+    /** Component ID = editor component */
+    allComponentsCache = {};
+
     constructor() {
         this.windowManager = new EditorWindowManager();
         this.fps = 60;
@@ -22,7 +30,7 @@ class Editor {
             //.registerWindow(new EditorWindow("orange"))
             //.registerWindow(new EditorWindow("pink"))
         );
-        row1.registerWindow(new EditorWindowContainer(0.7, "vertical").registerWindow(new EditorWindow("red")));
+        row1.registerWindow(new EditorWindowContainer(0.7, "vertical").registerWindow(new SceneWindow()));
         row1.registerWindow(new EditorWindowContainer(0.2, "vertical").registerWindow(new InspectorWindow()));
 
         this.windowManager.flex.registerWindow(new EditorWindowContainer(0.2, "horizontal").registerWindow(new EditorWindow("cyan")))
@@ -60,6 +68,8 @@ class Editor {
             if(index > -1)
                 this.selectedGameObjects.splice(index, 1);
         }
+
+        this._updateSelected();
     }
 
     /**
@@ -71,6 +81,43 @@ class Editor {
         this.selectedGameObjects = [];
         if(selected && obj != null)
             this.selectedGameObjects.push(obj);
+        this._updateSelected();
+    }
+
+    _updateSelected() {
+        if(editor.selectedGameObjects.length == 0) return;
+        let active = editor.selectedGameObjects[0];
+
+        this.selectedComponentsCache = [];
+        for(let i = 0; i < active.components.length; i++)
+            this.selectedComponentsCache.push(active.components[i]);
+
+        
+        for(let i = 0; i < this.selectedComponentsCache.length; i++) {
+            if(this.allComponentsCache[this.selectedComponentsCache[i].id] == null) {
+                console.error("No editor script found for component " + this.selectedComponentsCache[i].name + " in the cache for ID " + this.selectedComponentsCache[i].id);
+                return;
+            }
+            this.selectedEditorComponentsCache[i] = this.allComponentsCache[this.selectedComponentsCache[i].id];
+        }
+    }
+
+    /**@param {Component} component */
+    createEditorComponent(component) {
+        let editorScript = COMPONENT_REGISTER[component.name];
+        if(editorScript == null) {
+            console.error("No editor script found for component " + component.name);
+            return;
+        }
+
+        let instance = null;
+        eval(`instance = new ${editorScript}(component)`);
+        this.allComponentsCache[component.id] = instance;
+    }
+    
+    /**@param {Component} component */
+    removeEditorComponent(component) {
+        delete this.allComponentsCache[component.id];
     }
 
     /**

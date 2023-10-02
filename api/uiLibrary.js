@@ -72,7 +72,7 @@ class DrawTextOption {
      * @param {HorizontalAlignTypes} horizontalAlign
      * @param {VerticalAlignTypes} verticalAlign
      * */
-    constructor(size, font, fillColor, horizontalAlign, verticalAlign) {
+    constructor(size = 25, font = "default", fillColor = "white", horizontalAlign = "left", verticalAlign = "center") {
         this.size = size;
         this.font = font;
         this.fillColor = fillColor;
@@ -817,4 +817,6 @@ const COLORS = {
 
     toggleBoxEmpty: new DrawShapeOption("#212121", "#6b758012", 2).setRoundedCorners(10),
     toggleBoxFull: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
+
+    sceneBackgroundColor: new DrawShapeOption("#3a3a3a")
 }

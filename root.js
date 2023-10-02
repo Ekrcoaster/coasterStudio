@@ -3,6 +3,9 @@ var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d", {alpha: false});
 const CANVAS_SCALE = 2;
 
+const DEGREE_TO_RADIANS = Math.PI / 180;
+const RADIANS_TO_DEGREE = 180 / Math.PI;
+
 /**@type {Editor} */
 var editor;
 /** @type {Engine} */
@@ -22,15 +25,13 @@ function Initalize() {
     editor.setActiveScene(engine.activeScene);
 
     let obj = new GameObject(engine.activeScene, "test");
-    obj.addComponent(new Transform());
-    let obj2 = new GameObject(engine.activeScene, "test2");
-    obj2.addComponent(new Transform());
+    obj.transform.localAngle = 45;
     let obj3 = new GameObject(engine.activeScene, "test1b").setParent(obj);
-    obj3.addComponent(new Transform());
-    let t = new GameObject(engine.activeScene, "test1c").setParent(obj);
-    t.addComponent(new Transform());
+    obj3.transform.localPosition = new Vector2(5, 2);
+    let t = new GameObject(engine.activeScene, "test1c").setParent(obj3);
+    t.transform.localPosition = new Vector2(0, -2);
     let t2 = new GameObject(engine.activeScene, "test1d").setParent(t);
-    t2.addComponent(new Transform());
+    t2.transform.localPosition = new Vector2(0, -2);
 
     mouse = new Mouse();
     keyboard = new Keyboard();

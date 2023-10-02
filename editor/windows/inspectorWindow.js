@@ -1,9 +1,5 @@
 class InspectorWindow extends EditorWindow {
 
-    /**@type {EditorComponent[]} */
-    selectedComponentsCache = [];
-    lastSelected = ""
-
     constructor() {
         super("Inspector");
     }
@@ -14,24 +10,12 @@ class InspectorWindow extends EditorWindow {
         if(editor.selectedGameObjects.length == 0) return;
         let active = editor.selectedGameObjects[0];
 
-        /**@type {Component[]} */
-        let components = [];
-        for(let i = 0; i < active.components.length; i++)
-            components.push(active.components[i]);
-
-        // then, if we have selected something new, create the editor components
-        let selectedHash = editor.selectedGameObjects.map((x) => {return x.id}).join("-");
-        if(this.lastSelected != selectedHash) {
-            this.lastSelected = selectedHash;
-            this.createEditorComponents(components);
-        }
-
         let y = y1;
         y += drawHeader(y);
 
         y += 10;
-        for(let i = 0; i < components.length; i++) {
-            let res = UI_WIDGET.inspectorComponent("inspector"+this.container.id, x1+5, y, x2-5, components[i], this.selectedComponentsCache[i]);
+        for(let i = 0; i < editor.selectedComponentsCache.length; i++) {
+            let res = UI_WIDGET.inspectorComponent("inspector"+this.container.id, x1+5, y, x2-5, editor.selectedComponentsCache[i], editor.selectedEditorComponentsCache[i]);
             y += res.height;
         }
 
@@ -50,21 +34,6 @@ class InspectorWindow extends EditorWindow {
             if(newName.applied)
                 active.name = newName?.text;
             return height;
-        }
-    }
-
-    /** @param {Component[]} components */
-    createEditorComponents(components = []) {
-        for(let i = 0; i < components.length; i++) {
-            let editorScript = COMPONENT_REGISTER[components[i].name];
-            if(editorScript == null) {
-                console.error("No editor script found for component " + components[i].name);
-                break;
-            }
-
-            let instance = null;
-            eval(`instance = new ${editorScript}(components[i])`);
-            this.selectedComponentsCache[i] = instance;
         }
     }
 }

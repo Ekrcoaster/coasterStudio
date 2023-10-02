@@ -14,6 +14,19 @@ class EditorComponent {
     }
 
     onRender(x1, y1, x2, y2, width, height) {}
+
+    /**
+     * @param {Transform} transform 
+     * @param {SceneRendererTools} tools
+     * */
+    onSceneRender(transform, tools) {}
+
+    /**
+     * @param {Transform} transform 
+     * @param {SceneRendererTools} tools
+     * */
+    onSelectedSceneRender(transform, tools) {}
+    
     calculateExpandedHeight() {
         return 0;
     }
