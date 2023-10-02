@@ -18,6 +18,9 @@ class Editor {
 
     /** Component ID = editor component */
     allComponentsCache = {};
+    
+    lastTick = 0;
+    timeDelta = 1;
 
     constructor() {
         this.windowManager = new EditorWindowManager();
@@ -45,7 +48,10 @@ class Editor {
     }
 
     tick() {
+        this.timeDelta = (Date.now() - this.lastTick)/1000;
+        this.windowManager.tick();
 
+        this.lastTick = Date.now();
     }
 
     render(x1, y1, x2, y2) {

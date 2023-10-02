@@ -57,6 +57,12 @@ class EditorWindowContainer extends EditorWindowBase {
             this.collapse();
     }
 
+    tick() {
+        if(this.activeWindowIndex < this.windows.length && this.activeWindowIndex > -1) {
+            this.windows[this.activeWindowIndex].tick();
+        }
+    }
+
     /**
      *  This will render the container and the active window inside of it.
      * 

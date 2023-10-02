@@ -286,6 +286,13 @@ class Mouse {
         this.activeTool = mouseDrag.id;
         return true;
     }
+
+    getVelocity() {
+        return {
+            x: this.x - this.lastX,
+            y: this.y - this.lastY
+        }
+    }
 }
 
 class MouseDrag {

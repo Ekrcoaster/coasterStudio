@@ -19,6 +19,8 @@ class EditorWindow {
             UI_LIBRARY.drawText(this.container.id, x1, y1, x2, y2-50, new DrawTextOption(20, "default", this.name, "center", "bottom"));
     }
 
+    tick() {}
+
     postRender() {
         UI_LIBRARY.restore();
     }

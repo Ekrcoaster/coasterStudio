@@ -228,6 +228,13 @@ class EditorWindowFlex extends EditorWindowBase {
         }
     }
 
+    tick() {
+        for (let i = 0; i < this.windows.length; i++) {
+            this.windows[i].tick();
+        }
+
+    }
+
     /**
      * @returns {EditorWindowContainer}
      */

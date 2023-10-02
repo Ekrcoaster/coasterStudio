@@ -15,7 +15,7 @@ class InspectorWindow extends EditorWindow {
 
         y += 10;
         for(let i = 0; i < editor.selectedComponentsCache.length; i++) {
-            let res = UI_WIDGET.inspectorComponent("inspector"+this.container.id, x1+5, y, x2-5, editor.selectedComponentsCache[i], editor.selectedEditorComponentsCache[i]);
+            let res = UI_WIDGET.inspectorComponent("inspector"+this.container?.id, x1+5, y, x2-5, editor.selectedComponentsCache[i], editor.selectedEditorComponentsCache[i]);
             y += res.height;
         }
 

@@ -70,6 +70,8 @@ class EditorWindowBase {
         this.lastScreenPos = {x1: x1, y1: y1, x2: x2, y2: y2};
     }
 
+    tick() {}
+
     print(depth = 0) {
         return `${space(depth)}${this.myself}: ${this.id} (${this.getWidthPercent()}  ${this.getHeightPercent()})`;
 
