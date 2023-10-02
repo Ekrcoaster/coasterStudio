@@ -89,17 +89,14 @@ class SceneWindow extends EditorWindow {
         let topLeft = this.tools._screenSpaceToCoord(x1, y1);
         let bottomRight = this.tools._screenSpaceToCoord(x2, y2);
 
-        let lengthX = bottomRight.x - topLeft.x;
-        let lengthY = bottomRight.y - topLeft.y;
-
         // draw the horizontal lines
-        for(let x = Math.floor(topLeft.x); x <= Math.ceil(bottomRight.x); x++) {
+        for(let x = Math.floor(topLeft.x); x <= Math.ceil(bottomRight.x); x += increment) {
             let space = this.tools._coordToScreenSpace(x, 0, 0, 0);
             UI_LIBRARY.drawLine(space.x, y1, space.x, y2, COLORS.sceneGridColor);
         }
 
         // draw the vertical lines
-        for(let y = Math.floor(topLeft.y); y <= Math.ceil(bottomRight.y); y++) {
+        for(let y = Math.floor(topLeft.y); y <= Math.ceil(bottomRight.y); y += increment) {
             let space = this.tools._coordToScreenSpace(0, y, 0, 0);
             UI_LIBRARY.drawLine(x1, space.y, x2, space.y, COLORS.sceneGridColor);
         }
