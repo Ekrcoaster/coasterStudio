@@ -97,6 +97,25 @@ class DrawTextOption {
     }
 }
 
+class DrawLineOption {
+    color;
+    width;
+    /**@type {CanvasLineCap} */
+    cap;
+
+    constructor(color = "black", width = 3) {
+        this.color = color;
+        this.width = width;
+        this.cap = "round";
+    }
+
+    getStrokeStyle() {return this.color}
+    getStrokeWidth() {return this.width}
+    getLineCap() {return this.cap;}
+    /**@type {CanvasLineCap} */
+    setLineCap(cap) {this.cap = cap;}
+}
+
 class Filter { }
 
 const UI_LIBRARY = {
@@ -304,6 +323,26 @@ const UI_LIBRARY = {
             }
         }
     },
+    /**
+     * 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     * @param {DrawLineOption} draw 
+     */
+    drawLine: function(x1, y1, x2, y2, draw) {
+        if(draw == null) draw = new DrawLineOption();
+
+        ctx.strokeStyle = draw.getStrokeStyle();
+        ctx.lineWidth = draw.getStrokeWidth();
+        ctx.lineCap = draw.getLineCap();
+        
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    },
     restore() {
         ctx.restore();
     }
@@ -333,9 +372,7 @@ const UI_UTILITY = {
     }
 }
 
-let widgetCacheData = {
-    
-}
+let widgetCacheData = {}
 
 const UI_WIDGET = {
     /**
@@ -818,5 +855,7 @@ const COLORS = {
     toggleBoxEmpty: new DrawShapeOption("#212121", "#6b758012", 2).setRoundedCorners(10),
     toggleBoxFull: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
 
-    sceneBackgroundColor: new DrawShapeOption("#3a3a3a")
+    sceneBackgroundColor: new DrawShapeOption("#3a3a3a"),
+    sceneGridColor: new DrawLineOption("#ffffff1b", 5),
+    sceneGridCenterColor: new DrawShapeOption("#ffffff1b", 5)
 }

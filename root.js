@@ -105,6 +105,11 @@ canvas.addEventListener("mouseup", function (evt) {
     needsRendering = true;
 });
 
+canvas.addEventListener("wheel", function(evt) {
+    mouse.addScroll(evt.deltaY/100);
+    needsRendering = true;
+});
+
 window.addEventListener('keydown',function(e) {
     keyboard.onKey(e.key, true);
     needsRendering = true;
@@ -146,6 +151,9 @@ class Mouse {
 
     lastClick = 0;
     doubleClickFirstDown = false;
+    
+    scroll = 0;
+    lastScroll = 0;
 
     activeTool;
     activeToolInitData;
@@ -193,6 +201,9 @@ class Mouse {
         else
             this.timeDown = 0;
         
+        this.lastScroll = this.scroll;
+        this.lastX = this.x;
+        this.lastY = this.y;
         return reRenderFromMouse;
     }
 
@@ -201,8 +212,6 @@ class Mouse {
     }
 
     updatePosition(x, y) {
-        this.lastX = this.x;
-        this.lastY = this.y;
         this.x = x;
         this.y = y;
     }
@@ -271,6 +280,10 @@ class Mouse {
         }
     }
 
+    addScroll(amt) {
+        this.scroll += amt;
+    }
+
     getDownDistance() {
         if(!this.down) return 0;
         return Math.sqrt(((this.y - this.downY) ** 2) + ((this.x - this.downX) ** 2));
@@ -292,6 +305,10 @@ class Mouse {
             x: this.x - this.lastX,
             y: this.y - this.lastY
         }
+    }
+
+    getScrollVelocity() {
+        return this.scroll - this.lastScroll;
     }
 
     getDownDistanceSeperate() {
