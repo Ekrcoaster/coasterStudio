@@ -776,7 +776,7 @@ const UI_WIDGET = {
         
         UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
         let res = this.editableText(id, number + "", isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, ["NUMBERS_ONLY", ...rules]);
-        res.text = parseInt(res.text);
+        res.text = parseFloat(res.text);
         if(isNaN(res.text))
             res.text = 0;
         return res;

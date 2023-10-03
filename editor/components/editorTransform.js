@@ -31,4 +31,13 @@ class EditorTransformComponent extends EditorComponent {
         if(transform.gameObject.id == editor.activeScene.header.id) return;
         tools.text(transform.gameObject.name, transform.getWorldPosition().x, transform.getWorldPosition().y, 1, 0, new DrawTextOption(25));
     }
+
+    /**
+     * @param {Transform} transform 
+     * @param {SceneRendererTools} tools
+     * */
+    onSelectedSceneRender(transform, tools) {
+        if(transform.gameObject.id == editor.activeScene.header.id) return;
+        tools.gizmoMove(transform.id, transform.getWorldPosition(), 1);
+    }
 }

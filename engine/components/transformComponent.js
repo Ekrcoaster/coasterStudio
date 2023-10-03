@@ -15,16 +15,19 @@ class Transform extends Component {
 
     /**@param {Vector2} position */
     setLocalPosition(position) {
+        if(position == this.localPosition) return;
         this.localPosition = position;
         this._updateTransform();
     }
 
     setLocalAngle(angle) {
+        if(angle == this.localAngle) return;
         this.localAngle = angle;
         this._updateTransform();
     }
     /**@param {Vector2} position */
     setLocalScale(scale) {
+        if(scale == this.localScale) return;
         this.localScale = scale;
         this._updateTransform();
     }

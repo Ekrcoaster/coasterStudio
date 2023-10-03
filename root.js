@@ -26,12 +26,17 @@ function Initalize() {
 
     let obj = new GameObject(engine.activeScene, "test");
     obj.transform.setLocalAngle(45);
+    obj.addComponent(new ShapeRenderer());
     let obj3 = new GameObject(engine.activeScene, "test1b").setParent(obj);
     obj3.transform.setLocalPosition(new Vector2(5, 2));
+    obj3.addComponent(new ShapeRenderer());
     let t = new GameObject(engine.activeScene, "test1c").setParent(obj3);
-    t.transform.setLocalPosition(new Vector2(0, -2));
+    t.transform.setLocalPosition(new Vector2(0, -4));
+    t.addComponent(new ShapeRenderer());
     let t2 = new GameObject(engine.activeScene, "test1d").setParent(t);
-    t2.transform.setLocalPosition(new Vector2(0, -2));
+    t2.transform.setLocalPosition(new Vector2(0, -4));
+    t2.transform.setLocalAngle(-45);
+    t2.addComponent(new ShapeRenderer());
 
     mouse = new Mouse();
     keyboard = new Keyboard();

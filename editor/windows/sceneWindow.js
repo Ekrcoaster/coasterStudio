@@ -26,6 +26,24 @@ class SceneWindow extends EditorWindow {
     render(x1, y1, x2, y2, width, height) {
         UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.sceneBackgroundColor);
 
+        // setup the tool
+        this.tools._setScreenView(x1, y1, x2, y2, width, height);
+
+        this.renderGrid(x1, y1, x2, y2);
+
+        // render all of the onSceneRenders for each component in the scene
+        for(let id in editor.allComponentsCache) {
+            // ensure the object is active
+            if(editor.allComponentsCache[id].target.gameObject.activeInHierarchy)
+                editor.allComponentsCache[id].onSceneRender(editor.allComponentsCache[id].target.transform, this.tools);
+        }
+
+        // now render all of the selected components
+        for(let i = 0; i < editor.selectedEditorComponentsCache.length; i++) {
+            if(editor.selectedEditorComponentsCache[i].target.gameObject.activeInHierarchy)
+                editor.selectedEditorComponentsCache[i].onSelectedSceneRender(editor.selectedComponentsCache[i].transform, this.tools);
+        }
+
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, "scene" + this.container?.id);
         let down = mouse.isToolDown("scene" + this.container?.id);
         
@@ -49,25 +67,6 @@ class SceneWindow extends EditorWindow {
 
         if(hover) {
             this.changeScale(mouse.getScrollVelocity());
-        }
-
-
-        // setup the tool
-        this.tools._setScreenView(x1, y1, x2, y2, width, height);
-
-        this.renderGrid(x1, y1, x2, y2);
-
-        // render all of the onSceneRenders for each component in the scene
-        for(let id in editor.allComponentsCache) {
-            // ensure the object is active
-            if(editor.allComponentsCache[id].target.gameObject.activeInHierarchy)
-                editor.allComponentsCache[id].onSceneRender(editor.allComponentsCache[id].target.transform, this.tools);
-        }
-
-        // now render all of the selected components
-        for(let i = 0; i < editor.selectedEditorComponentsCache.length; i++) {
-            if(editor.selectedEditorComponentsCache[i].target.gameObject.activeInHierarchy)
-                editor.selectedEditorComponentsCache[i].onSelectedSceneRender(editor.selectedComponentsCache[i].transform, this.tools);
         }
     }
 
@@ -111,71 +110,5 @@ class SceneWindow extends EditorWindow {
 
     tick() {
         
-    }
-}
-
-class SceneRendererTools {
-    /**@type {SceneWindow} */
-    sceneWindow;
-
-    x1;y1;x2;y2;width;height;
-
-    /**@param {SceneWindow} sceneWindow */
-    constructor(sceneWindow) {
-        this.sceneWindow = sceneWindow;
-    }
-
-    _setScreenView(x1, y1, x2, y2, width, height) {
-        this.x1 = x1;
-        this.y1 = y1;
-        this.x2 = x2;
-        this.y2 = y2;
-        this.width = width;
-        this.height = height;
-    }
-
-    _coordToScreenSpace(x, y, width, height) {
-        x += this.sceneWindow.screenX;
-        y += this.sceneWindow.screenY;
-        x *= this.sceneWindow.getRealPixelTileSize();
-        y *= this.sceneWindow.getRealPixelTileSize();
-        width *= this.sceneWindow.getRealPixelTileSize();
-        height *= this.sceneWindow.getRealPixelTileSize();
-        let center =new Vector2(this.x1 + this.width / 2, this.y1 + this.height/2);
-        return {
-            x: x + center.x,
-            y: y + center.y,
-            width: width,
-            height: height,
-        }
-    }
-
-    _screenSpaceToCoord(x, y) {
-        let center =new Vector2(this.x1 + this.width / 2, this.y1 + this.height/2);
-        x -= center.x;
-        y -= center.y;
-        x /= this.sceneWindow.getRealPixelTileSize();
-        y /= this.sceneWindow.getRealPixelTileSize();
-        x -= this.sceneWindow.screenX;
-        y -= this.sceneWindow.screenY;
-
-        return {
-            x: x,
-            y: y
-        }
-    }
-
-    /**
-     * 
-     * @param {String} text 
-     * @param {Number} x 
-     * @param {Number} y 
-     * @param {Number} width 
-     * @param {Number} height 
-     * @param {DrawTextOption} draw 
-     */
-    text(text, x, y, width, height, draw) {
-        let center = this._coordToScreenSpace(x, y, width, height);
-        UI_LIBRARY.drawText(text, center.x, center.y, center.x + center.width, center.y + center.height, draw.drawDebug());
     }
 }
