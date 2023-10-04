@@ -30,7 +30,7 @@ class InspectorWindow extends EditorWindow {
                 active.setActive(toggle.isOn);
 
             // create the string field for the object name
-            let newName = UI_WIDGET.editorGUIString(t.container.id+"objName", "", active.name, active.id != editor.activeScene.header.id, x1+5+nameAndEnableHeight, y+5, x2-5, y+nameAndEnableHeight);
+            let newName = UI_WIDGET.editorGUIString(t.container.id+"objName", "", active.name, active.id != editor.activeScene.header.id, x1+5+nameAndEnableHeight, y+5, x2-5, y+nameAndEnableHeight, new StringFieldOption("any").setTextLengthRestraints(1, 64));
             if(newName.applied)
                 active.name = newName?.text;
             return height;

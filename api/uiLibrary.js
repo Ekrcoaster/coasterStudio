@@ -374,6 +374,98 @@ const UI_UTILITY = {
 
 let widgetCacheData = {}
 
+class StringFieldOption {
+    /**@typedef {("insert-regex-here"|"alphabet_only"|"numbers_only"|"any")} StringFieldFormatType */
+    /**@typedef {("single"|"double")} StringFieldClickMethod */
+
+    /**@type {StringFieldFormatType} */
+    format = "any";
+
+    minLength = 0;
+    maxLength = Infinity;
+
+    /**@type {Number} what to multiply to round */
+    roundDecimalPlaces = 10000;
+
+    /**@type {StringFieldClickMethod} */
+    clickMethod = "single";
+
+    /**@param {StringFieldFormatType} format */
+    constructor(format) {
+        this.format = format || "any";
+        this.minLength = 0;
+        this.maxLength = Infinity;
+        this.roundDecimalPlaces = 10000;
+        this.clickMethod = "single";
+    }
+
+    doesStringMatch(text) {
+        return this._matchFormat(text) && this._matchLength(text);
+    }
+
+    _matchFormat(text) {
+        if(this.format == "any") return true;
+
+        // check if this string is for numbers only
+        if(this.format == "numbers_only") {
+            let numbers = "0123456789.";
+            for(let c = 0; c < text.length; c++) {
+                let index = numbers.indexOf(text[c]);
+                if(index == -1) return false;
+            }
+            return true;
+        }
+
+        // check if this string is alphabet only
+        if(this.format == "alphabet_only") {
+            for(let c = 0; c < text.length; c++) {
+                let index = alphabet.indexOf(text[c]);
+                if(index == -1) return false;
+            }
+            return true;
+        }
+
+        // otherwise its regex
+        return text.match(this.format);
+    }
+
+    _matchLength(text) {
+        return text.length >= this.minLength && text.length <= this.maxLength;
+    }
+
+    parseAndRound(stringNumber) {
+        return Math.round(parseFloat(stringNumber) * this.roundDecimalPlaces) / this.roundDecimalPlaces;
+    }
+
+    setTextLengthRestraints(min, max) {
+        this.minLength = min;
+        this.maxLength = max;
+        return this;
+    }
+
+    /**@param {StringFieldFormatType} format */
+    setFormat(format) {
+        this.format = format;
+        return this;
+    }
+
+    setRoundDecimalPlaces(places) {
+        this.roundDecimalPlaces = 10 ** places;
+        return this;
+    }
+
+    makeInt() {
+        return this.setRoundDecimalPlaces(0);
+    }
+
+    /**@param {StringFieldClickMethod} type */
+    setClickMethod(type) {
+        this.clickMethod = type;
+        return this;
+    }
+}
+
+
 const UI_WIDGET = {
     /**
      * @param {string} id this is what will be assigned to the gizmo
@@ -516,7 +608,7 @@ const UI_WIDGET = {
 
         let textColor = isScene ? COLORS.hierarchyWindowSceneGameObjectText : COLORS.hierarchyWindowGameObjectNormalText;
         if(!obj.activeInHierarchy) textColor = COLORS.hierarchyWindowGameObjectDisabledText;
-        let newName = UI_WIDGET.editableText("edit"+id, obj.name, true, x1+offset, y1, x2, y1+height, textColor, ["NOT_EMPTY"], "doubleClick");
+        let newName = UI_WIDGET.editableText("edit"+id, obj.name, true, x1+offset, y1, x2, y1+height, textColor, new StringFieldOption("any").setTextLengthRestraints(1, 64).setClickMethod("double"));
 
         return {
             height: height,
@@ -588,17 +680,19 @@ const UI_WIDGET = {
 
     /**
      * @param {DrawTextOption} draw
-     * @param {("...regexhere..."|"NUMBERS_ONLY"|"ALPHABET_ONLY"|"NOT_EMPTY")[]} rules
+     * @param {StringFieldOption} option
      * @param {("standard"|"doubleClick")} clickMethod
      * */
-    editableText: function(id, text, isEditable, x1, y1, x2, y2, draw, rules = [], clickMethod = "standard") {
+    editableText: function(id, text, isEditable, x1, y1, x2, y2, draw, option) {
+        if(option == null) option = new StringFieldOption();
+
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
         let meta = widgetCacheData[id] || {};
 
         let appliedChange = false;
         // even if we want a double click, if we are active we should still cancel from a single outside click
-        if(meta.isActive) clickMethod = "standard";
-        let click = (clickMethod == "standard" ? mouse.isToolFirstUp(id) : mouse.isToolDoubleClick(id)) && isEditable;
+        if(meta.isActive) option.clickMethod = "single";
+        let click = (option.clickMethod == "single" ? mouse.isToolFirstUp(id) : mouse.isToolDoubleClick(id)) && isEditable;
 
         let tempText = text;
         if(meta.tempText != null) tempText = meta.tempText;
@@ -705,7 +799,7 @@ const UI_WIDGET = {
             widgetCacheData[id] = meta;
 
             if((click && !mouse.isHoveringOver(x1, y1, x2, y2)) || keyboard.downFirst.has("ENTER")) {
-                if(canSaveText(meta.tempText))
+                if(option.doesStringMatch(meta.tempText))
                     text = meta.tempText;
                 delete widgetCacheData[id];
                 appliedChange = true;
@@ -720,48 +814,14 @@ const UI_WIDGET = {
             height: y2-y1,
             applied: appliedChange
         }
-
-        function canSaveText(tempText = "") {
-            for(let i = 0; i < rules.length; i++) {
-                switch(rules[i]) {
-                    default:
-                    if(!tempText.match(rules[i]))
-                        return false;
-                    break;
-
-                    case "NUMBERS_ONLY":
-                        let numbers = "0123456789";
-                        for(let c = 0; c < tempText.length; c++) {
-                            let index = numbers.indexOf(tempText[c]);
-                            if(index == -1) return false;
-                        }
-                    break;
-                    
-                    case "ALPHABET_ONLY":
-                        let alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-                        for(let c = 0; c < tempText.length; c++) {
-                            let index = alphabet.indexOf(tempText[c]);
-                            if(index == -1) return false;
-                        }
-                    break;
-                    case "NOT_EMPTY":
-                        if(tempText.length == "") return false;
-                    break;
-                }
-            }
-
-            return true;
-        }
     },
 
-    /**
-     * @param {("...regexhere..."|"NUMBERS_ONLY"|"ALPHABET_ONLY"|"NOT_EMPTY")[]} rules
-     * */
-    editorGUIString: function(id, label, text, isEditable, x1, y1, x2, y2, rules = []) {
+    /** @param {StringFieldOption} option */
+    editorGUIString: function(id, label, text, isEditable, x1, y1, x2, y2, option) {
         let labelOffset = this.editorGUILabelPre(label, x1, y1, x2, y2);
         
         UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
-        return this.editableText(id, text, isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, ["NOT_EMPTY", ...rules]);
+        return this.editableText(id, text, isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, option);
     },
     editorGUILabelPre: function(label, x1, y1, x2, y2, divide = 2) {
         if(label) {
@@ -771,18 +831,20 @@ const UI_WIDGET = {
         }
         return 0;
     },
-    editorGUINumber: function(id, label, number, isEditable, x1, y1, x2, y2, rules = [], divide = 2) {
+    /** @param {StringFieldOption} option */
+    editorGUINumber: function(id, label, number, isEditable, x1, y1, x2, y2, option, divide = 2) {
+        if(option == null) option = new StringFieldOption("numbers_only");
         let labelOffset = this.editorGUILabelPre(label, x1, y1, x2, y2, divide);
         
         UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
-        let res = this.editableText(id, number + "", isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, ["NUMBERS_ONLY", ...rules]);
-        res.text = parseFloat(res.text);
+        let res = this.editableText(id, number + "", isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, option.setFormat("numbers_only"));
+        res.text = option.parseAndRound(res.text);
         if(isNaN(res.text))
             res.text = 0;
         return res;
     },
-    /**@param {Vector2} vector */
-    editorGUIVector2: function(id, label, vector, isEditable, x1, y1, x2, y2, rules = []) {
+    /**@param {Vector2} vector @param {StringFieldOption} option  */
+    editorGUIVector2: function(id, label, vector, isEditable, x1, y1, x2, y2, option) {
         let spacing = 20;
         let half = (x2-x1)/2-spacing;
         let topSpacing = 0;
@@ -792,8 +854,8 @@ const UI_WIDGET = {
             this.editorGUILabelPre(label, x1, y1, x2, y1+topSpacing*0.5, 1);
             leftSpacing = 25;
         }
-        vector.x = this.editorGUINumber(id + "x", "X", vector.x, isEditable, x1+leftSpacing, y1+topSpacing, x1+half, y2, rules, 4)?.text;
-        vector.y = this.editorGUINumber(id + "y", "Y", vector.y, isEditable, x1+half+spacing+leftSpacing, y1+topSpacing, x2, y2, rules, 4)?.text;
+        vector.x = this.editorGUINumber(id + "x", "X", vector.x, isEditable, x1+leftSpacing, y1+topSpacing, x1+half, y2, option, 4)?.text;
+        vector.y = this.editorGUINumber(id + "y", "Y", vector.y, isEditable, x1+half+spacing+leftSpacing, y1+topSpacing, x2, y2, option, 4)?.text;
         return vector;
     },
 
