@@ -1,5 +1,5 @@
-class UILayout {
-    /**@type {UILayoutElement[]} */
+class UIAutoLayout {
+    /**@type {UIAutoLayoutElement[]} */
     elements;
 
     enabled;
@@ -12,41 +12,41 @@ class UILayout {
     }
 
     /**
-     * @callback UILayoutNumberField gets the number
+     * @callback UIAutoLayoutNumberField gets the number
      * @returns {Number}
      */
     /**
-     * @param {UILayoutNumberField} number 
+     * @param {UIAutoLayoutNumberField} number 
      * @param {StringFieldOption} option */
     numberField(label, number = () => {}, option, callback = (number) => {}) {
-        this.elements.push(new UILayoutElement(this.indent, ["id", label, number, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUINumber, (res) => {
+        this.elements.push(new UIAutoLayoutElement(this.indent, ["id", label, number, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUINumber, (res) => {
             if(res.applied)
                 callback(res.text);
         }));
     }
 
     /**
-     * @callback UILayoutVector2Field gets the vector 2
+     * @callback UIAutoLayoutVector2Field gets the vector 2
      * @returns {Vector2}
      */
     /**
-     * @param {UILayoutVector2Field} vector
+     * @param {UIAutoLayoutVector2Field} vector
      * @param {StringFieldOption} option */
     vector2Field(label, vector, option, callback = (vector) => {}) {
-        this.elements.push(new UILayoutElement(this.indent, ["id", label, vector, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUIVector2, (res) => {
+        this.elements.push(new UIAutoLayoutElement(this.indent, ["id", label, vector, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUIVector2, (res) => {
             if(res != vector)
                 callback(res);
         }));
     }
 
      /**
-     * @callback UILayoutColorField gets the color
+     * @callback UIAutoLayoutColorField gets the color
      * @returns {Color}
      */
     /**
-     * @param {UILayoutColorField} color */
+     * @param {UIAutoLayoutColorField} color */
     colorField(label, color, callback = (color) => {}) {
-        this.elements.push(new UILayoutElement(this.indent, ["id", label, color, this.enabled, "x1", "y1", "x2", "y2"], UI_WIDGET.editorGUIColor, (col) => {
+        this.elements.push(new UIAutoLayoutElement(this.indent, ["id", label, color, this.enabled, "x1", "y1", "x2", "y2"], UI_WIDGET.editorGUIColor, (col) => {
             if(col != color)
                 callback(col);
         }));
@@ -68,7 +68,7 @@ class UILayout {
     }
 }
 
-class UILayoutElement {
+class UIAutoLayoutElement {
 
     params;
     renderFunction;
@@ -83,7 +83,7 @@ class UILayoutElement {
         this.params = params;
         this.renderFunction = renderFunction;
         this.callback = callback;
-        this.id = "uiLayout" + UTILITY.generateCode(48);
+        this.id = "uIAutoLayout" + UTILITY.generateCode(48);
         this.padding = 5;
     }
 

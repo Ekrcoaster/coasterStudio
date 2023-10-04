@@ -1,11 +1,11 @@
 class EditorShapeRenderer extends EditorComponent {
 
-    /**@type {UILayout} */
+    /**@type {UIAutoLayout} */
     layout;
 
     constructor(target) {
         super(target);
-        this.layout = new UILayout();
+        this.layout = new UIAutoLayout();
 
         this.layout.colorField("Fill Color", () => this.target.fillColor, (color) => {this.target.setFillColor(color);});
         this.layout.colorField("Outline Color", () => this.target.outlineColor, (color) => {this.target.setOutlineColor(color);});

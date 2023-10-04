@@ -1,11 +1,11 @@
 class EditorTransformComponent extends EditorComponent {
 
-    /**@type {UILayout} */
+    /**@type {UIAutoLayout} */
     layout;
 
     constructor(target) {
         super(target);
-        this.layout = new UILayout();
+        this.layout = new UIAutoLayout();
 
         /**@type {Transform} */
         let transform = this.target;
