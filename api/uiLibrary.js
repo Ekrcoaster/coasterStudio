@@ -8,10 +8,14 @@ class Color {
 
     constructor(stringColor = "") {
         if(typeof(stringColor) == "object") {
-            this.r = stringColor.r || 255;
-            this.g = stringColor.g || 255;
-            this.b = stringColor.b || 255;
-            this.a = stringColor.a || 1;
+            this.r = stringColor.r;
+            this.g = stringColor.g;
+            this.b = stringColor.b;
+            this.a = stringColor.a;
+            if(this.r == null) this.r = 255;
+            if(this.g == null) this.g = 255;
+            if(this.b == null) this.b = 255;
+            if(this.a == null) this.a = 1;
             this.isInvalid = false;
 
         } else {
@@ -78,55 +82,128 @@ class Color {
         return this;
     }
     
-    getHSL() {
+    /**@returns {{hue: 0, sat: 0, val: 0}} */
+    getHSV() {
         let r = this.r / 255;
         let g = this.g / 255;
         let b = this.b / 255;
-        var max = Math.max(r, g, b), min = Math.min(r, g, b);
-        var h, s, l = (max + min) / 2;
-        if(max == min){
-            h = s = 0; // achromatic
-        }else{
-            var d = max - min;
-            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-            switch(max){
-                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                case g: h = (b - r) / d + 2; break;
-                case b: h = (r - g) / d + 4; break;
-            }
-            h /= 6;
-        }
-        return {
-            "h": h*360,
-            "s": s,
-            "l": l
-        }
-    }
 
-    setHSL(h, s, l) {
-        h /= 360;
-        if (s === 0) {
-            this.r = this.g = this.b = l; // achromatic
+    
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const delta = max - min;
+    
+        let h, s, v;
+    
+        if (delta === 0) {
+            h = 0;
+        } else if (max === r) {
+            h = ((g - b) / delta) % 6;
+        } else if (max === g) {
+            h = (b - r) / delta + 2;
         } else {
-            const hue2rgb = (p, q, t) => {
-                if (t < 0) t += 1;
-                if (t > 1) t -= 1;
-                if (t < 1 / 6) return p + (q - p) * 6 * t;
-                if (t < 1 / 2) return q;
-                if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-                return p;
-            };
-            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-            const p = 2 * l - q;
-            this.r = Math.round(hue2rgb(p, q, h + 1 / 3)*255);
-            this.g =  Math.round(hue2rgb(p, q, h)*255);
-            this.b =  Math.round(hue2rgb(p, q, h - 1 / 3)*255);
+            h = (r - g) / delta + 4;
         }
+    
+        h = Math.round(h * 60);
+        if (h < 0) {
+            h += 360;
+        }
+    
+        s = max === 0 ? 0 : delta / max;
+        v = max;
+    
+        return { hue: h, sat:s, val:v };
+    }
+    
+    setHSV(hue, sat, val) {
+        let h = hue % 360;
+        let c = val * sat;
+        let x = c * (1-Math.abs(((h / 60) % 2) - 1));
+        let m = val - c;
+        
+        let r, g, b;
+        if(h < 60) {
+            r = c;
+            g = x;
+            b = 0;
+        } else if(h < 120) {
+            r = x;
+            g = c;
+            b = 0;
+        } else if(h < 180) {
+            r = 0;
+            g = c;
+            b = x;
+        } else if(h < 240) {
+            r = 0;
+            g = x;
+            b = c;
+        } else if(h < 300) {
+            r = x;
+            g = 0;
+            b = c;
+        } else {
+            r = c;
+            g = 0;
+            b = x;
+        }
+
+        this.r = Math.round((r+m) * 255);
+        this.g = Math.round((g+m) * 255);
+        this.b = Math.round((b+m) * 255);
+    
+        return this;
+    }
+    
+    /**
+     * @param {Color} other 
+     * @param {Number} time 
+     * @returns 
+     */
+    lerp(other, time) {
+        return UI_UTILITY.lerpColor(this, other, time);
+    }
+}
+
+// this doenst work??
+class Gradient {
+    /**@type {("linear"|"radial")} */
+    type;
+    /**@type {Number} */
+    angle;
+
+    /**@type {{pos: 0, color: Color}[]} */
+    colorStops = [];
+
+    /**@param {("linear"|"radial")} type */
+    constructor(type, angle = 0) {
+        this.type = type;
+        this.angle = angle;
     }
 
-    setHue(h) {
-        let hsl = this.getHSL();
-        this.setHSL(h, hsl.s, hsl.l);
+    /**@param {Number} pos @param {Color} color */
+    addColorStop(pos, color) {
+        this.colorStops.push({pos: pos, color: new Color(color)});
+        return this;
+    }
+
+    createGradient(x1, y1, x2, y2, r) {
+        if(this.type == "linear") {
+            let grad = ctx.createLinearGradient(x1, y1, x2, y2);
+            for(let i = 0; i < this.colorStops.length; i++)
+                grad.addColorStop(this.colorStops[i].pos, this.colorStops[i].color.toRGBA());
+            return grad;
+        } else {
+            let grad = ctx.createRadialGradient(x1, y1, r, x2, y2);
+            for(let i = 0; i < this.colorStops.length; i++)
+                grad.addColorStop(this.colorStops[i].pos, this.colorStops[i].color.toRGBA());
+            return grad;
+        }
+
+        function transformAngle(x) {
+
+        }
     }
 }
 
@@ -136,6 +213,11 @@ class DrawShapeOption {
     /**@type {Color} */
     outlineColor;
     outlineWidth = 0;
+
+    /**@type {Gradient} */
+    fillGradient;
+    /**@type {Gradient} */
+    outlineGradient;
 
     roundedCorners = [];
     highQualityRendering = true;
@@ -150,6 +232,8 @@ class DrawShapeOption {
         this.roundedCorners = [];
         this.highQualityRendering = true;
         this.isMask = false;
+        this.fillGradient = null;
+        this.outlineGradient = null;
     }
 
     /**@param {...Number} radius*/
@@ -171,11 +255,19 @@ class DrawShapeOption {
         return this;
     }
 
-    getFillColor() { return this.fillColor.toRGBA();}
-    shouldFill() { return !this.fillColor.isInvalid; }
+    getFillColor(x1, y1, x2, y2, r) {
+        if(this.fillGradient)
+            return this.fillGradient.createGradient(x1, y1, x2, y2, r);
+        return this.fillColor.toRGBA();
+    }
+    shouldFill() { return !this.fillColor.isInvalid && this.fillGradient == null; }
     setFillColor(fillColor) {this.fillColor = fillColor;}
 
-    getStrokeStyle() { return this.outlineColor.toRGBA(); }
+    getStrokeStyle(x1, y1, x2, y2, r) { 
+        if(this.outlineGradient)
+            return this.outlineGradient.createGradient(x1, y1, x2, y2, r);
+        return this.outlineColor.toRGBA(); 
+    }
     getStrokeWidth() { return this.outlineWidth; }
     setStrokeWidth(width) {this.outlineWidth = width; }
     shouldStroke() { return this.outlineWidth > 0; }
@@ -188,6 +280,18 @@ class DrawShapeOption {
     setAlpha(alpha) {
         this.fillColor.setAlpha(alpha);
         this.outlineColor.setAlpha(alpha);
+        return this;
+    }
+
+    /**@param {Gradient} gradient  */
+    setFillGradient(gradient) {
+        this.fillGradient = gradient;
+        return this;
+    }
+
+    /**@param {Gradient} gradient  */
+    setOutlineGradient(gradient) {
+        this.outlineGradient = gradient;
         return this;
     }
 }
@@ -296,9 +400,13 @@ const UI_LIBRARY = {
         if (shape == null) shape = new DrawShapeOption();
 
         UI_UTILITY.compileFilters(filters);
-        ctx.strokeStyle = shape.getStrokeStyle();
+        let bounds = {x1: 0, y1: 0, x2: 0, y2: 0};
+        if(shape.fillGradient != null || shape.outlineGradient != null) {
+            bounds = UI_UTILITY.calculateBounds(points);
+        }
+        ctx.strokeStyle = shape.getStrokeStyle(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
         ctx.lineWidth = shape.getStrokeWidth();
-        ctx.fillStyle = shape.getFillColor();
+        ctx.fillStyle = shape.getFillColor(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
 
         //ctx.moveTo(points[0].x, points[0].y);
         //ctx.beginPath();
@@ -457,6 +565,34 @@ const UI_LIBRARY = {
     },
     /**
      * 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     * @param {Color} topLeft 
+     * @param {Color} topRight 
+     * @param {Color} bottomLeft 
+     * @param {Color} bottomRight 
+     */
+    drawGradientSquare: function(x1, y1, x2, y2, topLeft, topRight, bottomLeft, bottomRight) {
+        topLeft = new Color(topLeft);
+        topRight = new Color(topRight);
+        bottomLeft = new Color(bottomLeft);
+        bottomRight = new Color(bottomRight);
+        for(let y = y1; y < y2; y++) {
+            let percent = (y-y1)/(y2-y1);
+            let left = UI_UTILITY.lerpColor(topLeft, bottomLeft, percent).toRGBA();
+            let right = UI_UTILITY.lerpColor(topRight, bottomRight, percent).toRGBA();
+            ctx.fillStyle = ctx.createLinearGradient(x1, y1, x2, y1);
+            ctx.fillStyle.addColorStop(0, left);
+            ctx.fillStyle.addColorStop(1, right);
+            ctx.beginPath();
+            ctx.fillRect(x1, y, (x2-x1), 1);
+            ctx.fill();
+        }
+    },
+    /**
+     * 
      * @param {String} text 
      * @param {Number} x 
      * @param {Number} y 
@@ -567,5 +703,49 @@ const UI_UTILITY = {
         }
         
         return Math.atan2(mousePos.x, mousePos.y)* (180/Math.PI);
+    },
+    calculateBounds: function(points) {
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+
+        for(let i = 0; i < points.length; i++) {
+            if(points[i].x < minX)
+                minX = points[i].x;
+
+            if(points[i].y < minY)
+                minY = points[i].y;
+
+            if(points[i].x > maxX)
+                maxX = points[i].x;
+
+            if(points[i].y > maxY)
+                maxY = points[i].y;
+        }
+
+        return {
+            x1: minX,
+            y1: minY,
+            x2: maxX,
+            y2: maxY
+        }
+    },
+    lerp(a, b, amt) {
+        return a + (b-a)*amt;
+    },
+    /**
+     * lersp between 2 colors
+     * @param {Color} a 
+     * @param {Color} b 
+     * @param {Number} amount 
+     */
+    lerpColor: function(a, b, amount) { 
+        return new Color({
+            r: UI_UTILITY.lerp(a.r, b.r, amount),
+            g: UI_UTILITY.lerp(a.g, b.g, amount),
+            b: UI_UTILITY.lerp(a.b, b.b, amount),
+            a: UI_UTILITY.lerp(a.a, b.a, amount)
+        });
     }
 }

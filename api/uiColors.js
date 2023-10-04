@@ -43,5 +43,5 @@ const COLORS = {
     sceneGridColor: new DrawLineOption("#ffffff1b", 5),
     sceneGridCenterColor: new DrawShapeOption("#ffffff1b", "#ffffff1b", 5),
 
-    colorPickerHueRotate: new DrawShapeOption("#181818", "#ffffff", 3)
+    colorPickerHueRotate: new DrawShapeOption("#18181893", "#ffffff", 3)
 }

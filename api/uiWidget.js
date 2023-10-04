@@ -514,60 +514,51 @@ const UI_WIDGET = {
         return color;
 
         function createWheelModal() {
+            let hsv = color.getHSV();
             return editor.createModal(new EditorModal(id+"modal", 350, 512, {
                 initColor: new Color(color),
                 color: color,
-                hue: color.getHSL().h
+                hue: hsv.hue,
+                sat: hsv.sat,
+                val: hsv.val
             },(x1, y1, x2, y2, data) => {
-                handleWheel({
+                let isFree = handleSatBox({
+                    centerX: (x2+x1)/2,
+                    centerY: (y2+y1)/2+(x2-x1)/-4+15,
+                    size: ((x2-x1)/2-15)/2,
+                    movingInsideGizmo: false
+                });
+
+                handleWheel(isFree, {
                     x: (x2+x1)/2,
                     y: (y2+y1)/2,
                     yOffset: (x2-x1)/-4+15,
                     radius: (x2-x1)/2-15
                 });
 
-                handleSatBox({
-                    centerX: (x2+x1)/2,
-                    centerY: (y2+y1)/2+(x2-x1)/-4+15,
-                    size: ((x2-x1)/2-15)/2
-                });
-                
-                function handleWheel(wheelSpace = {x: 0, y: 0, yOffset: 0, radius: 0}) {
+                handleColorPreview((y2+y1)/2 + (x2-x1)/4 +15+10);
+
+                function handleWheel(isMouseFree, wheelSpace = {x: 0, y: 0, yOffset: 0, radius: 0}) {
                     // draw the weel
-                    for(let a = 0; a <= 360; a++) {
+                    for(let a = 0; a <= 360; a += 5) {
                         let inAngle = (a - 2)*DEGREE_TO_RADIANS;
                         let outAngle = (a*DEGREE_TO_RADIANS);
 
                         ctx.strokeStyle = `hsl(${a}, 100%, 50%)`;
                         ctx.beginPath();
                         ctx.arc(wheelSpace.x, wheelSpace.y+wheelSpace.yOffset, wheelSpace.radius, inAngle, outAngle);
-                        ctx.arc(wheelSpace.x, wheelSpace.y+wheelSpace.yOffset, wheelSpace.radius*0.8, inAngle, outAngle);
                         ctx.stroke();
                     }
 
                     let hoverInWheel = mouse.isHoveringOver(wheelSpace.x-wheelSpace.radius, wheelSpace.y-wheelSpace.radius+wheelSpace.yOffset, wheelSpace.x+wheelSpace.radius, wheelSpace.y+wheelSpace.radius+wheelSpace.yOffset);
-                    if(hoverInWheel && mouse.down) {
+                    if(hoverInWheel && mouse.down && isMouseFree) {
                         data.hue = 180-mouse.angleTo(wheelSpace.x, wheelSpace.y+wheelSpace.yOffset)+90;
-                        data.color.setHue(data.hue);
+                        data.color.setHSV(data.hue, data.sat, data.val);
                     }
 
-                    UI_LIBRARY.drawRectCoords(
-                        wheelSpace.x - wheelSpace.radius, 
-                        wheelSpace.y + wheelSpace.yOffset + wheelSpace.radius + 10, 
-                        wheelSpace.x,
-                        wheelSpace.y + wheelSpace.yOffset + wheelSpace.radius + 50,
-                        0, new DrawShapeOption(data.color).setRoundedCorners(10, 0, 0, 10));
-
-                    UI_LIBRARY.drawRectCoords(
-                        wheelSpace.x, 
-                        wheelSpace.y + wheelSpace.yOffset + wheelSpace.radius + 10, 
-                        wheelSpace.x + wheelSpace.radius,
-                        wheelSpace.y + wheelSpace.yOffset + wheelSpace.radius + 50,
-                        0, new DrawShapeOption(data.initColor).setRoundedCorners(0, 10, 10, 0));
-
                     let hueGizmo = {
-                        "x": (Math.cos(data.hue * DEGREE_TO_RADIANS)*wheelSpace.radius*0.9) + wheelSpace.x,
-                        "y": (Math.sin(data.hue * DEGREE_TO_RADIANS)*wheelSpace.radius*0.9) + wheelSpace.y+wheelSpace.yOffset,
+                        "x": (Math.cos(data.hue  * DEGREE_TO_RADIANS)*wheelSpace.radius*0.9) + wheelSpace.x,
+                        "y": (Math.sin(data.hue  * DEGREE_TO_RADIANS)*wheelSpace.radius*0.9) + wheelSpace.y+wheelSpace.yOffset,
                         "radius": 30
                     }
 
@@ -576,8 +567,67 @@ const UI_WIDGET = {
                 }
 
                 function handleSatBox(space = {centerX: 0, centerY: 0, size: 0}) {
-                    UI_LIBRARY.drawRectCoords(space.centerX-space.size, space.centerY-space.size,
-                        space.centerX + space.size, space.centerY+space.size, 0, new DrawShapeOption("#e92727"));
+                    UI_LIBRARY.drawGradientSquare(space.centerX-space.size, space.centerY-space.size,
+                        space.centerX + space.size, space.centerY+space.size, "#ffffff", new Color().setHSV(data.hue, 1, 1), "#000000", "#000000");
+                    
+                    let hoverInWheel = {
+                        x: (mouse.x - space.centerX-space.size) / -(space.size*2),
+                        y: (mouse.y - space.centerY-space.size) / -(space.size*2),
+                    };
+
+                    let isInside = (hoverInWheel.x >= 0 && hoverInWheel.x <= 1) && (hoverInWheel.y >= 0 && hoverInWheel.y <= 1) || data.movingInsideGizmo;
+
+                    hoverInWheel.x = Math.min(1, Math.max(0, hoverInWheel.x));
+                    hoverInWheel.y = Math.min(1, Math.max(0, hoverInWheel.y));
+
+                    if(isInside && mouse.down) {
+                        data.sat = (1-hoverInWheel.x);
+                        data.val = (hoverInWheel.y);
+                        data.movingInsideGizmo = true;
+                        data.color.setHSV(data.hue, data.sat, data.val);
+                    }
+                    if(!mouse.down)
+                        data.movingInsideGizmo = false;
+
+                    let satLightGizmo = {
+                        x: space.centerX-space.size + (space.size * 2 * (data.sat)),
+                        y: space.centerY-space.size + (space.size * 2 * (1-data.val)),
+                        radius: 10
+                    }
+                    UI_LIBRARY.drawRectCoords(satLightGizmo.x-satLightGizmo.radius, satLightGizmo.y-satLightGizmo.radius,
+                        satLightGizmo.x+satLightGizmo.radius, satLightGizmo.y+satLightGizmo.radius, 0, COLORS.colorPickerHueRotate);
+
+                    return !isInside;
+                }
+
+                function handleColorPreview(wheelHeight) {
+                    UI_LIBRARY.drawRectCoords(
+                        x1+10, 
+                        wheelHeight, 
+                        (x2+x1)/2,
+                        wheelHeight + 40,
+                        0, new DrawShapeOption(data.color).setRoundedCorners(20, 0, 0, 20));
+
+                    UI_LIBRARY.drawRectCoords(
+                        (x2+x1)/2,
+                        wheelHeight, 
+                        x2-10,
+                        wheelHeight + 40,
+                        0, new DrawShapeOption(data.initColor).setRoundedCorners(0, 20, 20, 0));
+
+                    if(mouse.isHoveringOver((x2+x1)/2,
+                        wheelHeight, 
+                        x2-10,
+                        wheelHeight + 40,) && mouse.clickDown) {
+                            data.color.setR(data.initColor.r);
+                            data.color.setG(data.initColor.g);
+                            data.color.setB(data.initColor.b);
+                            let hsv = data.color.getHSV();
+                            data.hue = hsv.hue;
+                            data.sat = hsv.sat;
+                            data.val = hsv.val;
+                        }
+
                 }
                 
             }, (reason, data) => {
