@@ -34,7 +34,7 @@ class UIAutoLayout {
      * @param {StringFieldOption} option */
     vector2Field(label, vector, option, callback = (vector) => {}) {
         this.elements.push(new UIAutoLayoutElement(this.indent, ["id", label, vector, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUIVector2, (res) => {
-            if(res != vector)
+            if(res != vector())
                 callback(res);
         }));
     }
@@ -47,8 +47,21 @@ class UIAutoLayout {
      * @param {UIAutoLayoutColorField} color */
     colorField(label, color, callback = (color) => {}) {
         this.elements.push(new UIAutoLayoutElement(this.indent, ["id", label, color, this.enabled, "x1", "y1", "x2", "y2"], UI_WIDGET.editorGUIColor, (col) => {
-            if(col != color)
+            if(col != color())
                 callback(col);
+        }));
+    }
+
+    /**
+     * @callback UIAutoLayoutBoolField gets the bool
+     * @returns {boolean}
+     */
+    /**
+     * @param {UIAutoLayoutBoolField} isOn */
+    boolField(label, isOn, callback = (isOn) => {}) {
+        this.elements.push(new UIAutoLayoutElement(this.indent, ["id", label, isOn, this.enabled, "x1", "y1", "x2", "y2"], UI_WIDGET.editorGUIToggle, (col) => {
+            if(col.isOn != isOn())
+                callback(col.isOn);
         }));
     }
 

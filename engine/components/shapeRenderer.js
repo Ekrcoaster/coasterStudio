@@ -6,12 +6,18 @@ class ShapeRenderer extends Component {
     outlineColor;
     /**@type {Number} */
     outlineWidth;
+    /**@type {Number} */
+    borderRadius;
+    /**@type {boolean} */
+    outlineWorldSpace;
 
     constructor() {
         super("Shape Renderer");
         this.fillColor = new Color("#31dba8");
         this.outlineColor = new Color("#ffffff");
         this.outlineWidth = 5;
+        this.borderRadius = 20;
+        this.outlineWorldSpace = true;
     }
 
     /**@param {SceneRendererTools} tools */
@@ -23,7 +29,12 @@ class ShapeRenderer extends Component {
             this.transform.localToWorldSpace(new Vector2(-1, 1)),
         ]
 
-        tools.polygon(points, new DrawShapeOption(this.fillColor, this.outlineColor, this.outlineWidth).setRoundedCorners(20));
+        let outlineWidth = this.outlineWidth;
+        if(this.outlineWorldSpace)
+            outlineWidth *= tools.sceneWindow.getRealPixelTileSize() / tools.sceneWindow.pixelTileSize;
+        tools.polygon(points, 
+            new DrawShapeOption(this.fillColor, this.outlineColor, outlineWidth)
+            .setRoundedCorners(this.borderRadius));
     }
 
     /**@param {Color} color */
@@ -31,4 +42,6 @@ class ShapeRenderer extends Component {
     /**@param {Color} color */
     setOutlineColor(color) {this.outlineColor = color;}
     setOutlineWidth(width) {this.outlineWidth = width;}
+    setBorderRadius(radius) {this.borderRadius = radius;}
+    setOutlineWorldSpace(boo) {this.outlineWorldSpace = boo;}
 }

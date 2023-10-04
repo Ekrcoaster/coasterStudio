@@ -10,6 +10,10 @@ class EditorShapeRenderer extends EditorComponent {
         this.layout.colorField("Fill Color", () => this.target.fillColor, (color) => {this.target.setFillColor(color);});
         this.layout.colorField("Outline Color", () => this.target.outlineColor, (color) => {this.target.setOutlineColor(color);});
         this.layout.numberField("Outline Width", () => this.target.outlineWidth, new StringFieldOption("numbers_only"), (width) => {this.target.setOutlineWidth(width);});
+        this.layout.indent++;
+        this.layout.boolField("World Space", () => this.target.outlineWorldSpace, (outlineWorldSpace) => {this.target.setOutlineWorldSpace(outlineWorldSpace);});
+        this.layout.indent--;
+        this.layout.numberField("Border Radius", () => this.target.borderRadius, new StringFieldOption("numbers_only"), (width) => {this.target.setBorderRadius(width);});
     }
 
     onRender(x1, y1, x2, y2, width, height) {

@@ -25,7 +25,7 @@ class InspectorWindow extends EditorWindow {
 
             // create the toggle for the isActive
             let nameAndEnableHeight = 35;
-            let toggle = UI_WIDGET.toggle(t.container.id+"obToggle", active.isActive, x1+5, y+5, x1+nameAndEnableHeight, y+nameAndEnableHeight);
+            let toggle = UI_WIDGET.toggle(t.container.id+"obToggle", active.isActive, !active.isHeader, x1+5, y+5, x1+nameAndEnableHeight, y+nameAndEnableHeight);
             if(toggle.isOn != active.isActive && active.id != editor.activeScene.header.id)
                 active.setActive(toggle.isOn);
 

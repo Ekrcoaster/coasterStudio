@@ -39,7 +39,7 @@ class StringFieldOption {
 
         // check if this string is for numbers only
         if(this.format == "numbers_only") {
-            let numbers = "0123456789.";
+            let numbers = "0123456-789.";
             for(let c = 0; c < text.length; c++) {
                 let index = numbers.indexOf(text[c]);
                 if(index == -1) return false;
@@ -570,8 +570,8 @@ const UI_WIDGET = {
                     }
 
                     let hueGizmo = {
-                        "x": (Math.cos(data.hue  * DEGREE_TO_RADIANS)*wheelSpace.radius*0.9) + wheelSpace.x,
-                        "y": (Math.sin(data.hue  * DEGREE_TO_RADIANS)*wheelSpace.radius*0.9) + wheelSpace.y+wheelSpace.yOffset,
+                        "x": (Math.cos(data.hue  * DEGREE_TO_RADIANS)*wheelSpace.radius*0.87) + wheelSpace.x,
+                        "y": (Math.sin(data.hue  * DEGREE_TO_RADIANS)*wheelSpace.radius*0.87) + wheelSpace.y+wheelSpace.yOffset,
                         "radius": 30
                     }
 
@@ -649,16 +649,21 @@ const UI_WIDGET = {
         }
     },
 
-    toggle: function(id, isOn, x1, y1, x2, y2) {
+    editorGUIToggle: function(id, label, isOn, isEditable, x1, y1, x2, y2) {
+        let labelOffset = UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, 2);
+        return UI_WIDGET.toggle(id, isOn, isEditable, x1+labelOffset, y1, x1+labelOffset+(y2-y1), y2);
+    },
+
+    toggle: function(id, isOn, isEditable, x1, y1, x2, y2) {
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
         let click = mouse.isToolFirstUp(id);
 
-        if(click && hover)
+        if(click && hover && isEditable)
             isOn = !isOn;
 
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.toggleBoxEmpty);
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.toggleBoxEmpty.setAlpha(isEditable ? 0.8 : 0.5));
         if(isOn)
-            UI_LIBRARY.drawRectCoords(x1+2, y1+2, x2-2, y2-2, 0, COLORS.toggleBoxFull);
+            UI_LIBRARY.drawRectCoords(x1+2, y1+2, x2-2, y2-2, 0, COLORS.toggleBoxFull.setAlpha(isEditable ? 0.8 : 0.5));
 
         return {
             isOn: isOn

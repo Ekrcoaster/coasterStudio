@@ -76,8 +76,8 @@ class SceneWindow extends EditorWindow {
 
         this.screenScale += mouse.getScrollVelocity();
 
-        if(this.screenScale <= 0.1)
-            this.screenScale = 0.1;
+        if(this.screenScale <= 0.3)
+            this.screenScale = 0.3;
 
         //this.screenX -= mousePos.x * mouse.getScrollVelocity();
         //this.screenY -= mousePos.y * mouse.getScrollVelocity();
