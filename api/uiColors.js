@@ -6,6 +6,7 @@ const COLORS = {
     windowResizeHandlePress: new DrawShapeOption("#b0b0b0fe"),
 
     windowBackground: ()=>{ return new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10)},
+    windowModalBackground: ()=>{ return new DrawShapeOption("#323232ef", "#2c2c2c", 5).setRoundedCorners(20)},
     windowDarkerBackground: () => { return new DrawShapeOption("#33343489", "#1a1a1a", 2).setRoundedCorners(10)},
     windowTabLabel: new DrawTextOption(25, "default", "#979797", "center", "center"),
 

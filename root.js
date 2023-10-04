@@ -10,6 +10,10 @@ const RADIANS_TO_DEGREE = 180 / Math.PI;
 var editor;
 /** @type {Engine} */
 var engine;
+
+/**@type {AssetEngine} */
+var assets;
+
 /**@type {Mouse} */
 var mouse;
 /**@type {Keyboard} */
@@ -21,6 +25,8 @@ function Initalize() {
 
     editor = new Editor();
     engine = new Engine();
+    assets = new AssetEngine();
+
     engine.activeScene = new Scene("testingScene");
     editor.setActiveScene(engine.activeScene);
 

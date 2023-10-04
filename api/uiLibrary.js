@@ -371,6 +371,18 @@ class DrawLineOption {
     setLineCap(cap) {this.cap = cap;}
 }
 
+class DrawImageOption {
+    /**@type {{x: 0, y: 0}[]} */
+    uvs = []
+
+    constructor() {
+        this.uvs = [
+            {x: 0, y: 0},
+            {x: 1, y: 1},
+        ]
+    }
+}
+
 const UI_LIBRARY = {
 
     /** Renders a rect using x1, y1, x2, y2
@@ -590,6 +602,29 @@ const UI_LIBRARY = {
             ctx.fillRect(x1, y, (x2-x1), 1);
             ctx.fill();
         }
+    },
+    /**
+     * 
+     * @param {ImageAsset} imageAsset 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     * @param {DrawImageOption} draw
+     */
+    drawImage: function(imageAsset, x1, y1, x2, y2, draw) {
+        if(draw == null) draw = new DrawImageOption();
+        let firstCorner = {
+            x: draw.uvs[0].x * imageAsset.width,
+            y: draw.uvs[0].y * imageAsset.height
+        }
+        ctx.drawImage(imageAsset.image, 
+            firstCorner.x,
+            firstCorner.y,
+            draw.uvs[1].x * (imageAsset.width - firstCorner.x),
+            draw.uvs[1].y * (imageAsset.height - firstCorner.y),
+            x1, y1, (x2-x1), (y2-y1));
+            
     },
     /**
      * 

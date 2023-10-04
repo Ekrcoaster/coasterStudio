@@ -48,18 +48,18 @@ class EditorModal {
 
     calculateDesiredPosition() {
         let x = mouse.x-this.width/2;
-        if(x + this.width+10 > canvas.width)
-            x -= (x + this.width+10) - canvas.width;
+        if(x + this.width+20 > canvas.width)
+            x -= (x + this.width+20) - canvas.width;
 
         let y = mouse.y;
-        if(y + this.height+10 > canvas.height)
-            y -= (y + this.height+10) - canvas.height;
+        if(y + this.height+20 > canvas.height)
+            y -= (y + this.height+20) - canvas.height;
 
         return {x: x, y: y}
     }
 
     render(x1, y1, x2, y2) {
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.windowBackground());
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.windowModalBackground());
         this.onRender(x1, y1, x2, y2, this.data);
     }
 }

@@ -3,6 +3,7 @@ let widgetCacheData = {}
 class StringFieldOption {
     /**@typedef {("insert-regex-here"|"alphabet_only"|"numbers_only"|"any")} StringFieldFormatType */
     /**@typedef {("single"|"double")} StringFieldClickMethod */
+    /**@typedef {("normal"|"selectAll")} StringFieldFirstClickMethod */
 
     /**@type {StringFieldFormatType} */
     format = "any";
@@ -16,6 +17,9 @@ class StringFieldOption {
     /**@type {StringFieldClickMethod} */
     clickMethod = "single";
 
+    /**@type {StringFieldFirstClickMethod} */
+    firstClickMethod = "normal";
+
     /**@param {StringFieldFormatType} format */
     constructor(format) {
         this.format = format || "any";
@@ -23,6 +27,7 @@ class StringFieldOption {
         this.maxLength = Infinity;
         this.roundDecimalPlaces = 10000;
         this.clickMethod = "single";
+        this.firstClickMethod = "selectAll";
     }
 
     doesStringMatch(text) {
@@ -87,6 +92,14 @@ class StringFieldOption {
     /**@param {StringFieldClickMethod} type */
     setClickMethod(type) {
         this.clickMethod = type;
+        return this;
+    }
+
+    /**
+     * @param {StringFieldFirstClickMethod} type 
+     */
+    setFirstClickMethod(type) {
+        this.firstClickMethod = type;
         return this;
     }
 }
@@ -234,7 +247,7 @@ const UI_WIDGET = {
 
         let textColor = isScene ? COLORS.hierarchyWindowSceneGameObjectText : COLORS.hierarchyWindowGameObjectNormalText;
         if(!obj.activeInHierarchy) textColor = COLORS.hierarchyWindowGameObjectDisabledText;
-        let newName = UI_WIDGET.editableText("edit"+id, obj.name, true, x1+offset, y1, x2, y1+height, textColor, new StringFieldOption("any").setTextLengthRestraints(1, 64).setClickMethod("double"));
+        let newName = UI_WIDGET.editableText("edit"+id, obj.name, true, x1+offset, y1, x2, y1+height, textColor, new StringFieldOption("any").setTextLengthRestraints(1, 64).setClickMethod("double").setFirstClickMethod("normal"));
 
         return {
             height: height,
@@ -403,14 +416,20 @@ const UI_WIDGET = {
 
         if(click && hover) {
             meta.isActive = true;
-            meta.cursor = Math.round(Math.max(0, Math.min(1, (mouse.x - x1) / ((x1+space.width)-x1))) * tempText.length);
-            if(meta.tempText == null) meta.tempText = text;
             if(keyboard.isShiftDown) {
                 if(meta.select == -1)
                     meta.select = meta.cursor;
             } else {
                 meta.select = -1;
             }
+            if(option.firstClickMethod == "normal") {
+                meta.cursor = Math.round(Math.max(0, Math.min(1, (mouse.x - x1) / ((x1+space.width)-x1))) * tempText.length);
+            } else {
+                meta.cursor = tempText.length;
+                meta.select = 0;
+            }
+            if(meta.tempText == null) meta.tempText = text;
+            
         }
 
         if(meta.isActive) {
@@ -539,16 +558,10 @@ const UI_WIDGET = {
                 handleColorPreview((y2+y1)/2 + (x2-x1)/4 +15+10);
 
                 function handleWheel(isMouseFree, wheelSpace = {x: 0, y: 0, yOffset: 0, radius: 0}) {
-                    // draw the weel
-                    for(let a = 0; a <= 360; a += 5) {
-                        let inAngle = (a - 2)*DEGREE_TO_RADIANS;
-                        let outAngle = (a*DEGREE_TO_RADIANS);
-
-                        ctx.strokeStyle = `hsl(${a}, 100%, 50%)`;
-                        ctx.beginPath();
-                        ctx.arc(wheelSpace.x, wheelSpace.y+wheelSpace.yOffset, wheelSpace.radius, inAngle, outAngle);
-                        ctx.stroke();
-                    }
+                
+                    UI_LIBRARY.drawImage(assets.getAsset("editor/colorWheel"), 
+                        wheelSpace.x-wheelSpace.radius, wheelSpace.y-wheelSpace.radius+wheelSpace.yOffset,
+                        wheelSpace.x+wheelSpace.radius, wheelSpace.y+wheelSpace.radius+wheelSpace.yOffset)
 
                     let hoverInWheel = mouse.isHoveringOver(wheelSpace.x-wheelSpace.radius, wheelSpace.y-wheelSpace.radius+wheelSpace.yOffset, wheelSpace.x+wheelSpace.radius, wheelSpace.y+wheelSpace.radius+wheelSpace.yOffset);
                     if(hoverInWheel && mouse.down && isMouseFree) {

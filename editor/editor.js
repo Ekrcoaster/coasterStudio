@@ -68,6 +68,7 @@ class Editor {
                     this.closeActiveModal();
             }
         }
+        
     }
 
     /**
