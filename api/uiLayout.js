@@ -3,10 +3,12 @@ class UILayout {
     elements;
 
     enabled;
+    indent;
 
     constructor() {
         this.elements = [];
         this.enabled = true;
+        this.indent = 0;
     }
 
     /**
@@ -17,7 +19,7 @@ class UILayout {
      * @param {UILayoutNumberField} number 
      * @param {StringFieldOption} option */
     numberField(label, number = () => {}, option, callback = (res) => {}) {
-        this.elements.push(new UILayoutElement(["id", label, number, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUINumber, (res) => {
+        this.elements.push(new UILayoutElement(this.indent, ["id", label, number, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUINumber, (res) => {
             if(res.applied)
                 callback(res.text);
         }));
@@ -31,7 +33,7 @@ class UILayout {
      * @param {UILayoutVector2Field} vector
      * @param {StringFieldOption} option */
     vector2Field(label, vector, option, callback = (res) => {}) {
-        this.elements.push(new UILayoutElement(["id", label, vector, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUIVector2, (res) => {
+        this.elements.push(new UILayoutElement(this.indent, ["id", label, vector, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUIVector2, (res) => {
             if(res != vector)
                 callback(res);
         }));
@@ -61,8 +63,10 @@ class UILayoutElement {
     id;
 
     padding;
+    indent;
 
-    constructor(params, renderFunction, callback) {
+    constructor(indent, params, renderFunction, callback) {
+        this.indent = indent;
         this.params = params;
         this.renderFunction = renderFunction;
         this.callback = callback;
@@ -76,6 +80,7 @@ class UILayoutElement {
 
     render(x1, y1, x2) {
         let height = this.calculateSize();
+        x1 += this.calculateIndent();
         let newParams = [];
         for(let i = 0; i < this.params.length; i++) {
             if(this.params[i] == "x1") newParams.push(x1);
@@ -95,5 +100,9 @@ class UILayoutElement {
         let res = this.renderFunction(...newParams);
         this.callback(res);
         return height;
+    }
+
+    calculateIndent() {
+        return 20 * this.indent;
     }
 }
