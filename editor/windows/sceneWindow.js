@@ -40,8 +40,8 @@ class SceneWindow extends EditorWindow {
 
         // now render all of the selected components
         for(let i = 0; i < editor.selectedEditorComponentsCache.length; i++) {
-            if(editor.selectedEditorComponentsCache[i].target.gameObject.activeInHierarchy)
-                editor.selectedEditorComponentsCache[i].onSelectedSceneRender(editor.selectedComponentsCache[i].transform, this.tools);
+            if(editor.selectedEditorComponentsCache[i].target.gameObject.activeInHierarchy && editor?.selectedComponentsCache[i] != null)
+                editor.selectedEditorComponentsCache[i].onSelectedSceneRender(editor?.selectedComponentsCache[i]?.transform, this.tools);
         }
 
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, "scene" + this.container?.id);

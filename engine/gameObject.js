@@ -19,7 +19,10 @@ class GameObject {
     /**@type {Transform} */
     transform;
 
-    constructor(scene, name) {
+    isHeader;
+
+    constructor(scene, name, isHeader = false) {
+        this.isHeader = isHeader;
         this.scene = scene;
         this.id = UTILITY.generateCode(14);
         this.name = name;
@@ -33,6 +36,7 @@ class GameObject {
         this.transform = new Transform();
         this.addComponent(this.transform);
         this.transform._updateTransform();
+
     }
 
     /**

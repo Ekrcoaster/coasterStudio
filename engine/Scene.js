@@ -14,7 +14,8 @@ class Scene {
 
         this.rootGameObjects = [];
 
-        this.header = new GameObject(this, this.name);
+        this.header = new GameObject(this, this.name, true);
+        this.header.transform.isHeader = false;
     }
     
     _registerRootGameObject(obj) {

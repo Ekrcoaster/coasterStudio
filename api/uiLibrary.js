@@ -818,10 +818,10 @@ const UI_WIDGET = {
 
     /** @param {StringFieldOption} option */
     editorGUIString: function(id, label, text, isEditable, x1, y1, x2, y2, option) {
-        let labelOffset = this.editorGUILabelPre(label, x1, y1, x2, y2);
+        let labelOffset = UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2);
         
         UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
-        return this.editableText(id, text, isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, option);
+        return UI_WIDGET.editableText(id, text, isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, option);
     },
     editorGUILabelPre: function(label, x1, y1, x2, y2, divide = 2) {
         if(label) {
@@ -831,13 +831,14 @@ const UI_WIDGET = {
         }
         return 0;
     },
+
     /** @param {StringFieldOption} option */
     editorGUINumber: function(id, label, number, isEditable, x1, y1, x2, y2, option, divide = 2) {
         if(option == null) option = new StringFieldOption("numbers_only");
-        let labelOffset = this.editorGUILabelPre(label, x1, y1, x2, y2, divide);
+        let labelOffset = UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, divide);
         
         UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
-        let res = this.editableText(id, number + "", isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, option.setFormat("numbers_only"));
+        let res = UI_WIDGET.editableText(id, number + "", isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, option.setFormat("numbers_only"));
         res.text = option.parseAndRound(res.text);
         if(isNaN(res.text))
             res.text = 0;
@@ -847,15 +848,14 @@ const UI_WIDGET = {
     editorGUIVector2: function(id, label, vector, isEditable, x1, y1, x2, y2, option) {
         let spacing = 20;
         let half = (x2-x1)/2-spacing;
-        let topSpacing = 0;
         let leftSpacing = 0;
         if(label) {
-            topSpacing = (y2-y1)/2
-            this.editorGUILabelPre(label, x1, y1, x2, y1+topSpacing*0.5, 1);
-            leftSpacing = 25;
+            UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, 1);
+            leftSpacing = half;
         }
-        vector.x = this.editorGUINumber(id + "x", "X", vector.x, isEditable, x1+leftSpacing, y1+topSpacing, x1+half, y2, option, 4)?.text;
-        vector.y = this.editorGUINumber(id + "y", "Y", vector.y, isEditable, x1+half+spacing+leftSpacing, y1+topSpacing, x2, y2, option, 4)?.text;
+        half = (x2-(x1+leftSpacing))/2-spacing;
+        vector.x = UI_WIDGET.editorGUINumber(id + "x", "X", vector.x, isEditable, x1+leftSpacing, y1, x1+half+leftSpacing, y2, option, 4)?.text;
+        vector.y = UI_WIDGET.editorGUINumber(id + "y", "Y", vector.y, isEditable, x1+half+spacing+leftSpacing, y1, x2, y2, option, 4)?.text;
         return vector;
     },
 
