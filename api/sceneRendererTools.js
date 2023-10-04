@@ -87,7 +87,7 @@ class SceneRendererTools {
         } else {
             mouse.removeActiveTool(hoverID);
         }
-        UI_LIBRARY.drawRectCoords(centerSquare.x1, centerSquare.y1, centerSquare.x2, centerSquare.y2, 0, new DrawShapeOption("#ffffff"));
+        //UI_LIBRARY.drawRectCoords(centerSquare.x1, centerSquare.y1, centerSquare.x2, centerSquare.y2, 0, new DrawShapeOption("#ffffff"));
 
         return position;
     }
