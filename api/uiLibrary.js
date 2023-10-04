@@ -77,6 +77,57 @@ class Color {
         this.a = a;
         return this;
     }
+    
+    getHSL() {
+        let r = this.r / 255;
+        let g = this.g / 255;
+        let b = this.b / 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        if(max == min){
+            h = s = 0; // achromatic
+        }else{
+            var d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch(max){
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        return {
+            "h": h*360,
+            "s": s,
+            "l": l
+        }
+    }
+
+    setHSL(h, s, l) {
+        h /= 360;
+        if (s === 0) {
+            this.r = this.g = this.b = l; // achromatic
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1 / 6) return p + (q - p) * 6 * t;
+                if (t < 1 / 2) return q;
+                if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                return p;
+            };
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            this.r = Math.round(hue2rgb(p, q, h + 1 / 3)*255);
+            this.g =  Math.round(hue2rgb(p, q, h)*255);
+            this.b =  Math.round(hue2rgb(p, q, h - 1 / 3)*255);
+        }
+    }
+
+    setHue(h) {
+        let hsl = this.getHSL();
+        this.setHSL(h, hsl.s, hsl.l);
+    }
 }
 
 class DrawShapeOption {
@@ -216,8 +267,6 @@ class DrawLineOption {
     setLineCap(cap) {this.cap = cap;}
 }
 
-class Filter { }
-
 const UI_LIBRARY = {
 
     /** Renders a rect using x1, y1, x2, y2
@@ -246,6 +295,7 @@ const UI_LIBRARY = {
         }
         if (shape == null) shape = new DrawShapeOption();
 
+        UI_UTILITY.compileFilters(filters);
         ctx.strokeStyle = shape.getStrokeStyle();
         ctx.lineWidth = shape.getStrokeWidth();
         ctx.fillStyle = shape.getFillColor();
@@ -373,6 +423,36 @@ const UI_LIBRARY = {
                 ctx.closePath()
             }
     },
+    /** Draws a polygon with the given points
+     * @param {{x: Number, y: Number}[]} points 
+     * @param {DrawShapeOption} shape 
+     * @param {Filter[]} filters 
+     */
+    drawEllipse: function (x, y, width, height, shape, filters = []) {
+        if (shape == null) shape = new DrawShapeOption();
+
+        UI_UTILITY.compileFilters(filters);
+        ctx.strokeStyle = shape.getStrokeStyle();
+        ctx.lineWidth = shape.getStrokeWidth();
+        ctx.fillStyle = shape.getFillColor();
+
+        let path = new Path2D();
+        path.ellipse(x, y, width/2, height/2, 0, 0, Math.PI*2);
+
+        // if we are drawing an outline, then go back to the first point and draw a line (so all sides have a line)
+        if (shape.shouldStroke()) {
+            //ctx.lineTo(points[0].x, points[0].y);
+            ctx.stroke(path);
+        }
+
+        if (shape.shouldFill())
+            ctx.fill(path);
+        
+        if(shape.isMask) {
+            ctx.save();
+            ctx.clip(path);
+        }
+    },
     /**
      * 
      * @param {String} text 
@@ -469,6 +549,22 @@ const UI_UTILITY = {
             "width": data.width, 
             "height": data.fontBoundingBoxDescent - data.fontBoundingBoxAscent
         }
+    },
+    /**@param {Filter[]} filters */
+    compileFilters: function(filters = []) {
+        let build = "";
+        for(let i = 0; i < filters.length; i++) {
+            build += filters[i].toString() + " ";
+        }
+        ctx.filter = build.trim();
+    },
+    getAngleBetweenPoints: function(pointAX, pointAY, pointBX, pointBY) {
+        let mousePos = {
+            x: pointBX - pointAX,
+            y: pointBY - pointAY
+        }
+        
+        return Math.atan2(mousePos.x, mousePos.y)* (180/Math.PI);
     }
 }
 
@@ -956,6 +1052,92 @@ const UI_WIDGET = {
         return vector;
     },
 
+    /**
+     * @param {String} id 
+     * @param {String} label 
+     * @param {Color} color 
+     * @param {boolean} isEditable 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     */
+    editorGUIColor: function(id, label, color, isEditable, x1, y1, x2, y2) {
+        let labelOffset = UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, 2);
+
+        let hover = mouse.isHoveringOver(x1+labelOffset, y1, x2, y2, 0, id);
+        let down = mouse.isToolDown(id);
+
+        let meta = widgetCacheData[id] || {};
+
+        if(hover && down) {
+            let mod = editor.createModal(new EditorModal(id+"modal", 350, 512, {
+                initColor: new Color(color),
+                color: color,
+                hue: color.getHSL().h
+            },(x1, y1, x2, y2, data) => {
+                let wheelSpace = {
+                    x: (x2+x1)/2,
+                    y: (y2+y1)/2,
+                    yOffset: (x2-x1)/-4+15,
+                    radius: (x2-x1)/2-15
+                }
+
+                // draw the weel
+                for(let a = 0; a <= 360; a++) {
+                    let inAngle = (a - 2)*DEGREE_TO_RADIANS;
+                    let outAngle = (a*DEGREE_TO_RADIANS);
+        
+                    ctx.strokeStyle = `hsl(${a}, 100%, 50%)`;
+                    ctx.beginPath();
+                    ctx.arc(wheelSpace.x, wheelSpace.y+wheelSpace.yOffset, wheelSpace.radius, inAngle, outAngle);
+                    ctx.arc(wheelSpace.x, wheelSpace.y+wheelSpace.yOffset, wheelSpace.radius*0.8, inAngle, outAngle);
+                    ctx.stroke();
+                }
+
+                let hoverInWheel = mouse.isHoveringOver(wheelSpace.x-wheelSpace.radius, wheelSpace.y-wheelSpace.radius+wheelSpace.yOffset, wheelSpace.x+wheelSpace.radius, wheelSpace.y+wheelSpace.radius+wheelSpace.yOffset);
+                if(hoverInWheel && mouse.down) {
+                    data.hue = 180-mouse.angleTo(wheelSpace.x, wheelSpace.y+wheelSpace.yOffset)+90;
+                    data.color.setHue(data.hue);
+                }
+
+                UI_LIBRARY.drawRectCoords(
+                    wheelSpace.x - wheelSpace.radius, 
+                    wheelSpace.y + wheelSpace.yOffset + wheelSpace.radius + 10, 
+                    wheelSpace.x,
+                    wheelSpace.y + wheelSpace.yOffset + wheelSpace.radius + 50,
+                    0, new DrawShapeOption(data.color).setRoundedCorners(10, 0, 0, 10));
+
+                UI_LIBRARY.drawRectCoords(
+                    wheelSpace.x, 
+                    wheelSpace.y + wheelSpace.yOffset + wheelSpace.radius + 10, 
+                    wheelSpace.x + wheelSpace.radius,
+                    wheelSpace.y + wheelSpace.yOffset + wheelSpace.radius + 50,
+                    0, new DrawShapeOption(data.initColor).setRoundedCorners(0, 10, 10, 0));
+
+                let hueGizmo = {
+                    "x": (Math.cos(data.hue * DEGREE_TO_RADIANS)*wheelSpace.radius*0.9) + wheelSpace.x,
+                    "y": (Math.sin(data.hue * DEGREE_TO_RADIANS)*wheelSpace.radius*0.9) + wheelSpace.y+wheelSpace.yOffset,
+                    "radius": 30
+                }
+
+                UI_LIBRARY.drawEllipse(hueGizmo.x, hueGizmo.y,
+                      hueGizmo.radius, hueGizmo.radius, COLORS.colorPickerHueRotate);
+                
+            }, (reason, data) => {
+
+            }));
+            meta = {
+                modal: mod
+            }
+            widgetCacheData[id] = meta;
+        }
+
+        UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, new DrawShapeOption(color, COLORS.stringEditorTextBackground.outlineColor, COLORS.stringEditorTextBackground.outlineWidth).setRoundedCorners(10));
+
+        return color;
+    },
+
     toggle: function(id, isOn, x1, y1, x2, y2) {
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
         let click = mouse.isToolFirstUp(id);
@@ -1016,5 +1198,7 @@ const COLORS = {
 
     sceneBackgroundColor: new DrawShapeOption("#3a3a3a"),
     sceneGridColor: new DrawLineOption("#ffffff1b", 5),
-    sceneGridCenterColor: new DrawShapeOption("#ffffff1b", "#ffffff1b", 5)
+    sceneGridCenterColor: new DrawShapeOption("#ffffff1b", "#ffffff1b", 5),
+
+    colorPickerHueRotate: new DrawShapeOption("#181818", "#ffffff", 3)
 }

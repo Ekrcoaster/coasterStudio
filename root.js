@@ -38,6 +38,8 @@ function Initalize() {
     t2.transform.setLocalAngle(-45);
     t2.addComponent(new ShapeRenderer());
 
+    editor.setSelected(obj, true);
+
     mouse = new Mouse();
     keyboard = new Keyboard();
 
@@ -321,6 +323,10 @@ class Mouse {
             x: this.x - this.downX,
             y: this.y - this.downY
         }
+    }
+
+    angleTo(x, y) {
+        return UI_UTILITY.getAngleBetweenPoints(mouse.x, mouse.y, x, y);
     }
 }
 

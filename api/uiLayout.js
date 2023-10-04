@@ -18,7 +18,7 @@ class UILayout {
     /**
      * @param {UILayoutNumberField} number 
      * @param {StringFieldOption} option */
-    numberField(label, number = () => {}, option, callback = (res) => {}) {
+    numberField(label, number = () => {}, option, callback = (number) => {}) {
         this.elements.push(new UILayoutElement(this.indent, ["id", label, number, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUINumber, (res) => {
             if(res.applied)
                 callback(res.text);
@@ -32,10 +32,23 @@ class UILayout {
     /**
      * @param {UILayoutVector2Field} vector
      * @param {StringFieldOption} option */
-    vector2Field(label, vector, option, callback = (res) => {}) {
+    vector2Field(label, vector, option, callback = (vector) => {}) {
         this.elements.push(new UILayoutElement(this.indent, ["id", label, vector, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUIVector2, (res) => {
             if(res != vector)
                 callback(res);
+        }));
+    }
+
+     /**
+     * @callback UILayoutColorField gets the color
+     * @returns {Color}
+     */
+    /**
+     * @param {UILayoutColorField} color */
+    colorField(label, color, callback = (color) => {}) {
+        this.elements.push(new UILayoutElement(this.indent, ["id", label, color, this.enabled, "x1", "y1", "x2", "y2"], UI_WIDGET.editorGUIColor, (col) => {
+            if(col != color)
+                callback(col);
         }));
     }
 

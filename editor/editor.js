@@ -22,6 +22,9 @@ class Editor {
     lastTick = 0;
     timeDelta = 1;
 
+    /**@type {EditorModal} */
+    activeModal;
+
     constructor() {
         this.windowManager = new EditorWindowManager();
         this.fps = 60;
@@ -57,6 +60,14 @@ class Editor {
     render(x1, y1, x2, y2) {
         UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption(COLORS.background));
         this.windowManager.render(x1, y1, x2, y2);
+
+        if(this.activeModal != null) {
+            this.activeModal.render(this.activeModal.x, this.activeModal.y, this.activeModal.x + this.activeModal.width, this.activeModal.y + this.activeModal.height);
+            if(!mouse.isHoveringOver(this.activeModal.x, this.activeModal.y, this.activeModal.x + this.activeModal.width, this.activeModal.y + this.activeModal.height)
+                && mouse.clickDown) {
+                    this.closeActiveModal();
+            }
+        }
     }
 
     /**
@@ -133,5 +144,26 @@ class Editor {
      */
     isSelected(obj) {
         return this.selectedGameObjects.indexOf(obj) > -1;
+    }
+
+    /** @param {EditorModal} modal  */
+    createModal(modal) {
+        if(this.activeModal != null) {
+            this.activeModal.onClose("force", this.activeModal.data);
+        }
+        this.activeModal = modal;
+        mouse.setActiveTool(modal.id);
+
+        let desiredPos = modal.calculateDesiredPosition();
+        modal.x = desiredPos.x;
+        modal.y = desiredPos.y;
+        return modal;
+    }
+
+    closeActiveModal() {
+        if(this.activeModal == null) return;
+        mouse.removeActiveTool(this.activeModal.id);
+        this.activeModal.onClose("natural", this.activeModal.data);
+        this.activeModal = null;
     }
 }
