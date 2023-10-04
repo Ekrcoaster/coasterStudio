@@ -116,14 +116,14 @@ canvas.addEventListener("wheel", function(evt) {
 });
 
 window.addEventListener('keydown',function(e) {
-    keyboard.onKey(e.key, true);
+    keyboard.keyDownQueue.push(e.key);
     needsRendering = true;
 
     keyboard.isCapsLockDown = e.getModifierState("CapsLock");
 },false);
 
 window.addEventListener('keyup',function(e) {
-    keyboard.onKey(e.key, false);
+    keyboard.keyUpQueue.push(e.key);
     needsRendering = true;
     keyboard.isCapsLockDown = e.getModifierState("CapsLock");
 },false);
@@ -376,8 +376,8 @@ class Keyboard {
     isAltDown;
     isCapsLockDown;
 
-    deleteDownFirst = {};
-    deleteUpFirst = {};
+    keyDownQueue = [];
+    keyUpQueue = [];
     constructor() {
         this.down = new Set();
         this.downFirst = new Set();
@@ -388,30 +388,31 @@ class Keyboard {
         this.isAltDown = false;
         this.isCapsLockDown = false;
         
-        this.deleteDownFirst = {};
-        this.deleteUpFirst = {};
+        this.keyDownQueue = [];
+        this.keyUpQueue = [];
     }
     
 
     tick() {
+        this.downFirst = new Set();
+        this.upFirst = new Set();
+
         let needsRendering = false;
+        // handle all of the waiting down keys
+        for(let i = 0; i < this.keyDownQueue.length; i++) {
+            this.onKey(this.keyDownQueue[i], true);
+            needsRendering = true;
+        }
+        this.keyDownQueue = [];
 
-        // handle the down firsts, making sure they always exist for a single frame
-        this.downFirst.forEach(element => {
-            if(this.deleteDownFirst[element] == null)
-                this.deleteDownFirst[element] = true;
-            else 
-                this.downFirst.delete(element);
-        });
+        // handle all of the waiting up keys
+        for(let i = 0; i < this.keyUpQueue.length; i++) {
+            this.onKey(this.keyUpQueue[i], false);
+            needsRendering = true;
+        }
+        this.keyUpQueue = [];
 
-        // handle the up firsts, making sure they always exist for a single frame
-        this.upFirst.forEach(element => {
-            if(this.deleteUpFirst[element] == null)
-                this.deleteUpFirst[element] = true;
-            else 
-                this.upFirst.delete(element);
-        });
-        
+
         return needsRendering;
     }
 
@@ -427,9 +428,7 @@ class Keyboard {
 
         if(down) {
             this.downFirst.add(key);
-            delete this.deleteUpFirst[key];
         } else {
-            delete this.deleteDownFirst[key];
             this.upFirst.add(key);
         }
     }
