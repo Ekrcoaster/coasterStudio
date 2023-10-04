@@ -12,6 +12,6 @@ class ShapeRenderer extends Component {
             this.transform.localToWorldSpace(new Vector2(-1, 1)),
         ]
 
-        tools.polygon(points, new DrawShapeOption("red", "orange", 3).setRoundedCorners(20));
+        tools.polygon(points, new DrawShapeOption("#f40808", "#f08000", 3).setRoundedCorners(20));
     }
 }

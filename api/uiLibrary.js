@@ -1,6 +1,89 @@
+class Color {
+    r;
+    g;
+    b;
+    a;
+
+    isInvalid;
+
+    constructor(stringColor = "") {
+        if(typeof(stringColor) == "object") {
+            this.r = stringColor.r || 255;
+            this.g = stringColor.g || 255;
+            this.b = stringColor.b || 255;
+            this.a = stringColor.a || 1;
+            this.isInvalid = false;
+
+        } else {
+            this.r = 255;
+            this.g = 255;
+            this.b = 255;
+            this.a = 1;
+            this.setColor(stringColor);
+        }
+    }
+
+    setColor(stringColor) {
+        this.isInvalid = true;
+        
+        if(stringColor.startsWith("#")) {
+            this.r = parseInt(stringColor.slice(1, 3), 16);
+            this.g = parseInt(stringColor.slice(3, 5), 16);
+            this.b = parseInt(stringColor.slice(5, 7), 16);
+            if(stringColor.length > 7)
+                this.a = parseInt(stringColor.slice(7, 9), 16)/255;
+            else
+                this.a = 1;
+
+            this.isInvalid = false;
+        }
+    }
+
+    toHex() {
+        return `#${number(this.r)}${number(this.g)}${number(this.b)}${number(this.a*255)}`
+
+        function number(b) {
+            let res = b.toString(16);
+            if(res.length == 1)
+                return "0"+res;
+            return res;
+        }
+    }
+
+    toRGBA() {
+        return `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`;
+    }
+
+    clone() {
+        return new Color({r: this.r, g: this.g, b: this.b, a: this.a});
+    }
+    
+    setR(r) {
+        this.r = r;
+        return this;
+    }
+
+    setG(g) {
+        this.g = g;
+        return this;
+    }
+
+    setB(b) {
+        this.b = b;
+        return this;
+    }
+
+    setAlpha(a) {
+        this.a = a;
+        return this;
+    }
+}
+
 class DrawShapeOption {
-    fillColor = "";
-    outlineColor = "";
+    /**@type {Color} */
+    fillColor;
+    /**@type {Color} */
+    outlineColor;
     outlineWidth = 0;
 
     roundedCorners = [];
@@ -8,9 +91,10 @@ class DrawShapeOption {
 
     isMask;
 
-    constructor(fillColor = "", outlineColor = "", outlineWidth = 0) {
-        this.fillColor = fillColor;
-        this.outlineColor = outlineColor;
+    constructor(fillColor = "lime", outlineColor = "", outlineWidth = 0) {
+        if(typeof(this.outlineColor) == "number") throw "outline color cannot be a number!"
+        this.fillColor = new Color(fillColor);
+        this.outlineColor = new Color(outlineColor);
         this.outlineWidth = outlineWidth || 0;
         this.roundedCorners = [];
         this.highQualityRendering = true;
@@ -36,10 +120,11 @@ class DrawShapeOption {
         return this;
     }
 
-    getFillColor() { return this.fillColor || "lime"; }
-    shouldFill() { return this.fillColor != null; }
+    getFillColor() { return this.fillColor.toRGBA();}
+    shouldFill() { return !this.fillColor.isInvalid; }
+    setFillColor(fillColor) {this.fillColor = fillColor;}
 
-    getStrokeStyle() { return this.outlineColor; }
+    getStrokeStyle() { return this.outlineColor.toRGBA(); }
     getStrokeWidth() { return this.outlineWidth; }
     setStrokeWidth(width) {this.outlineWidth = width; }
     shouldStroke() { return this.outlineWidth > 0; }
@@ -47,6 +132,12 @@ class DrawShapeOption {
         if(this.roundedCorners.length == 0)
             return [0];
         return this.roundedCorners;
+    }
+
+    setAlpha(alpha) {
+        this.fillColor.setAlpha(alpha);
+        this.outlineColor.setAlpha(alpha);
+        return this;
     }
 }
 
@@ -58,6 +149,7 @@ class DrawTextOption {
     /**@type {FontTypes} */
     font;
 
+    /**@type {Color} */
     fillColor;
     
     /**@type {HorizontalAlignTypes} */
@@ -72,10 +164,10 @@ class DrawTextOption {
      * @param {HorizontalAlignTypes} horizontalAlign
      * @param {VerticalAlignTypes} verticalAlign
      * */
-    constructor(size = 25, font = "default", fillColor = "white", horizontalAlign = "left", verticalAlign = "center") {
+    constructor(size = 25, font = "default", fillColor = "#ffffff", horizontalAlign = "left", verticalAlign = "center") {
         this.size = size;
         this.font = font;
-        this.fillColor = fillColor;
+        this.fillColor = new Color(fillColor);
         this.horizontalAlign = horizontalAlign;
         this.verticalAlign = verticalAlign;
         this.debugBoxes = false;
@@ -92,24 +184,32 @@ class DrawTextOption {
         return this.font;
     }
 
+    getColor() { return this.fillColor.toRGBA();}
+
     getFontForCTX() {
         return this.size + "px " + this.getFont();
+    }
+
+    setAlpha(alpha) {
+        this.fillColor.setAlpha(alpha);
+        return this;
     }
 }
 
 class DrawLineOption {
+    /**@type {Color} */
     color;
     width;
     /**@type {CanvasLineCap} */
     cap;
 
     constructor(color = "black", width = 3) {
-        this.color = color;
+        this.color = new Color(color);
         this.width = width;
         this.cap = "round";
     }
 
-    getStrokeStyle() {return this.color}
+    getStrokeStyle() {return this.color.toRGBA()}
     getStrokeWidth() {return this.width}
     getLineCap() {return this.cap;}
     /**@type {CanvasLineCap} */
@@ -310,7 +410,7 @@ const UI_LIBRARY = {
         }
 
         ctx.font = draw.getFontForCTX();
-        ctx.fillStyle = draw.fillColor;
+        ctx.fillStyle = draw.getColor();
         ctx.fillText(text, x1+xOffset, y1+yOffset, x2-x1);
 
         return {
@@ -773,7 +873,7 @@ const UI_WIDGET = {
         }
         meta.tempText = tempText;
 
-        let space = UI_LIBRARY.drawText(tempText, x1, y1, x2, y2, draw);
+        let space = UI_LIBRARY.drawText(tempText, x1, y1, x2, y2, new DrawTextOption(draw.size, draw.font, draw.fillColor.setAlpha(isEditable ? 1 : 0.5), draw.horizontalAlign, draw.verticalAlign));
 
         if(click && hover) {
             meta.isActive = true;
@@ -817,10 +917,10 @@ const UI_WIDGET = {
     },
 
     /** @param {StringFieldOption} option */
-    editorGUIString: function(id, label, text, isEditable, x1, y1, x2, y2, option) {
-        let labelOffset = UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2);
+    editorGUIString: function(id, label, text, isEditable, x1, y1, x2, y2, option, divide = 2) {
+        let labelOffset = UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, divide);
         
-        UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
+        UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground.setAlpha(isEditable ? 1 : 0.5));
         return UI_WIDGET.editableText(id, text, isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, option);
     },
     editorGUILabelPre: function(label, x1, y1, x2, y2, divide = 2) {
@@ -835,10 +935,7 @@ const UI_WIDGET = {
     /** @param {StringFieldOption} option */
     editorGUINumber: function(id, label, number, isEditable, x1, y1, x2, y2, option, divide = 2) {
         if(option == null) option = new StringFieldOption("numbers_only");
-        let labelOffset = UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, divide);
-        
-        UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
-        let res = UI_WIDGET.editableText(id, number + "", isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, option.setFormat("numbers_only"));
+        let res = UI_WIDGET.editorGUIString(id, label, number+"", isEditable, x1, y1, x2, y2, option, divide);
         res.text = option.parseAndRound(res.text);
         if(isNaN(res.text))
             res.text = 0;
@@ -894,30 +991,30 @@ const COLORS = {
     windowTabMoving: new DrawShapeOption("#6b758012").setRoundedCorners(10),
     windowTabInsert: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
 
-    hierarchyWindowGameObjectNormalText: new DrawTextOption(28, "default", "white", "left", "center"),
+    hierarchyWindowGameObjectNormalText: new DrawTextOption(28, "default", "#ffffff", "left", "center"),
     hierarchyWindowGameObjectDisabledText: new DrawTextOption(28, "default", "#ffffff62", "left", "center"),
-    hierarchyWindowSceneGameObjectBackground: new DrawShapeOption("#33343489", "black", 2),
+    hierarchyWindowSceneGameObjectBackground: new DrawShapeOption("#33343489", "#000000", 2),
     hierarchyWindowSceneGameObjectText: new DrawTextOption(28, "default", "#ffffff7d", "left", "center"),
     hierarchyWindowSelect: new DrawShapeOption("#2986ea5e"),
 
     inspectorComponentHeader: new DrawShapeOption("#33343489", "#24242489", 3),
-    inspectorComponentHeaderText: new DrawTextOption(25, "default", "white", "left", "center"),
+    inspectorComponentHeaderText: new DrawTextOption(25, "default", "#ffffff", "left", "center"),
     inspectorComponentBox: new DrawShapeOption("#40404089", "#333333", 2).setRoundedCorners(10),
     inspectorLabel: new DrawTextOption(25, "default", "#ffffff7d", "left", "center"),
 
-    textCursor: new DrawShapeOption("white"),
+    textCursor: new DrawShapeOption("#ffffff"),
     textSelect: new DrawShapeOption("#2986ea5e"),
 
     stringEditorText: new DrawTextOption(25, "default", "#ffffff", "left", "center"),
-    stringEditorTextBackground: new DrawShapeOption("#33343489", "black", 2).setRoundedCorners(5),
+    stringEditorTextBackground: new DrawShapeOption("#33343489", "#131313", 2).setRoundedCorners(10),
 
-    normalDropdownHandle: new DrawShapeOption("gray"),
-    hoverDropdownHandle: new DrawShapeOption("white"),
+    normalDropdownHandle: new DrawShapeOption("#656565"),
+    hoverDropdownHandle: new DrawShapeOption("#ffffff"),
 
     toggleBoxEmpty: new DrawShapeOption("#212121", "#6b758012", 2).setRoundedCorners(10),
     toggleBoxFull: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
 
     sceneBackgroundColor: new DrawShapeOption("#3a3a3a"),
     sceneGridColor: new DrawLineOption("#ffffff1b", 5),
-    sceneGridCenterColor: new DrawShapeOption("#ffffff1b", 5)
+    sceneGridCenterColor: new DrawShapeOption("#ffffff1b", "#ffffff1b", 5)
 }

@@ -107,7 +107,7 @@ class EditorWindowContainer extends EditorWindowBase {
         drawTabs(true, tabWindowDropIndex);
 
         if(windowToDraw < this.windows.length && windowToDraw > -1) {
-            UI_LIBRARY.drawRectCoords(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, 0, new DrawShapeOption(COLORS.windowBackground().fillColor).setRoundedCorners(10).makeMask());
+            UI_LIBRARY.drawRectCoords(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, 0, new DrawShapeOption(COLORS.windowBackground().getFillColor()).setRoundedCorners(10).makeMask());
             this.windows[windowToDraw].render(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2- windowSpace.x1, windowSpace.y2 - windowSpace.y1);
             this.windows[windowToDraw].postRender();
             //console.log(Date.now() - startTime + " for editor window " + this.windows[windowToDraw].name)
