@@ -12,6 +12,10 @@ class ImageAsset extends Asset {
         this.image = null;
         this.isLoaded = false;
     }
+
+    render(x1, y1, x2, y2) {
+        UI_LIBRARY.drawImage(this, x1, y1, x2, y2, new DrawImageOption());
+    }
 }
 
 class LocalImageAsset extends ImageAsset {

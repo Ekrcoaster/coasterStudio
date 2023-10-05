@@ -32,17 +32,11 @@ class Editor {
         let row1 = this.windowManager.flex.registerFlex(new EditorWindowFlex(0.8, "horizontal"));
         row1.registerWindow(new EditorWindowContainer(0.1, "vertical")
             .registerWindow(new HierarchyWindow())
-            //.registerWindow(new EditorWindow("purple"))
-            //.registerWindow(new EditorWindow("orange"))
-            //.registerWindow(new EditorWindow("pink"))
         );
         row1.registerWindow(new EditorWindowContainer(0.7, "vertical").registerWindow(new SceneWindow()));
         row1.registerWindow(new EditorWindowContainer(0.2, "vertical").registerWindow(new InspectorWindow()));
 
-        this.windowManager.flex.registerWindow(new EditorWindowContainer(0.2, "horizontal").registerWindow(new EditorWindow("cyan")))
-
-        //let row1 = this.windowManager.flex.registerFlex(new EditorWindowFlex(1, "horizontal"));
-        //row1.registerWindow(new EditorWindowContainer(0.5, "vertical").registerWindow(new EditorWindow("red")));
+        this.windowManager.flex.registerWindow(new EditorWindowContainer(0.2, "horizontal").registerWindow(new AssetWindow()))
     }
 
     /**@type {Scene} */

@@ -23,9 +23,9 @@ window.onload = Initalize;
 let needsRendering = true;
 function Initalize() {
 
-    editor = new Editor();
-    engine = new Engine();
     assets = new AssetEngine();
+    engine = new Engine();
+    editor = new Editor();
 
     engine.activeScene = new Scene("testingScene");
     editor.setActiveScene(engine.activeScene);
