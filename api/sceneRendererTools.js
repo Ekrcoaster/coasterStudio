@@ -35,7 +35,7 @@ class SceneRendererTools {
     }
 
     _screenSpaceToCoord(x, y) {
-        let center =new Vector2(this.x1 + this.width / 2, this.y1 + this.height/2);
+        let center = new Vector2(this.x1 + this.width / 2, this.y1 + this.height/2);
         x -= center.x;
         y -= center.y;
         x /= this.sceneWindow.getRealPixelTileSize();

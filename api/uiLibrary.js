@@ -465,7 +465,7 @@ const UI_LIBRARY = {
             let last = points[points.length - 1];
             let lastIndex = points.length - 1;
             for (let i = 0; i < points.length; i++) {
-                if(isNaN(points[i].x) || isNaN(points[i].y))
+                if((isNaN(points[i].x) || isNaN(points[i].y)))
                     console.trace("Point " + i + "is nan! X:" + isNaN(points[i].x));
                 if(skipRounding) {
                     path.lineTo(points[i].x, points[i].y);
