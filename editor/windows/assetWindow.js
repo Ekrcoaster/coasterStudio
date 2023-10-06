@@ -14,57 +14,54 @@ class AssetWindow extends EditorWindow {
 
     render(x1, y1, x2, y2, width, height) {
         const t = this;
-        let leftWidth = 256;
-        renderOutline({
+        let action = null;
+        renderAssets(createFoldersToRender(), {
             x1: x1,
-            y1: y1,
-            x2: x1+leftWidth,
-            y2: y2
-        });
-        renderAssets({
-            x1: x1+leftWidth,
             y1: y1,
             x2: x2,
             y2: y2
         });
 
+        // then, do the action. Doing it this way so the path doesn't change half way through drawing (looks ugly)
+        if(action == "goBack")
+            this.goBackPath();
+        else if(action != null)
+            this.setPath(action);
         
-        function renderOutline(space = {x1, y1, x2, y2}) {
-            UI_LIBRARY.drawRectCoords(space.x1, space.y1, space.x2, space.y2, 0, COLORS.windowDarkerBackground());
-
-            let action = null;
-
-            let y = space.y1+5;
+        function createFoldersToRender() {
+            let folders = [];
             if(t.currentPath.length > 1) {
-                if(UI_WIDGET.button("...", space.x1+5, y, space.x2-5, space.y1+35)) {
-                    action = "goBack";
-                }
-                y += 40;
+                folders.push({
+                    render: function(x1, y1, x2, y2) {
+                        if(UI_WIDGET.button("...", x1+5, y1, x2-5, y2)) {
+                            action = "goBack";
+                        }
+                    }
+                });
             }
 
             for(let i = 0; i < t.currentSubPaths.length; i++) {
-                let height = 35;
-                if(UI_WIDGET.button(t.currentSubPaths[i].replace(t.currentPath, ""), space.x1+5, y, space.x2-5, y + height)) {
-                    action = t.currentSubPaths[i];
-                }
-
-                y += height + 5;
+                folders.push({
+                    render: function(x1, y1, x2, y2) {
+                        if(UI_WIDGET.button(t.currentSubPaths[i].replace(t.currentPath, ""), x1+5, y1, x2-5, y2)) {
+                            action = t.currentSubPaths[i];
+                        }
+                    }
+                });
             }
 
-            // then, do the action. Doing it this way so the path doesn't change half way through drawing (looks ugly)
-            if(action == "goBack")
-                t.goBackPath();
-            else if(action != null)
-                t.setPath(action);
+            return folders;            
         }
 
-        function renderAssets(space = {x1, y1, x2, y2}) {
+        function renderAssets(folderToRender = [], space = {x1, y1, x2, y2}) {
+            let toRender = [...folderToRender, ...t.currentAssets];
             let padding = 5;
-            let tileSize = space.y2-space.y1-padding;
+            let tileSize = 146;
+
+
             let x = space.x1+padding;
-            for(let i = 0; i < t.currentAssets.length; i++) {
-                t.currentAssets[i].render(x, space.y1+padding, x+tileSize, space.y1+padding+tileSize-padding);
-    
+            for(let i = 0; i < toRender.length; i++) {
+                toRender[i].render(x, space.y1+padding, x+tileSize, space.y1+padding+tileSize-padding);
                 x += tileSize+padding;
             }
         }

@@ -3,9 +3,6 @@ class AssetEngine {
 
     constructor() {
         this.saveAsset("editor/colorWheel", new LocalImageAsset("./res/editor/colorWheel.png"));
-        this.saveAsset("editor/colorWheel2", new LocalImageAsset("./res/editor/colorWheel.png"));
-        this.saveAsset("editor/colorWheel3", new LocalImageAsset("./res/editor/colorWheel.png"));
-        this.saveAsset("editor/colorWheel4", new LocalImageAsset("./res/editor/colorWheel.png"));
 
         this.createFalseDirectory("engine");
         this.createFalseDirectory("engine/textures");
@@ -67,7 +64,7 @@ class AssetEngine {
         
         for(let p in this.assets) {
             let dir = this._isDirectorySub(path, p);
-            if(dir.isMatch)
+            if(dir.isMatch && this.assets[p] == null)
                 paths.add(dir.dir);
         }
 
