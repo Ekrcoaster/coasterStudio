@@ -3,6 +3,16 @@ class AssetEngine {
 
     constructor() {
         this.saveAsset("editor/colorWheel", new LocalImageAsset("./res/editor/colorWheel.png"));
+        this.saveAsset("editor/colorWheel2", new LocalImageAsset("./res/editor/colorWheel.png"));
+        this.saveAsset("editor/colorWheel3", new LocalImageAsset("./res/editor/colorWheel.png"));
+        this.saveAsset("editor/colorWheel4", new LocalImageAsset("./res/editor/colorWheel.png"));
+
+        this.createFalseDirectory("engine");
+        this.createFalseDirectory("engine/textures");
+        this.createFalseDirectory("engine/audio");
+        this.createFalseDirectory("engine/shapes");
+        this.createFalseDirectory("engine/scenes");
+        this.createFalseDirectory("editor/icons");
     }
 
     /**
@@ -18,6 +28,10 @@ class AssetEngine {
         this.assets[path] = asset;
         asset._setPath(path);
         return asset;
+    }
+
+    createFalseDirectory(path) {
+        this.assets[path] = null;
     }
 
     /**
@@ -39,48 +53,41 @@ class AssetEngine {
      */
     getAssets(path = "") {
         let found = [];
-        let mySplit = path.split("/");
+        if(path == "") return [];
         for(let p in this.assets) {
-            let pSplit = this.assets[p].directory.split("/");
-
-            // check if the directories are the same length (excluding the asset name)
-            if(pSplit.length == mySplit.length) {
-
-                // then check if they match
-                let directoryMatches = true;
-                for(let i = 0; i < mySplit.length; i++) {
-                    if(pSplit[i] != mySplit[i])
-                        directoryMatches = false;
-                }
-
+            if(this.assets[p] == null) continue;
+            if(this._isDirectorySub(path, this.assets[p].directory).isMatch)
                 found.push(this.assets[p]);
-            }
         }
         return found;
     }
 
     getSubPaths(path = "") {
-        if(path == "/") path = "";
-
         let paths = new Set();
-        let mySplit = path.split("/");
+        
         for(let p in this.assets) {
-            let pSplit = this.assets[p].directory.split("/");
-            
-            // check if the directories are the same length (excluding the asset name)
-            if(pSplit.length == mySplit.length+1) {
-
-                // then check if they match
-                let directoryMatches = true;
-                for(let i = 0; i < mySplit.length-1; i++) {
-                    if(pSplit[i] != mySplit[i])
-                        directoryMatches = false;
-                }
-
-                paths.add(this.assets[p].directory);
-            }
+            let dir = this._isDirectorySub(path, p);
+            if(dir.isMatch)
+                paths.add(dir.dir);
         }
+
         return paths;
+    }
+    
+    _isDirectorySub(firstPath, secondPath) {
+        let mySplit = firstPath.split("/");
+        if(mySplit[0] == "") mySplit.shift();
+        if(secondPath.startsWith(firstPath)) {
+            let split = secondPath.split("/");
+            let dir = "";
+            for(let i = 0; i <= mySplit.length; i++) {
+                if(split[i] != null)
+                    dir += split[i] + "/";
+            }
+            dir = dir.substring(0, dir.length - 1);
+            return {isMatch: dir.length > 2 && dir != firstPath, dir: dir};
+        }
+        return {isMatch: false, dir: ""};
     }
 }
 
@@ -102,6 +109,10 @@ class Asset {
     }
 
     render(x1, y1, x2, y2) {
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption("#ff0000"));
+        let textHeight = 50;
+        UI_LIBRARY.drawText(this.name, x1, y2-textHeight, x2, y2, COLORS.assetWindowAssetText);
+        this.renderPreview(x1+textHeight/2, y1, x2-textHeight/2, y2-textHeight);
     }
+
+    renderPreview(x1, y1, x2, y2) {}
 }

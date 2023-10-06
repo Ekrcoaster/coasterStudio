@@ -668,5 +668,43 @@ const UI_WIDGET = {
         return {
             isOn: isOn
         };
+    },
+
+    /**
+     * 
+     * @param {String} text 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     * @param {DrawTextOption} optionalTextDraw 
+     * @param {DrawShapeOption} optionalBackgroundDraw 
+     * @param {ImageAsset} optionalIcon
+     */
+    button: function(text, x1, y1, x2, y2, optionalTextDraw, optionalBackgroundDraw, optionalIcon) {
+        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, "button" + text);
+        let click = mouse.isToolFirstUp("button" + text);
+
+        if(optionalTextDraw == null)
+            optionalTextDraw = new DrawTextOption(25, "default", "#ffffffa2", optionalIcon == null ? "center" : "left", "center");
+
+        if(optionalBackgroundDraw == null)
+            optionalBackgroundDraw = hover ? COLORS.buttonHoverBackground : COLORS.buttonDefaultBackground;
+
+        let iconSpace = 0;
+
+        if(optionalIcon != null)
+            iconSpace = (y2-y1);
+        
+        if(optionalBackgroundDraw != null)
+            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, optionalBackgroundDraw);
+
+        UI_LIBRARY.drawText(text, x1+iconSpace+5, y1, x2, y2, optionalTextDraw);
+
+        if(optionalIcon != null) {
+            UI_LIBRARY.drawImage(optionalIcon, x1+3, y1+3, x1+iconSpace-3, y2-3, new DrawImageOption());
+        }
+
+        return click && hover;
     }
 }

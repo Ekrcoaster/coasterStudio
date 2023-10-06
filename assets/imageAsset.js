@@ -13,7 +13,7 @@ class ImageAsset extends Asset {
         this.isLoaded = false;
     }
 
-    render(x1, y1, x2, y2) {
+    renderPreview(x1, y1, x2, y2) {
         UI_LIBRARY.drawImage(this, x1, y1, x2, y2, new DrawImageOption());
     }
 }

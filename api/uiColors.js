@@ -44,5 +44,10 @@ const COLORS = {
     sceneGridColor: new DrawLineOption("#ffffff1b", 5),
     sceneGridCenterColor: new DrawShapeOption("#ffffff1b", "#ffffff1b", 5),
 
-    colorPickerHueRotate: new DrawShapeOption("#18181893", "#ffffff", 3)
+    colorPickerHueRotate: new DrawShapeOption("#18181893", "#ffffff", 3),
+
+    assetWindowAssetText: new DrawTextOption(25, "default", "#aaaaaa", "center", "center"),
+
+    buttonDefaultBackground: new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10),
+    buttonHoverBackground: new DrawShapeOption("#878787", "#2c2c2c", 3).setRoundedCorners(10),
 }
