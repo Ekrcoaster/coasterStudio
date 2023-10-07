@@ -53,4 +53,8 @@ class Bounds {
             y: (nY2-nY1) * percentY + nY1,
         }
     }
+
+    isInside(x, y, padding = 0) {
+        return UI_UTILITY.isInside(x, y, this.x1, this.y1, this.x2, this.y2, padding);
+    }
 }

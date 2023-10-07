@@ -88,6 +88,7 @@ class Matrix {
         return this.elementRows[r][c];
     }
     
+    // not mine, https://web.archive.org/web/20210406035905/http://blog.acipo.com/matrix-inversion-in-javascript/
     invertMatrix(){
         // I use Guassian Elimination to calculate the inverse:
         // (1) 'augment' the matrix (left) by the identity (on the right)

@@ -47,6 +47,9 @@ class SceneWindow extends EditorWindow {
         
         // handle dragging 
         if(down && hover) {
+            let hoveringObjects = this.getHoveringObjects();
+            console.log(hoveringObjects)
+
             // save the screens' og position when clicked
             if(mouse.clickDown) {
                 this.downScreenX = this.screenX;
@@ -68,6 +71,21 @@ class SceneWindow extends EditorWindow {
         if(hover) {
             this.changeScale(mouse.getScrollVelocity());
         }
+    }
+
+    getHoveringObjects() {
+        /**@type {RenderingComponent[]} */
+        let hovering = [];
+        let mousePos = this.tools._screenSpaceToCoord(mouse.x, mouse.y);
+        console.log(mousePos)
+        for(let id in editor.allComponentsCache) {
+            // ensure the object is active
+            if(editor.allComponentsCache[id].target instanceof RenderingComponent && editor.allComponentsCache[id].target.gameObject.activeInHierarchy) {
+                if(editor.allComponentsCache[id].target.isInside(mousePos.x, mousePos.y))
+                    hovering.push(editor.allComponentsCache[id]);
+            }
+        }
+        return hovering;
     }
 
     changeScale(amt) {

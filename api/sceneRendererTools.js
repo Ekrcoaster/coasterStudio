@@ -67,8 +67,8 @@ class SceneRendererTools {
      * @param {Vector2} position
      * @param {Vector2} offsetPosition
      *  */
-    gizmoMove(id, position, offsetPosition, size = 1) {
-        let screenSpace = this._coordToScreenSpace(position.x+offsetPosition.x, position.y+offsetPosition.y);
+    gizmoMove(id, position, size = 1) {
+        let screenSpace = this._coordToScreenSpace(position.x, position.y);
         let centerSquare = {
             x1: screenSpace.x-10 * size,
             y1: screenSpace.y-10 * size,
@@ -81,13 +81,11 @@ class SceneRendererTools {
         let down = mouse.isToolDown(hoverID);
         if(hover && down) {
             mouse.setActiveTool(hoverID);
-
             position = new Vector2(this._screenSpaceToCoord(mouse.x, mouse.y));
-
         } else {
             mouse.removeActiveTool(hoverID);
         }
-        //UI_LIBRARY.drawRectCoords(centerSquare.x1, centerSquare.y1, centerSquare.x2, centerSquare.y2, 0, new DrawShapeOption("#ffffff"));
+        UI_LIBRARY.drawRectCoords(centerSquare.x1, centerSquare.y1, centerSquare.x2, centerSquare.y2, 0, new DrawShapeOption("#ffffff"));
 
         return position;
     }

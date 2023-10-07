@@ -31,7 +31,6 @@ class EditorTransformComponent extends EditorComponent {
      * */
     onSceneRender(transform, tools) {
         if(transform.gameObject.isHeader) return;
-        tools.text(transform.gameObject.name, transform.getWorldPosition().x, transform.getWorldPosition().y, 1, 0, new DrawTextOption(25));
     }
 
     /**
@@ -40,6 +39,6 @@ class EditorTransformComponent extends EditorComponent {
      * */
     onSelectedSceneRender(transform, tools) {
         if(transform.gameObject.isHeader) return;
-        tools.gizmoMove(transform.id, transform.getWorldPosition(), 1);
+        //transform.setWorldPosition(tools.gizmoMove(transform.id, transform.getWorldPosition()));
     }
 }

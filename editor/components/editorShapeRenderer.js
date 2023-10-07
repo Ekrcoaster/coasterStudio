@@ -29,6 +29,12 @@ class EditorShapeRenderer extends EditorComponent {
     onSceneRender(transform, tools) {
         /**@type {ShapeRenderer} */
         let myself = this.target;
-        myself.renderShape(tools);
+        myself.render(tools);
+    }
+
+    onSelectedSceneRender(transform, tools) {
+        let points = this.target.getWorldPoints(1.2);
+
+        tools.polygon(points, new DrawShapeOption("red", "#1dacf4", 6).setRoundedCorners(10));
     }
 }

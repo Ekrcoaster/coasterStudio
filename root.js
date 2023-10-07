@@ -31,17 +31,17 @@ function Initalize() {
 
     let obj = new GameObject(engine.activeScene, "test");
     obj.transform.setLocalAngle(45);
-    obj.addComponent(new ShapeRenderer());
+    obj.addComponent(new ShapeRenderer(obj));
     let obj3 = new GameObject(engine.activeScene, "test1b").setParent(obj);
     obj3.transform.setLocalPosition(new Vector2(5, 2));
-    obj3.addComponent(new ShapeRenderer());
+    obj3.addComponent(new ShapeRenderer(obj));
     let t = new GameObject(engine.activeScene, "test1c").setParent(obj3);
     t.transform.setLocalPosition(new Vector2(0, -4));
-    t.addComponent(new ShapeRenderer());
+    t.addComponent(new ShapeRenderer(obj));
     let t2 = new GameObject(engine.activeScene, "test1d").setParent(t);
     t2.transform.setLocalPosition(new Vector2(0, -4));
     t2.transform.setLocalAngle(-45);
-    t2.addComponent(new ShapeRenderer());
+    t2.addComponent(new ShapeRenderer(obj));
 
     editor.setSelected(obj, true);
 

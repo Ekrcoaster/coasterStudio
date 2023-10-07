@@ -33,10 +33,8 @@ class GameObject {
         this.scene._registerRootGameObject(this);
         this.components = [];
 
-        this.transform = new Transform();
+        this.transform = new Transform(this);
         this.addComponent(this.transform);
-        this.transform._updateTransform();
-
     }
 
     /**

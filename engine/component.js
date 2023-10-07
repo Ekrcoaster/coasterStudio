@@ -11,10 +11,13 @@ class Component {
     /**@type {Transform} */
     transform;
 
-    constructor(name) {
+    constructor(name, gameObject) {
         this.id = UTILITY.generateCode(32);
         this.name = name;
+        this.gameObject = gameObject;
     }
+
+    onCreated() {}
 
     onAwake() {}
     onStart() {}
