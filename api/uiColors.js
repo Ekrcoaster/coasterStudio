@@ -50,4 +50,9 @@ const COLORS = {
 
     buttonDefaultBackground: new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10),
     buttonHoverBackground: new DrawShapeOption("#878787", "#2c2c2c", 3).setRoundedCorners(10),
+
+    dropdownCurrentText:  new DrawTextOption(25, "default", "#ffffff", "left", "center"),
+    dropdownItemText:  new DrawTextOption(25, "default", "#ffffffd8", "left", "center"),
+    dropdownHoverBackground: new DrawShapeOption("#9496995e").setRoundedCorners(10),
+    dropdownSelectedBackground: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
 }

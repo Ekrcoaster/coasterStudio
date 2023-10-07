@@ -2,14 +2,46 @@ class AssetEngine {
     assets = {};
 
     constructor() {
-        this.saveAsset("editor/colorWheel", new LocalImageAsset("./res/editor/colorWheel.png"));
+        this.setupDefaultImages();
+        this.setupDefaultShapes();
 
         this.createFalseDirectory("engine");
         this.createFalseDirectory("engine/textures");
         this.createFalseDirectory("engine/audio");
-        this.createFalseDirectory("engine/shapes");
         this.createFalseDirectory("engine/scenes");
         this.createFalseDirectory("editor/icons");
+    }
+
+    setupDefaultImages() {
+        this.saveAsset("editor/colorWheel", new LocalImageAsset("./res/editor/colorWheel.png"));
+    }
+    setupDefaultShapes() {
+        this.saveAsset("engine/shapes/square", new ShapeAsset([
+            {x: -1, y: -1},
+            {x: 1, y: -1},
+            {x: 1, y: 1},
+            {x: -1, y: 1},
+        ]));
+        this.saveAsset("engine/shapes/triangle", new ShapeAsset([
+            {x: 0, y: -1},
+            {x: 1, y: 1},
+            {x: -1, y: 1},
+        ]));
+        this.saveAsset("engine/shapes/pentagon", new ShapeAsset([
+            {x: 0, y: -1},
+            {x: -1, y: -0.2},
+            {x: -0.7, y: 1},
+            {x: 0.7, y: 1},
+            {x: 1, y: -0.2},
+        ]));
+        this.saveAsset("engine/shapes/hexagon", new ShapeAsset([
+            {x: -1, y: 0},
+            {x: -0.5, y: 1},
+            {x: 0.5, y: 1},
+            {x: 1, y: 0},
+            {x: 0.5, y: -1},
+            {x: -0.5, y: -1},
+        ]));
     }
 
     /**
@@ -59,12 +91,24 @@ class AssetEngine {
         return found;
     }
 
+    getAssetsOfType(path = "", type) {
+        let assets = [];
+        for(let p in this.assets) {
+            if(this.assets[p] == null) continue;
+            if(p.startsWith(path)) {
+                if(this.assets[p] instanceof type)
+                    assets.push(this.assets[p]);
+            }
+        }
+        return assets;
+    }
+
     getSubPaths(path = "") {
         let paths = new Set();
         
         for(let p in this.assets) {
             let dir = this._isDirectorySub(path, p);
-            if(dir.isMatch && this.assets[p] == null)
+            if(dir.isMatch)
                 paths.add(dir.dir);
         }
 

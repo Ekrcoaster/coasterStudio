@@ -57,7 +57,8 @@ class Editor {
 
         if(this.activeModal != null) {
             this.activeModal.render(this.activeModal.x, this.activeModal.y, this.activeModal.x + this.activeModal.width, this.activeModal.y + this.activeModal.height);
-            if(!mouse.isHoveringOver(this.activeModal.x, this.activeModal.y, this.activeModal.x + this.activeModal.width, this.activeModal.y + this.activeModal.height)
+            
+            if(this.activeModal != null && !mouse.isHoveringOver(this.activeModal.x, this.activeModal.y, this.activeModal.x + this.activeModal.width, this.activeModal.y + this.activeModal.height)
                 && mouse.clickDown) {
                     this.closeActiveModal();
             }

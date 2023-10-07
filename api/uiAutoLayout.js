@@ -65,6 +65,19 @@ class UIAutoLayout {
         }));
     }
 
+    /**
+     * @callback UIAutoLayoutAssetComponentField gets the asset component
+     * @returns {boolean}
+     */
+    /**
+     * @param {UIAutoLayoutAssetComponentField} assetObj */
+    assetComponentField(label, assetObj, type, callback = (asset) => {}) {
+        this.elements.push(new UIAutoLayoutElement(this.indent, ["id", label, assetObj, type, this.enabled, "x1", "y1", "x2", "y2"], UI_WIDGET.editorGUIAssetComponent, (res) => {
+            if(res.applied)
+                callback(res.selected.obj);
+        }));
+    }
+
     renderSpace(x1, y1, x2) {
         let y = y1;
         for(let i = 0; i < this.elements.length; i++) {
@@ -115,7 +128,7 @@ class UIAutoLayoutElement {
             else if(this.params[i] == "y2") newParams.push(y1 + this.calculateSize()-this.padding);
             else if(this.params[i] == "id") newParams.push(this.id);
 
-            else if(typeof(this.params[i]) == "function") {
+            else if(typeof(this.params[i]) == "function" && this.params[i].prototype == null) {
                 newParams.push(this.params[i]());
             }
 

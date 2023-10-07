@@ -1,5 +1,7 @@
 class ShapeRenderer extends Component {
 
+    /**@type {ShapeAsset} */
+    shape;
     /**@type {Color} */
     fillColor;
     /**@type {Color} */
@@ -13,6 +15,7 @@ class ShapeRenderer extends Component {
 
     constructor() {
         super("Shape Renderer");
+        this.shape = assets.getAsset("engine/shapes/square");
         this.fillColor = new Color("#31dba8");
         this.outlineColor = new Color("#ffffff");
         this.outlineWidth = 5;
@@ -22,12 +25,10 @@ class ShapeRenderer extends Component {
 
     /**@param {SceneRendererTools} tools */
     renderShape(tools) {
-        let points = [
-            this.transform.localToWorldSpace(new Vector2(-1, -1)),
-            this.transform.localToWorldSpace(new Vector2(1, -1)),
-            this.transform.localToWorldSpace(new Vector2(1, 1)),
-            this.transform.localToWorldSpace(new Vector2(-1, 1)),
-        ]
+        let points = []
+        for(let i = 0; i < this.shape.points.length; i++) {
+            points.push(this.transform.localToWorldSpace(this.shape.points[i]));
+        }
 
         let outlineWidth = this.outlineWidth;
         if(this.outlineWorldSpace)
@@ -44,4 +45,5 @@ class ShapeRenderer extends Component {
     setOutlineWidth(width) {this.outlineWidth = width;}
     setBorderRadius(radius) {this.borderRadius = radius;}
     setOutlineWorldSpace(boo) {this.outlineWorldSpace = boo;}
+    setShape(shape) { this.shape = shape; }
 }

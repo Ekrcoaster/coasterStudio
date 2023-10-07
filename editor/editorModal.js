@@ -26,6 +26,10 @@ class EditorModal {
     onClose;
     data;
 
+    desiredX;
+    desiredY;
+    borderPadding;
+
     /**
      * 
      * @param {String} id 
@@ -44,16 +48,30 @@ class EditorModal {
         this.onRender = onRender;
         this.onClose = onClose;
         this.data = data;
+        this.desiredX = null;
+        this.desiredY = null;
+        this.borderPadding = 20;
+    }
+
+    setDesiredXY(x, y, borderPadding = 20) {
+        this.desiredX = x;
+        this.desiredY = y;
+        this.borderPadding = borderPadding;
+        return this;
     }
 
     calculateDesiredPosition() {
-        let x = mouse.x-this.width/2;
-        if(x + this.width+20 > canvas.width)
-            x -= (x + this.width+20) - canvas.width;
+        if(this.desiredX == null)
+            this.desiredX = mouse.x-this.width/2;
+        let x = this.desiredX;
+        if(x + this.width+this.borderPadding > canvas.width)
+            x -= (x + this.width+this.borderPadding) - canvas.width;
 
-        let y = mouse.y;
-        if(y + this.height+20 > canvas.height)
-            y -= (y + this.height+20) - canvas.height;
+        if(this.desiredY == null)
+            this.desiredY = mouse.y;
+        let y = this.desiredY;
+        if(y + this.height+this.borderPadding > canvas.height)
+            y -= (y + this.height+this.borderPadding) - canvas.height;
 
         return {x: x, y: y}
     }

@@ -104,6 +104,40 @@ class StringFieldOption {
     }
 }
 
+class DropdownItem {
+    /**
+     * @callback DropdownItemIconRender
+     * @param {Number} x1
+     * @param {Number} y1
+     * @param {Number} x2
+     * @param {Number} y2
+     */
+    label;
+    id;
+    obj;
+    /**@type {DropdownItemIconRender} */
+    onIconRender;
+
+    constructor(id, label, obj) {
+        this.id = id;
+        this.label = label;
+        this.obj = obj;
+    }
+
+    /**@param {DropdownItemIconRender} onRender */
+    setOnRender(onRender) {
+        this.onIconRender = onRender;
+        return this;
+    }
+
+    /** @param {ImageAsset} image  */
+    setImageIcon(image) {
+        this.onIconRender = (x1, y1, x2, y2) => {
+            UI_LIBRARY.drawImage(image, x1, y1, x2, y2, new DrawImageOption());
+        }
+        return this;
+    }
+}
 
 const UI_WIDGET = {
     /**
@@ -471,7 +505,7 @@ const UI_WIDGET = {
     editorGUILabelPre: function(label, x1, y1, x2, y2, divide = 2) {
         if(label) {
             let labelOffset = (x2-x1)/divide;
-            UI_LIBRARY.drawText(label, x1, y1, x2+labelOffset, y2, COLORS.inspectorLabel);
+            UI_LIBRARY.drawText(label, x1, y1, x2 -labelOffset, y2, COLORS.inspectorLabel);
             return labelOffset;
         }
         return 0;
@@ -492,7 +526,7 @@ const UI_WIDGET = {
         let half = (x2-x1)/2-spacing;
         let leftSpacing = 0;
         if(label) {
-            UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, 1);
+            UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, 2);
             leftSpacing = half;
         }
         half = (x2-(x1+leftSpacing))/2-spacing;
@@ -706,5 +740,92 @@ const UI_WIDGET = {
         }
 
         return click && hover;
+    },
+    
+    editorGUIAssetComponent: function(id, label, current, type, isEditable, x1, y1, x2, y2) {
+        let options = assets.getAssetsOfType("engine", type);
+        let index = options.indexOf(current);
+        options = options.map((x) => {
+            return new DropdownItem(x.id, x.name, x).setOnRender((x1, y1 ,x2, y2) => {
+                x.renderPreview(x1, y1, x2, y2);
+            });
+        });
+
+        let labelOffset = UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, 2);
+        return UI_WIDGET.dropdown(id, options, index, isEditable, x1+labelOffset, y1, x2, y2);
+    },
+    
+    /**
+     * 
+     * @param {String} id 
+     * @param {DropdownItem[]} options 
+     * @param {Number} selectedIndex 
+     * @param {boolean} isEditable 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     */
+    dropdown: function(id, options, selectedIndex, isEditable, x1, y1, x2, y2) {
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground.setAlpha(isEditable ? 1 : 0.5));
+        if(selectedIndex > -1) {
+            drawItem(x1, y1, x2, y2, options[selectedIndex]);
+        }
+
+        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0);
+        let click = mouse.isToolFirstUp(id);
+
+        let itemHeight = 45;
+
+        UI_LIBRARY.drawEllipse(x2-(y2-y1) / 2, (y1+y2)/2, (y2-y1) / 2, (y2-y1) / 2, hover ? COLORS.hoverDropdownHandle : COLORS.normalDropdownHandle);
+
+        if(click && hover) {
+            editor.createModal(new EditorModal(id, (x2-x1), itemHeight * options.length, {
+                selectedIndex: selectedIndex
+            }, (x1, y1, x2, y2, data) => {
+                for(let i = 0; i < options.length; i++) {
+                    let y= y1 + (itemHeight * i);
+                    let hoveringMe = mouse.isHoveringOver(x1, y, x2, y+itemHeight);
+                    let click = mouse.clickUp;
+                    if(hoveringMe)
+                        UI_LIBRARY.drawRectCoords(x1, y, x2, y+itemHeight, 0, COLORS.dropdownHoverBackground);
+                    if(selectedIndex == i)
+                        UI_LIBRARY.drawRectCoords(x1, y, x2, y+itemHeight, 0, COLORS.dropdownSelectedBackground);
+
+                    drawItem(x1, y, x2, y+itemHeight, options[i]);
+
+                    if(click && hoveringMe) {
+                        data.selectedIndex = i;
+                        editor.closeActiveModal();
+                    }
+                }
+            }, (reason, data) => {
+                widgetCacheData[id] = data;
+            }).setDesiredXY(x1, y2, 0));
+        }
+
+        let applied = false;
+        if(widgetCacheData[id] != null) {
+            selectedIndex = widgetCacheData[id].selectedIndex;
+            delete widgetCacheData[id];
+            applied = true;
+            NeedsReRendering();
+        }
+        
+        return {
+            selectedIndex: selectedIndex,
+            applied: applied,
+            selected: options[selectedIndex]
+        }
+
+        /**@param {DropdownItem} item  */
+        function drawItem(x1, y1, x2, y2, item) {
+            let offset = 5;
+            if(item.onIconRender != null) {
+                item.onIconRender(x1+offset+5, y1+6, x1+(y2-y1)-5, y2-6);
+                offset += (y2-y1);
+            }
+            UI_LIBRARY.drawText(item.label, x1+offset, y1, x2, y2, COLORS.dropdownItemText);
+        }
     }
 }

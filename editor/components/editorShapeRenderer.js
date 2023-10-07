@@ -7,11 +7,12 @@ class EditorShapeRenderer extends EditorComponent {
         super(target);
         this.layout = new UIAutoLayout();
 
+        this.layout.assetComponentField("Shape", () => this.target.shape, ShapeAsset, (asset) => {this.target.setShape(asset);});
         this.layout.colorField("Fill Color", () => this.target.fillColor, (color) => {this.target.setFillColor(color);});
         this.layout.colorField("Outline Color", () => this.target.outlineColor, (color) => {this.target.setOutlineColor(color);});
         this.layout.numberField("Outline Width", () => this.target.outlineWidth, new StringFieldOption("numbers_only"), (width) => {this.target.setOutlineWidth(width);});
         this.layout.indent++;
-        this.layout.boolField("World Space", () => this.target.outlineWorldSpace, (outlineWorldSpace) => {this.target.setOutlineWorldSpace(outlineWorldSpace);});
+        this.layout.boolField("World Consistent", () => this.target.outlineWorldSpace, (outlineWorldSpace) => {this.target.setOutlineWorldSpace(outlineWorldSpace);});
         this.layout.indent--;
         this.layout.numberField("Border Radius", () => this.target.borderRadius, new StringFieldOption("numbers_only"), (width) => {this.target.setBorderRadius(width);});
     }

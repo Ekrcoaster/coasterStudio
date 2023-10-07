@@ -22,7 +22,6 @@ var keyboard;
 window.onload = Initalize;
 let needsRendering = true;
 function Initalize() {
-
     assets = new AssetEngine();
     engine = new Engine();
     editor = new Editor();
@@ -72,10 +71,10 @@ function PostTick() {
 }
 
 function Render() {
+    needsRendering = false;
     if(editor) editor.render(0, 0, canvas.width, canvas.height);
     engine.render(0, 0, canvas.width, canvas.height);
     mouse.render();
-    needsRendering = false;
 }
 
 function NeedsReRendering() {needsRendering = true;}
