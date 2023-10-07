@@ -14,6 +14,7 @@ class EditorTransformComponent extends EditorComponent {
         this.layout.vector2Field("Position", () => transform.localPosition, null, (res) => {transform.setLocalPosition(res);});
         this.layout.numberField("Angle", () => transform.localAngle, null, (res) => {transform.setLocalAngle(res);});
         this.layout.vector2Field("Scale", () => transform.localScale, null, (res) => {transform.setLocalScale(res);});
+        this.layout.vector2Field("Sheer", () => transform.localSheer, null, (res) => {transform.setLocalSheer(res);});
     }
 
     onRender(x1, y1, x2, y2, width, height) {
