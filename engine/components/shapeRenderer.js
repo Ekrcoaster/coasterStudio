@@ -29,7 +29,7 @@ class ShapeRenderer extends RenderingComponent {
 
         let outlineWidth = this.outlineWidth;
         if(this.outlineWorldSpace)
-            outlineWidth *= tools.sceneWindow.getRealPixelTileSize() / tools.sceneWindow.pixelTileSize;
+            outlineWidth *= tools.getRealPixelTileSize() / tools.pixelTileSize;
         tools.polygon(points, 
             new DrawShapeOption(this.fillColor, this.outlineColor, outlineWidth)
             .setRoundedCorners(this.borderRadius));

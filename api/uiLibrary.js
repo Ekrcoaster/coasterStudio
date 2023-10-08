@@ -782,5 +782,8 @@ const UI_UTILITY = {
             b: UI_UTILITY.lerp(a.b, b.b, amount),
             a: UI_UTILITY.lerp(a.a, b.a, amount)
         });
+    },
+    distance: function(x1, y1, x2, y2) {
+        return Math.sqrt(((y2 - y1) ** 2) + ((x2 - x1) ** 2));
     }
 }

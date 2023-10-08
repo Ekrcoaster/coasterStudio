@@ -93,7 +93,9 @@ class Transform extends Component {
 
     /**@param {SceneRendererTools} tools */
     onGizmosSelected(tools) {
-        if(this.isHeader) return;
-        this.transform.setWorldPosition(tools.gizmoMove(this.transform.id, this.transform.getWorldPosition()));
+        if(this.gameObject.isHeader) return;
+        this.setWorldPosition(tools.gizmoMove(this.id + "move", this.getWorldPosition()));
+
+        this.setLocalAngle(tools.gizmoRotation(this.id + "rotate", this.getWorldPosition(), this.localAngle));
     }
 }

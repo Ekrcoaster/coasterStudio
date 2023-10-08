@@ -10,22 +10,20 @@ class SceneWindow extends EditorWindow {
     downScreenX;
     downScreenY;
 
-    pixelTileSize = 64;
-
     constructor() {
         super("Scene");
         this.screenX = 0;
         this.screenY = 0;
         this.screenScale = 1;
         this.pixelTileSize = 64;
-        this.tools = new SceneRendererTools(this);
+        this.tools = new SceneRendererTools();
     }
 
     render(x1, y1, x2, y2, width, height) {
         UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.sceneBackgroundColor);
 
         // setup the tool
-        this.tools._setScreenView(x1, y1, x2, y2, width, height);
+        this.tools._setScreenView(x1, y1, x2, y2, width, height, this.screenX, this.screenY, this.screenScale);
 
         this.renderGrid(x1, y1, x2, y2);
 
@@ -69,7 +67,7 @@ class SceneWindow extends EditorWindow {
 
             // then calculate the new position based on how much it moved
             let downDistances = mouse.getDownDistanceSeperate();
-            let sensitivity = 1/this.getRealPixelTileSize();
+            let sensitivity = 1/this.tools.getRealPixelTileSize();
             if(this.downScreenX != null && this.downScreenY != null) {
                 this.screenX = this.downScreenX + downDistances.x * sensitivity;
                 this.screenY = this.downScreenY + downDistances.y * sensitivity;
@@ -128,10 +126,6 @@ class SceneWindow extends EditorWindow {
         
         let center = this.tools._coordToScreenSpace(0, 0, 0, 0);
         UI_LIBRARY.drawRectCoords(center.x-10, center.y-10, center.x+10, center.y+10, 45, COLORS.sceneGridCenterColor);
-    }
-
-    getRealPixelTileSize() {
-        return this.pixelTileSize * this.screenScale;
     }
 
     tick() {

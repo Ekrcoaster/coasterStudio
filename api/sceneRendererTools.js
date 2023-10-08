@@ -1,33 +1,33 @@
 class SceneRendererTools {
-    /**@type {SceneWindow} */
-    sceneWindow;
 
     x1;y1;x2;y2;width;height;
+    screenX;screenY;screenScale;
 
-    toolCache;
+    pixelTileSize;
 
-    /**@param {SceneWindow} sceneWindow */
-    constructor(sceneWindow) {
-        this.sceneWindow = sceneWindow;
-        this.toolCache = {};
+    constructor() {
+        this.pixelTileSize = 64;
     }
 
-    _setScreenView(x1, y1, x2, y2, width, height) {
+    _setScreenView(x1, y1, x2, y2, width, height, screenX, screenY, screenScale) {
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
         this.width = width;
         this.height = height;
+        this.screenX = screenX;
+        this.screenY = screenY;
+        this.screenScale = screenScale;
     }
 
     _coordToScreenSpace(x, y, width, height) {
-        x += this.sceneWindow.screenX;
-        y += this.sceneWindow.screenY;
-        x *= this.sceneWindow.getRealPixelTileSize();
-        y *= this.sceneWindow.getRealPixelTileSize();
-        width *= this.sceneWindow.getRealPixelTileSize();
-        height *= this.sceneWindow.getRealPixelTileSize();
+        x += this.screenX;
+        y += this.screenY;
+        x *= this.getRealPixelTileSize();
+        y *= this.getRealPixelTileSize();
+        width *= this.getRealPixelTileSize();
+        height *= this.getRealPixelTileSize();
         let center =new Vector2(this.x1 + this.width / 2, this.y1 + this.height/2);
         return {
             x: x + center.x,
@@ -37,14 +37,18 @@ class SceneRendererTools {
         }
     }
 
+    getRealPixelTileSize() {
+        return this.pixelTileSize * this.screenScale;
+    }
+
     _screenSpaceToCoord(x, y) {
         let center = new Vector2(this.x1 + this.width / 2, this.y1 + this.height/2);
         x -= center.x;
         y -= center.y;
-        x /= this.sceneWindow.getRealPixelTileSize();
-        y /= this.sceneWindow.getRealPixelTileSize();
-        x -= this.sceneWindow.screenX;
-        y -= this.sceneWindow.screenY;
+        x /= this.getRealPixelTileSize();
+        y /= this.getRealPixelTileSize();
+        x -= this.screenX;
+        y -= this.screenY;
 
         return {
             x: x,
@@ -96,13 +100,11 @@ class SceneRendererTools {
                 // handle the offset
                 let old = position;
                 position = new Vector2(t._screenSpaceToCoord(mouse.x, mouse.y));
-                let offset = t.toolCache[hoverID] || position.subtractNew(old);
-                t.toolCache[hoverID] = offset;
+                let offset = mouse.activeToolInitData[hoverID] || position.subtractNew(old);
+                mouse.activeToolInitData[hoverID] = offset;
                 position.subtract(offset);
             } else {
                 mouse.removeActiveTool(hoverID);
-                if(t.toolCache[hoverID])
-                    delete t.toolCache[hoverID];
             }
     
             // then draw the square
@@ -142,8 +144,8 @@ class SceneRendererTools {
                 mouse.setActiveTool(hoverID);
                 let old = position;
                 position = new Vector2(t._screenSpaceToCoord(mouse.x, mouse.y));
-                let offset = t.toolCache[hoverID] || position.subtractNew(old);
-                t.toolCache[hoverID] = offset;
+                let offset = mouse.activeToolInitData[hoverID] || position.subtractNew(old);
+                mouse.activeToolInitData[hoverID] = offset;
                 position.subtract(offset);
                 if(isX)
                     position.y = old.y;
@@ -151,8 +153,6 @@ class SceneRendererTools {
                     position.x = old.x;
             } else {
                 mouse.removeActiveTool(hoverID);
-                if(t.toolCache[hoverID])
-                    delete t.toolCache[hoverID];
             }
 
             // then draw the arrow
@@ -183,6 +183,34 @@ class SceneRendererTools {
             }
         }
         return position;
+    }
+
+    gizmoRotation(id, position, angle, size = 1) {
+        let screenSpace = this._coordToScreenSpace(position.x, position.y);
+
+        let radius = 150*size;
+        let mouseDist = mouse.distanceTo(screenSpace.x, screenSpace.y);
+        let hover = (mouseDist > radius-10 && mouseDist < radius+10) || mouse.activeTool == id;
+        let down = mouse.isToolDown(id);
+        
+        UI_LIBRARY.drawEllipse(screenSpace.x, screenSpace.y, radius*2, radius*2, (hover) ? COLORS.rotateGizmoHover : COLORS.rotateGizmoNormal);
+
+        if(hover && down) {
+            mouse.setActiveTool(id);
+
+            let newAngle = mouse.angleTo(screenSpace.x, screenSpace.y);
+            let offset = mouse.activeToolInitData[id] || (newAngle - angle);
+            if(offset < -180)
+                offset += 360;
+            if(offset > 180)
+                offset -= 360;
+            mouse.activeToolInitData[id] = offset;
+            angle = newAngle - offset;
+        } else {
+            mouse.removeActiveTool(id);
+        }
+
+        return angle;        
     }
 
     /**@param {{x: 0, y: 0}[]} points @param {DrawShapeOption} draw */

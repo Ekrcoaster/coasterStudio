@@ -266,7 +266,7 @@ class Mouse {
         return this.doubleClickFirstDown && (this.activeTool == null || this.activeTool == id);
     }
 
-    setActiveTool(id, initData) {
+    setActiveTool(id, initData = {}) {
         if(id == this.activeTool) return;
         this.activeTool = id;
         this.activeToolInitData = initData;
@@ -298,7 +298,7 @@ class Mouse {
 
     getDownDistance() {
         if(!this.down) return 0;
-        return Math.sqrt(((this.y - this.downY) ** 2) + ((this.x - this.downX) ** 2));
+        return this.distanceTo(this.downX, this.downY);
     }
 
     /**
@@ -332,6 +332,10 @@ class Mouse {
 
     angleTo(x, y) {
         return UI_UTILITY.getAngleBetweenPoints(mouse.x, mouse.y, x, y);
+    }
+
+    distanceTo(x, y) {
+        return UI_UTILITY.distance(this.x, this.y, x, y);
     }
 }
 
