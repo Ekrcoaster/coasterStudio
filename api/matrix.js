@@ -35,6 +35,23 @@ class Matrix {
         ]));
         return this;
     }
+    setAsInverseTransformMatrix(x, y, angle, scaleX, scaleY, sheerX = 0, sheerY = 0) {
+        this.elementRows = [
+            [scaleX, sheerX, x],
+            [sheerY, scaleY, y],
+            [0, 0, 1]
+        ];
+        let rad = DEGREE_TO_RADIANS * angle;
+        this.inverse();
+        let rot = new Matrix([
+            [Math.cos(rad), Math.sin(rad), 0],
+            [-Math.sin(rad), Math.cos(rad), 0],
+            [0, 0, 1]
+        ]);
+        rot.inverse();
+        this.multiply(rot);
+        return this;
+    }
 
     /**@param {Matrix} b */
     addNew(b) {
@@ -81,15 +98,30 @@ class Matrix {
             }
             res.push(temp);
         }
+
+        for(let r = 0; r < res.length; r++) {
+            for(let c = 0; c < res[r].length; c++)
+                res[r][c] = Math.round(res[r][c] * 1000000) / 1000000;
+        }
+
         return res;
     }
 
     getElement(r, c) {
         return this.elementRows[r][c];
     }
+
+    inverse() {
+        this.elementRows = this._inverse();
+        return this;
+    }
+
+    inverseNew() {
+        return new Matrix(this._inverse());
+    }
     
     // not mine, https://web.archive.org/web/20210406035905/http://blog.acipo.com/matrix-inversion-in-javascript/
-    invertMatrix(){
+    _inverse(){
         // I use Guassian Elimination to calculate the inverse:
         // (1) 'augment' the matrix (left) by the identity (on the right)
         // (2) Turn the matrix on the left into the identity by elemetry row ops
@@ -100,7 +132,7 @@ class Matrix {
         // (c) Add 2 rows
         
         //if the matrix isn't square: exit (error)
-        if(this.elementRows.length !== this.elementRows[0].length){return "a";}
+        if(this.elementRows.length !== this.elementRows[0].length){return "Matrix isn't square!";}
         
         //create the identity matrix (I), and a copy (C) of the original
         var i=0, ii=0, j=0, dim=this.elementRows.length, e=0, t=0;
@@ -147,7 +179,7 @@ class Matrix {
                 //get the new diagonal
                 e = C[i][i];
                 //if it's still 0, not invertable (error)
-                if(e==0){return "b"}
+                if(e==0){return "Not invertable!"}
             }
             
             // Scale this row down by e (so we have a 1 on the diagonal)
@@ -179,6 +211,6 @@ class Matrix {
         
         //we've done all operations, C should be the identity
         //matrix I should be the inverse:
-        return new Matrix(I);
+        return I;
     }
 }

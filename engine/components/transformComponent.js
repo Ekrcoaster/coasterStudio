@@ -49,10 +49,6 @@ class Transform extends Component {
         return new Vector2(res.getElement(0, 0), res.getElement(1, 0));
     }
 
-    worldToLocalSpace(position) {
-        let res = this.getWorldToLocalMatrix().multiplyNew(new Matrix([[position.x], [position.y], [1]]));
-        return new Vector2(res.getElement(0, 0), res.getElement(1, 0));
-    }
 
     /**@returns {Matrix} */
     getLocalToWorldMatrix() {
@@ -64,9 +60,9 @@ class Transform extends Component {
     }
 
     getWorldToLocalMatrix() {
-        let myself = new Matrix().setAsTransformMatrix(this.localPosition.x, this.localPosition.y, this.localAngle, this.localScale.x, this.localScale.y, this.localSheer.x, this.localSheer.y).invertMatrix();
+        let myself = new Matrix().setAsInverseTransformMatrix(this.localPosition.x, this.localPosition.y, this.localAngle, this.localScale.x, this.localScale.y, this.localSheer.x, this.localSheer.y);
         if(this.gameObject.parent != null)
-            myself = this.gameObject.parent.transform.getLocalToWorldMatrix().multiply(myself);
+            myself = this.gameObject.parent.transform.getWorldToLocalMatrix().multiply(myself).inverse();
     
         return myself;
     }
@@ -79,6 +75,13 @@ class Transform extends Component {
         // then make sure all of the children have been updated
         for(let i = 0; i < this.gameObject.children.length; i++)
             this.gameObject.children[i].transform._updateTransform();
+    }
+
+    worldToLocalSpace(position) {
+        if(this.parent == null) return position;
+
+        let res = this.parent.getLocalToWorldMatrix().inverse().multiplyNew(new Matrix([[position.x], [position.y], [1]]));
+        return new Vector2(res.getElement(0, 0), res.getElement(1, 0));
     }
 
     /**
