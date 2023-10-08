@@ -90,4 +90,10 @@ class Transform extends Component {
     setWorldPosition(pos) {
         this.setLocalPosition(this.worldToLocalSpace(pos));
     }
+
+    /**@param {SceneRendererTools} tools */
+    onGizmosSelected(tools) {
+        if(this.isHeader) return;
+        this.transform.setWorldPosition(tools.gizmoMove(this.transform.id, this.transform.getWorldPosition()));
+    }
 }

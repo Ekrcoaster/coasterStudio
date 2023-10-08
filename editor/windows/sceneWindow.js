@@ -35,11 +35,19 @@ class SceneWindow extends EditorWindow {
             if(editor.allComponentsCache[id].target.gameObject.activeInHierarchy)
                 editor.allComponentsCache[id].onSceneRender(editor.allComponentsCache[id].target.transform, this.tools);
         }
-
+        
         // now render all of the selected components
         for(let i = 0; i < editor.selectedEditorComponentsCache.length; i++) {
-            if(editor.selectedEditorComponentsCache[i].target.gameObject.activeInHierarchy && editor?.selectedComponentsCache[i] != null)
+            if(editor.selectedEditorComponentsCache[i].target.gameObject.activeInHierarchy && editor?.selectedComponentsCache[i] != null) {
                 editor.selectedEditorComponentsCache[i].onSelectedSceneRender(editor?.selectedComponentsCache[i]?.transform, this.tools);
+            }
+        }
+
+        // finally, render all of the onGizmoSelected for each component in the scene
+        for(let i = 0; i < editor.selectedEditorComponentsCache.length; i++) {
+            if(editor.selectedEditorComponentsCache[i].target.gameObject.activeInHierarchy && editor?.selectedComponentsCache[i] != null) {
+                editor.selectedEditorComponentsCache[i].target.onGizmosSelected(this.tools);
+            }
         }
 
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, "scene" + this.container?.id);
@@ -48,7 +56,9 @@ class SceneWindow extends EditorWindow {
         // handle dragging 
         if(down && hover) {
             let hoveringObjects = this.getHoveringObjects();
-            console.log(hoveringObjects)
+            if(mouse.clickDown) {
+                editor.handleSelectClick(hoveringObjects[0]?.target?.gameObject);
+            }
 
             // save the screens' og position when clicked
             if(mouse.clickDown) {
@@ -77,7 +87,6 @@ class SceneWindow extends EditorWindow {
         /**@type {RenderingComponent[]} */
         let hovering = [];
         let mousePos = this.tools._screenSpaceToCoord(mouse.x, mouse.y);
-        console.log(mousePos)
         for(let id in editor.allComponentsCache) {
             // ensure the object is active
             if(editor.allComponentsCache[id].target instanceof RenderingComponent && editor.allComponentsCache[id].target.gameObject.activeInHierarchy) {

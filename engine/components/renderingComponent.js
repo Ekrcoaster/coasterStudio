@@ -7,6 +7,9 @@ class RenderingComponent extends Component {
     render(tools) {}
 
     isInside(x, y, padding = 0) {
-        return this.bounds.isInside(x, y, padding);
+        return this.getBounds().isInside(x, y, padding);
     }
+
+    /**@returns {Bounds} */
+    getBounds() {return this.bounds;}
 }

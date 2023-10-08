@@ -29,7 +29,7 @@ class HierarchyWindow extends EditorWindow {
         let deselect = mouse.clickDown && mouse.isHoveringOver(x1, y, x2, Math.max(y, y2));
 
         if(deselect)
-            editor.setOnlySelected(null, true);
+            editor.handleSelectClick(null);
 
         this.cacheObjScreenPos = newCache;
         
@@ -62,10 +62,7 @@ class HierarchyWindow extends EditorWindow {
             if(data.hover && mouse.getDownDistance() > 5 && obj.id != scene.header.id) {
                 startDragging(obj);
             } else if(data.click) {
-                if(keyboard.isShiftDown)
-                    editor.setSelected(obj, !editor.isSelected(obj));
-                else 
-                    editor.setOnlySelected(obj, !editor.isSelected(obj) || editor.selectedGameObjects.size > 1);
+                editor.handleSelectClick(obj);
             }
 
             if(metaData.drawChildren) {

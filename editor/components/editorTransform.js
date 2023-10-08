@@ -38,7 +38,5 @@ class EditorTransformComponent extends EditorComponent {
      * @param {SceneRendererTools} tools
      * */
     onSelectedSceneRender(transform, tools) {
-        if(transform.gameObject.isHeader) return;
-        //transform.setWorldPosition(tools.gizmoMove(transform.id, transform.getWorldPosition()));
     }
 }

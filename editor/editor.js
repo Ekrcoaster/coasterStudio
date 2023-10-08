@@ -97,7 +97,20 @@ class Editor {
         this._updateSelected();
     }
 
+    /**
+     * This will handle the selection action of a gameobject! This is globalized so many different spaces can take advantage
+     * @param {GameObject} obj 
+     */
+    handleSelectClick(obj) {
+        if(keyboard.isShiftDown && false) // disabling for the time being, only single selection allowed
+            this.setSelected(obj, !this.isSelected(obj));
+        else 
+            this.setOnlySelected(obj, !this.isSelected(obj) || this.selectedGameObjects.size > 1);
+    }
+
     _updateSelected() {
+        this.selectedComponentsCache = [];
+
         if(editor.selectedGameObjects.length == 0) return;
         let active = editor.selectedGameObjects[0];
 

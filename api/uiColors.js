@@ -55,4 +55,11 @@ const COLORS = {
     dropdownItemText:  new DrawTextOption(25, "default", "#ffffffd8", "left", "center"),
     dropdownHoverBackground: new DrawShapeOption("#9496995e").setRoundedCorners(10),
     dropdownSelectedBackground: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
+
+    moveGizmoCenterNormal: new DrawShapeOption("#c0c0c0"),
+    moveGizmoCenterHover: new DrawShapeOption("#ffffff"),
+    moveGizmoXNormal: new DrawShapeOption("#be2828"),
+    moveGizmoXHover: new DrawShapeOption("#ff2020"),
+    moveGizmoYNormal: new DrawShapeOption("#3250b3"),
+    moveGizmoYHover: new DrawShapeOption("#3f6cff")
 }

@@ -23,4 +23,7 @@ class Component {
     onStart() {}
 
     onUpdate() {}
+
+    /**@param {SceneRendererTools} tools  */
+    onGizmosSelected(tools) {}
 }
