@@ -117,6 +117,14 @@ canvas.addEventListener("mouseup", function (evt) {
     needsRendering = true;
 });
 
+canvas.addEventListener("drop", (ev) => {
+    ev.preventDefault();
+    editor.onDropEvent(ev);
+});
+canvas.addEventListener("dragover", (ev) => {
+    ev.preventDefault();
+});
+
 canvas.addEventListener("wheel", function(evt) {
     mouse.addScroll(evt.deltaY/100);
     needsRendering = true;

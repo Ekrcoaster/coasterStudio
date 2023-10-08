@@ -175,4 +175,16 @@ class Editor {
         this.activeModal.onClose("natural", this.activeModal.data);
         this.activeModal = null;
     }
+
+    /**@param {DragEvent} ev  */
+    onDropEvent(ev) {
+        if (ev.dataTransfer.items) {
+            // Use DataTransferItemList interface to access the file(s)
+            for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+                let hoveringWindow = this.windowManager.getWindowContainerAtScreenPos(mouse.x, mouse.y);
+                console.log(hoveringWindow)
+                hoveringWindow.onFileDrop(ev.dataTransfer.items[i].getAsFile());
+            }
+        }
+    }
 }

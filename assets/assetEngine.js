@@ -1,6 +1,9 @@
 class AssetEngine {
     assets = {};
 
+    /**@type {Set<Function>} */
+    onAssetLoaded = new Set();
+
     constructor() {
         this.createFalseDirectory("engine");
         this.createFalseDirectory("engine/textures");
@@ -78,6 +81,7 @@ class AssetEngine {
     saveAsset(path, asset) {
         this.assets[path] = asset;
         asset._setPath(path);
+        this.onAssetLoadedCall(asset);
         return asset;
     }
 
@@ -107,17 +111,17 @@ class AssetEngine {
         if(path == "") return [];
         for(let p in this.assets) {
             if(this.assets[p] == null) continue;
-            if(this._isDirectorySub(path, this.assets[p].directory).isMatch)
+            if(path+"/" == this.assets[p].directory)
                 found.push(this.assets[p]);
         }
         return found;
     }
 
-    getAssetsOfType(path = "", type) {
+    getAssetsOfType(startingPath = "", type) {
         let assets = [];
         for(let p in this.assets) {
             if(this.assets[p] == null) continue;
-            if(p.startsWith(path)) {
+            if(p.startsWith(startingPath)) {
                 if(this.assets[p] instanceof type)
                     assets.push(this.assets[p]);
             }
@@ -140,7 +144,9 @@ class AssetEngine {
     _isDirectorySub(firstPath, secondPath) {
         let mySplit = firstPath.split("/");
         if(mySplit[0] == "") mySplit.shift();
+        // check if the directory even starts with it
         if(secondPath.startsWith(firstPath)) {
+            // if so, split the directories up and see if the sub paths patch
             let split = secondPath.split("/");
             let dir = "";
             for(let i = 0; i <= mySplit.length; i++) {
@@ -148,9 +154,36 @@ class AssetEngine {
                     dir += split[i] + "/";
             }
             dir = dir.substring(0, dir.length - 1);
-            return {isMatch: dir.length > 2 && dir != firstPath, dir: dir};
+
+            // if the directory is valid and it isn't the same as the current path
+            // then check if the directory is an object or a directory
+            // directories are either longer OR they point to null
+            if(dir.length > 2 && dir != firstPath) {
+                if(this.assets[dir] == null)
+                    return {isMatch: true, dir: dir}
+            }
+            return {isMatch: false, dir: ""};
         }
         return {isMatch: false, dir: ""};
+    }
+
+    /**@param {File} file */
+    uploadFile(file, path) {  
+        if(file.type.indexOf("image") > -1) {
+            console.log(file, path)
+            this.saveAsset(path + "/" + file.name, new UploadedImageAsset(file));
+        }
+    }
+
+    addAssetLoadedListener(callback = (asset) => {}) {
+        this.onAssetLoaded.add(callback);
+    }
+
+    onAssetLoadedCall(asset) {
+        this.onAssetLoaded.forEach(x => {
+            if(x != null)
+                x(asset);
+        });
     }
 }
 

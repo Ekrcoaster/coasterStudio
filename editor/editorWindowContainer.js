@@ -355,4 +355,10 @@ class EditorWindowContainer extends EditorWindowBase {
         if(depth >= maxDepth) return;
         UI_LIBRARY.drawRectCoords(x1+50, y1+50, x2-50, y2-50, 0, new DrawShapeOption("#ffffff00", "#ab28281f", 10));
     }
+
+    /**@param {File} file  */
+    onFileDrop(file) {
+        if(this.activeWindowIndex > -1 && this.activeWindowIndex < this.windows.length)
+            this.windows[this.activeWindowIndex].onFileDrop(file);
+    }
 }

@@ -33,3 +33,24 @@ class LocalImageAsset extends ImageAsset {
         document.body.append(this.image);
     }
 }
+
+class UploadedImageAsset extends ImageAsset {
+    constructor(file) {
+        super();
+        const t = this;
+        let reader = new FileReader();
+        reader.onload = function(){
+            let dataURL = reader.result;
+            t.image = new Image();
+            t.image.onload = (ev) => {
+                t.width = t.image.clientWidth;
+                t.height = t.image.clientHeight;
+            }
+            t.image.id = "image_" + t.path;
+            t.image.src = dataURL;
+            t.isLoaded = true;
+            document.body.append(t.image);
+        };
+        reader.readAsDataURL(file);
+    }
+}

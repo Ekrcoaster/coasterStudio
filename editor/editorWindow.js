@@ -24,4 +24,7 @@ class EditorWindow {
     postRender() {
         UI_LIBRARY.restore();
     }
+
+    /**@param {File} file  */
+    onFileDrop(file) {}
 }

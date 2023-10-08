@@ -10,6 +10,11 @@ class AssetWindow extends EditorWindow {
     constructor() {
         super("Asset");
         this.setPath("editor");
+        const t = this;
+
+        assets.addAssetLoadedListener(() => {
+            t.reloadCache()
+        });
     }
 
     render(x1, y1, x2, y2, width, height) {
@@ -69,13 +74,23 @@ class AssetWindow extends EditorWindow {
 
     setPath(path) {
         this.currentPath = path;
-        this.currentAssets = assets.getAssets(path);
-        this.currentSubPaths = Array.from(assets.getSubPaths(path));
+        this.reloadCache();
     }
 
     goBackPath() {
         let path = this.currentPath.split("/");
         path.pop();
         this.setPath(path.join("/"));
+    }
+
+    reloadCache() {
+        let current = this.currentPath;
+        this.currentAssets = assets.getAssets(current);
+        this.currentSubPaths = Array.from(assets.getSubPaths(current));
+    }
+
+    /**@param {File} file */
+    onFileDrop(file) {
+        assets.uploadFile(file, this.currentPath);
     }
 }

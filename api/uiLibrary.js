@@ -614,6 +614,10 @@ const UI_LIBRARY = {
      */
     drawImage: function(imageAsset, x1, y1, x2, y2, draw) {
         if(draw == null) draw = new DrawImageOption();
+        if(!imageAsset.isLoaded) { return; };
+        if(imageAsset.image == null)
+            throw "Image's image is null!";
+
         let firstCorner = {
             x: draw.uvs[0].x * imageAsset.width,
             y: draw.uvs[0].y * imageAsset.height
