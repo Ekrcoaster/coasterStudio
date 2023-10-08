@@ -13,9 +13,12 @@ class ShapeRenderer extends RenderingComponent {
     /**@type {boolean} */
     outlineWorldSpace;
 
-    constructor(gameObject) {
+    constructor(gameObject, shape) {
         super("Shape Renderer", gameObject);
-        this.setShape(assets.getAsset("engine/shapes/square"));
+        if(shape == null)
+            this.setShape(assets.getAsset("engine/shapes/square"));
+        else
+            this.setShape(shape);
         this.fillColor = new Color("#31dba8");
         this.outlineColor = new Color("#ffffff");
         this.outlineWidth = 5;

@@ -137,6 +137,20 @@ class DropdownItem {
         }
         return this;
     }
+
+    render(x1, y1, x2, y2, isHovering, isSelected) {
+        if(isHovering)
+            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.dropdownHoverBackground);
+        if(isSelected)
+            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.dropdownSelectedBackground);
+
+        let offset = 5;
+        if(this.onIconRender != null) {
+            this.onIconRender(x1+offset+5, y1+6, x1+(y2-y1)-5, y2-6);
+            offset += (y2-y1);
+        }
+        UI_LIBRARY.drawText(this.label, x1+offset, y1, x2, y2, COLORS.dropdownItemText);
+    }
 }
 
 const UI_WIDGET = {
@@ -768,40 +782,19 @@ const UI_WIDGET = {
      */
     dropdown: function(id, options, selectedIndex, isEditable, x1, y1, x2, y2) {
         UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground.setAlpha(isEditable ? 1 : 0.5));
-        if(selectedIndex > -1) {
-            drawItem(x1, y1, x2, y2, options[selectedIndex]);
+        if(selectedIndex > -1 && options[selectedIndex] != null) {
+            options[selectedIndex].render(x1, y1, x2, y2, false, false);
         }
 
-        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0);
+        let hover = isEditable && mouse.isHoveringOver(x1, y1, x2, y2, 0);
         let click = mouse.isToolFirstUp(id);
 
-        let itemHeight = 45;
 
         UI_LIBRARY.drawEllipse(x2-(y2-y1) / 2, (y1+y2)/2, (y2-y1) / 2, (y2-y1) / 2, hover ? COLORS.hoverDropdownHandle : COLORS.normalDropdownHandle);
 
         if(click && hover) {
-            editor.createModal(new EditorModal(id, (x2-x1), itemHeight * options.length, {
-                selectedIndex: selectedIndex
-            }, (x1, y1, x2, y2, data) => {
-                for(let i = 0; i < options.length; i++) {
-                    let y= y1 + (itemHeight * i);
-                    let hoveringMe = mouse.isHoveringOver(x1, y, x2, y+itemHeight);
-                    let click = mouse.clickUp;
-                    if(hoveringMe)
-                        UI_LIBRARY.drawRectCoords(x1, y, x2, y+itemHeight, 0, COLORS.dropdownHoverBackground);
-                    if(selectedIndex == i)
-                        UI_LIBRARY.drawRectCoords(x1, y, x2, y+itemHeight, 0, COLORS.dropdownSelectedBackground);
-
-                    drawItem(x1, y, x2, y+itemHeight, options[i]);
-
-                    if(click && hoveringMe) {
-                        data.selectedIndex = i;
-                        editor.closeActiveModal();
-                    }
-                }
-            }, (reason, data) => {
-                widgetCacheData[id] = data;
-            }).setDesiredXY(x1, y2, 0));
+            UI_WIDGET.popUpDropdownList(id, options, selectedIndex, x1, y1, x2, y2, (i) => {
+            });
         }
 
         let applied = false;
@@ -817,15 +810,38 @@ const UI_WIDGET = {
             applied: applied,
             selected: options[selectedIndex]
         }
+    },
+    /**
+     * 
+     * @param {String} id 
+     * @param {DropdownItem[]} options 
+     * @param {Number} selectedIndex 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     */
+    popUpDropdownList: function(id, options, selectedIndex, x1, y1, x2, y2, onSelect = (index) => {}) {
+        let itemHeight = 45;
 
-        /**@param {DropdownItem} item  */
-        function drawItem(x1, y1, x2, y2, item) {
-            let offset = 5;
-            if(item.onIconRender != null) {
-                item.onIconRender(x1+offset+5, y1+6, x1+(y2-y1)-5, y2-6);
-                offset += (y2-y1);
+        editor.createModal(new EditorModal(id, (x2-x1), itemHeight * options.length, {
+            selectedIndex: selectedIndex
+        }, (x1, y1, x2, y2, data) => {
+            for(let i = 0; i < options.length; i++) {
+                let y= y1 + (itemHeight * i);
+                let hoveringMe = mouse.isHoveringOver(x1, y, x2, y+itemHeight);
+                let click = mouse.clickUp;
+                options[i].render(x1, y, x2, y+itemHeight, hoveringMe, i == selectedIndex);
+           
+
+                if(click && hoveringMe) {
+                    onSelect(i);
+                    data.selectedIndex = i;
+                    editor.closeActiveModal();
+                }
             }
-            UI_LIBRARY.drawText(item.label, x1+offset, y1, x2, y2, COLORS.dropdownItemText);
-        }
+        }, (reason, data) => {
+            widgetCacheData[id] = data;
+        }).setDesiredXY(x1, y2, 0));
     }
 }

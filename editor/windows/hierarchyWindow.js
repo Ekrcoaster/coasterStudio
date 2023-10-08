@@ -32,6 +32,19 @@ class HierarchyWindow extends EditorWindow {
             editor.handleSelectClick(null);
 
         this.cacheObjScreenPos = newCache;
+
+        if(UI_WIDGET.button("New Object", x1, y2-45, x2, y2)) {
+            let primitives = assets.getAssetsOfType("editor/primitives", ObjectPrimitiveAsset);
+            /**@type {DropdownItem[]} */
+            let options = [];
+            for(let i = 0; i < primitives.length; i++) {
+                options.push(new DropdownItem(i, primitives[i].name, primitives[i]));
+            }
+            UI_WIDGET.popUpDropdownList(this.id + "popupNew", options, -1, x1, y2-45, x2, y2, (index) => {
+                let obj = options[index].obj.createObject(editor.activeScene);
+                editor.setOnlySelected(obj, true);
+            });
+        }
         
         /**@param {GameObject} obj */
         function recurseDepth(obj, d = 0) {

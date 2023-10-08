@@ -2,14 +2,15 @@ class AssetEngine {
     assets = {};
 
     constructor() {
-        this.setupDefaultImages();
-        this.setupDefaultShapes();
-
         this.createFalseDirectory("engine");
         this.createFalseDirectory("engine/textures");
         this.createFalseDirectory("engine/audio");
         this.createFalseDirectory("engine/scenes");
         this.createFalseDirectory("editor/icons");
+
+        this.setupDefaultImages();
+        this.setupDefaultShapes();
+        this.setupDefaultObjectPrimitives();
     }
 
     setupDefaultImages() {
@@ -42,6 +43,27 @@ class AssetEngine {
             {x: 0.5, y: -1},
             {x: -0.5, y: -1},
         ]));
+    }
+    setupDefaultObjectPrimitives() {
+        this.saveAsset("editor/primitives/square", new ObjectPrimitiveAsset((obj) => {
+            obj.name = "New Square";
+            obj.addComponent(new ShapeRenderer(obj, assets.getAsset("engine/shapes/square")));
+        }));
+
+        this.saveAsset("editor/primitives/triangle", new ObjectPrimitiveAsset((obj) => {
+            obj.name = "New Triangle";
+            obj.addComponent(new ShapeRenderer(obj, assets.getAsset("engine/shapes/triangle")));
+        }));
+
+        this.saveAsset("editor/primitives/pentagon", new ObjectPrimitiveAsset((obj) => {
+            obj.name = "New Pentagon";
+            obj.addComponent(new ShapeRenderer(obj, assets.getAsset("engine/shapes/pentagon")));
+        }));
+
+        this.saveAsset("editor/primitives/hexagon", new ObjectPrimitiveAsset((obj) => {
+            obj.name = "New Hexagon";
+            obj.addComponent(new ShapeRenderer(obj, assets.getAsset("engine/shapes/hexagon")));
+        }));
     }
 
     /**
