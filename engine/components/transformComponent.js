@@ -97,5 +97,6 @@ class Transform extends Component {
         this.setWorldPosition(tools.gizmoMove(this.id + "move", this.getWorldPosition()));
 
         this.setLocalAngle(tools.gizmoRotation(this.id + "rotate", this.getWorldPosition(), this.localAngle));
+        this.setLocalScale(tools.gizmoScale(this.id + "scale", this.getWorldPosition(), this.localScale));
     }
 }

@@ -190,7 +190,7 @@ class SceneRendererTools {
 
         let radius = 150*size;
         let mouseDist = mouse.distanceTo(screenSpace.x, screenSpace.y);
-        let hover = (mouseDist > radius-10 && mouseDist < radius+10) || mouse.activeTool == id;
+        let hover = (mouseDist > radius-10 && mouseDist < radius+10 && mouse.activeTool == null) || mouse.activeTool == id;
         let down = mouse.isToolDown(id);
         
         UI_LIBRARY.drawEllipse(screenSpace.x, screenSpace.y, radius*2, radius*2, (hover) ? COLORS.rotateGizmoHover : COLORS.rotateGizmoNormal);
@@ -211,6 +211,38 @@ class SceneRendererTools {
         }
 
         return angle;        
+    }
+
+    gizmoScale(id, position, scale, size = 1) {
+        let screenSpace = this._coordToScreenSpace(position.x, position.y);
+
+        let space = {
+            x1: screenSpace.x + 50*size * scale.x,
+            y1: screenSpace.y + 50*size * scale.y
+        }
+        space.x2 = space.x1 + 30;
+        space.y2 = space.y1 + 30;
+
+        let hover = mouse.isHoveringOver(space.x1, space.y1, space.x2, space.y2, 0, id);
+        let down = mouse.isToolDown(id);
+
+        UI_LIBRARY.drawRectCoords(space.x1, space.y1, space.x2, space.y2, 0, hover ? COLORS.moveGizmoCenterHover : COLORS.moveGizmoCenterNormal);
+
+        if(hover && down) {
+            mouse.setActiveTool(id);
+
+            let og = mouse.activeToolInitData[id] || scale;
+            mouse.activeToolInitData[id] = og;
+
+            scale = new Vector2(mouse.getDownDistanceSeperate()).scale(1 /this.pixelTileSize).add(og);
+            if(keyboard.isShiftDown)
+                scale.x = scale.y;
+
+        } else {
+            mouse.removeActiveTool(id);
+        }
+
+        return scale;    
     }
 
     /**@param {{x: 0, y: 0}[]} points @param {DrawShapeOption} draw */

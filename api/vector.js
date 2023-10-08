@@ -34,4 +34,10 @@ class Vector2 {
         this.y -= vector.y;
         return this;
     }
+
+    scale(amt) {
+        this.x *= amt;
+        this.y *= amt;
+        return this;
+    }
 }
