@@ -78,9 +78,9 @@ class Transform extends Component {
     }
 
     worldToLocalSpace(position) {
-        if(this.parent == null) return position;
+        if(this.gameObject.parent == null) return position;
 
-        let res = this.parent.getLocalToWorldMatrix().inverse().multiplyNew(new Matrix([[position.x], [position.y], [1]]));
+        let res = this.gameObject.parent.transform.getLocalToWorldMatrix().inverse().multiplyNew(new Matrix([[position.x], [position.y], [1]]));
         return new Vector2(res.getElement(0, 0), res.getElement(1, 0));
     }
 
