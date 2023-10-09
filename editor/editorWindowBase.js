@@ -73,7 +73,7 @@ class EditorWindowBase {
     tick() {}
 
     print(depth = 0) {
-        return `${space(depth)}${this.myself}: ${this.id} (${this.getWidthPercent()}  ${this.getHeightPercent()})`;
+        return `${space(depth)}${this.myself}: ${this.id} (${this.getWidthPercent()}  ${this.getHeightPercent()}) [${Math.round(this.lastScreenPos.x1)} ${Math.round(this.lastScreenPos.y1)} ${Math.round(this.lastScreenPos.x2)} ${Math.round(this.lastScreenPos.y2)}]`;
 
         function space(dep) {
             let b = "";

@@ -126,6 +126,9 @@ class EditorWindowContainer extends EditorWindowBase {
         // reset any hovering windows
         this.newWindowHoveringOverMe = null;
 
+        if(editor.windowManager.fileDropActiveWindow == this)
+            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption("#ffffff32"));
+
         /**
          * This will calculate the spacing for the tabs on the header, then provides a method to draw the tab.
          * It is done this way because we don't know the size of the window, (its based on the length of text), we can't draw tabs individually

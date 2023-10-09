@@ -6,6 +6,9 @@ class EditorWindowManager {
     debugRender = false;
     debugRenderMaxDepth = -1;
 
+    /**@type {EditorWindowContainer} */
+    fileDropActiveWindow;
+
     constructor() {
         this.flex = new EditorWindowFlex(1, "vertical");
         this.debugRender = false;
@@ -13,6 +16,11 @@ class EditorWindowManager {
     }
 
     render(x1, y1, x2, y2) {
+        if(mouse.fileDropHovering)
+            this.fileDropActiveWindow = this.getWindowContainerAtScreenPos(mouse.x, mouse.y);
+        else
+            this.fileDropActiveWindow = null;
+
         this.flex.render(x1, y1, x2, y2, x2-x1, y2-y1);
 
         if(this.debugRender)

@@ -94,14 +94,6 @@ canvas.addEventListener('mousemove', function(evt) {
     var mousePos = getMousePos(canvas, evt);
     mouse.updatePosition(mousePos.x, mousePos.y);
     needsRendering = true;
-
-    function getMousePos(canvas, evt) {
-        var rect = canvas.getBoundingClientRect();
-        return {
-          x: (evt.clientX - rect.left) * CANVAS_SCALE,
-          y: (evt.clientY - rect.top) * CANVAS_SCALE
-        };
-      }
 }, false);
     
 canvas.addEventListener("mousedown", function (evt) {
@@ -120,9 +112,24 @@ canvas.addEventListener("mouseup", function (evt) {
 canvas.addEventListener("drop", (ev) => {
     ev.preventDefault();
     editor.onDropEvent(ev);
+    mouse.fileDropHovering = false;
+    needsRendering = true;
 });
 canvas.addEventListener("dragover", (ev) => {
     ev.preventDefault();
+    needsRendering = true;
+    var mousePos = getMousePos(canvas, ev);
+    mouse.updatePosition(mousePos.x, mousePos.y);
+});
+canvas.addEventListener("dragenter", (ev) => {
+    ev.preventDefault();
+    mouse.fileDropHovering = true;
+    needsRendering = true;
+});
+canvas.addEventListener("dragleave", (ev) => {
+    ev.preventDefault();
+    mouse.fileDropHovering = false;
+    needsRendering = true;
 });
 
 canvas.addEventListener("wheel", function(evt) {
@@ -142,6 +149,14 @@ window.addEventListener('keyup',function(e) {
     needsRendering = true;
     keyboard.isCapsLockDown = e.getModifierState("CapsLock");
 },false);
+
+function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+      x: (evt.clientX - rect.left) * CANVAS_SCALE,
+      y: (evt.clientY - rect.top) * CANVAS_SCALE
+    };
+  }
 
 const UTILITY = {
     generateCode: function(length) {
@@ -180,6 +195,8 @@ class Mouse {
 
     /**@type {MouseDrag} */
     mouseDrag;
+
+    fileDropHovering = false;
     
     tick() {
         let reRenderFromMouse = false;
