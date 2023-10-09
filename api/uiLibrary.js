@@ -624,7 +624,7 @@ const UI_LIBRARY = {
      * @param {Number} y2 
      * @param {DrawImageOption} draw
      */
-    drawImage: function(imageAsset, x1, y1, x2, y2, draw) {
+    drawImage: function(imageAsset, x1, y1, x2, y2, angle, draw) {
         if(draw == null) draw = new DrawImageOption();
         if(!imageAsset.isLoaded) { return; };
         if(imageAsset.image == null)
@@ -634,12 +634,16 @@ const UI_LIBRARY = {
             x: draw.uvs[0].x * imageAsset.width,
             y: draw.uvs[0].y * imageAsset.height
         }
+        ctx.translate((x1+x2)/2, (y1+y2)/2);
+        ctx.rotate(-angle * DEGREE_TO_RADIANS);
+        ctx.translate((x1+x2)/-2, (y1+y2)/-2);
         ctx.drawImage(imageAsset.image, 
             firstCorner.x,
             firstCorner.y,
             draw.uvs[1].x * (imageAsset.width - firstCorner.x),
             draw.uvs[1].y * (imageAsset.height - firstCorner.y),
             x1, y1, (x2-x1), (y2-y1));
+        ctx.resetTransform();
             
     },
     /**

@@ -133,7 +133,7 @@ class DropdownItem {
     /** @param {ImageAsset} image  */
     setImageIcon(image) {
         this.onIconRender = (x1, y1, x2, y2) => {
-            UI_LIBRARY.drawImage(image, x1, y1, x2, y2, new DrawImageOption());
+            UI_LIBRARY.drawImage(image, x1, y1, x2, y2, 0, new DrawImageOption());
         }
         return this;
     }
@@ -609,7 +609,7 @@ const UI_WIDGET = {
                 
                     UI_LIBRARY.drawImage(assets.getAsset("editor/colorWheel"), 
                         wheelSpace.x-wheelSpace.radius, wheelSpace.y-wheelSpace.radius+wheelSpace.yOffset,
-                        wheelSpace.x+wheelSpace.radius, wheelSpace.y+wheelSpace.radius+wheelSpace.yOffset)
+                        wheelSpace.x+wheelSpace.radius, wheelSpace.y+wheelSpace.radius+wheelSpace.yOffset, 0)
 
                     let hoverInWheel = mouse.isHoveringOver(wheelSpace.x-wheelSpace.radius, wheelSpace.y-wheelSpace.radius+wheelSpace.yOffset, wheelSpace.x+wheelSpace.radius, wheelSpace.y+wheelSpace.radius+wheelSpace.yOffset);
                     if(hoverInWheel && mouse.down && isMouseFree) {
@@ -750,7 +750,7 @@ const UI_WIDGET = {
         UI_LIBRARY.drawText(text, x1+iconSpace+5, y1, x2, y2, optionalTextDraw);
 
         if(optionalIcon != null) {
-            UI_LIBRARY.drawImage(optionalIcon, x1+3, y1+3, x1+iconSpace-3, y2-3, new DrawImageOption());
+            UI_LIBRARY.drawImage(optionalIcon, x1+3, y1+3, x1+iconSpace-3, y2-3, 0, new DrawImageOption());
         }
 
         return click && hover;

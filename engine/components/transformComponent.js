@@ -99,4 +99,14 @@ class Transform extends Component {
         this.setLocalAngle(tools.gizmoRotation(this.id + "rotate", this.getWorldPosition(), this.localAngle));
         this.setLocalScale(tools.gizmoScale(this.id + "scale", this.getWorldPosition(), this.localScale));
     }
+
+    getWorldRotation() {
+        if(this.gameObject.parent == null) return this.localAngle;
+        return this.gameObject.parent.transform.getWorldRotation() + this.localAngle;
+    }
+
+    getWorldScale() {
+        if(this.gameObject.parent == null) return this.localScale;
+        return new Vector2(this.gameObject.parent.transform.getWorldScale()).multiply(this.localScale)
+    }
 }

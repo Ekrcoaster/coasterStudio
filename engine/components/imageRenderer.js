@@ -40,8 +40,13 @@ class ImageRenderer extends RenderingComponent {
 
     /**@param {SceneRendererTools} tools */
     render(tools) {
-        if(this.imageAsset != null)
-        tools.image(this.imageAsset, this.getWorldPoints(), 
+        if(this.imageAsset == null) return;
+
+        let center = this.transform.localToWorldSpace(new Vector2());
+        let scale = this.transform.getWorldScale();
+        let rotation = this.transform.getWorldRotation();
+
+        tools.image(this.imageAsset, center.x-scale.x, center.y-scale.y, center.x+scale.x, center.y+scale.y, rotation, 
             new DrawImageOption().setTopLeftUV(this.topLeftUV.x, this.topLeftUV.y).setBottomRightUV(this.bottomRightUV.x, this.bottomRightUV.y));
     }
 

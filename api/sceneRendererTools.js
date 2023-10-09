@@ -256,13 +256,10 @@ class SceneRendererTools {
         UI_LIBRARY.drawPolygon(convertedPoints, draw);
     }
     /**@param {ImageAsset} image @param {{x: 0, y: 0}[]} points @param {DrawImageOption} draw */
-    image(image, points, draw) {
-        let convertedPoints = [];
-        for(let i = 0; i < points.length; i++) {
-            let space = this._coordToScreenSpace(points[i].x, points[i].y);
-            convertedPoints.push({x: space.x, y: space.y});
-        }
+    image(image, x1, y1, x2, y2, rotation, draw) {
+        let leftTop = this._coordToScreenSpace(x1, y1);
+        let bottomRight = this._coordToScreenSpace(x2, y2);
 
-        UI_LIBRARY.drawImage(image, convertedPoints[0].x, convertedPoints[0].y, convertedPoints[1].x, convertedPoints[1].y, draw);
+        UI_LIBRARY.drawImage(image, leftTop.x, leftTop.y, bottomRight.x, bottomRight.y, rotation, draw);
     }
 }

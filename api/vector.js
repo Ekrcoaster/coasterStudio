@@ -40,4 +40,10 @@ class Vector2 {
         this.y *= amt;
         return this;
     }
+
+    multiply(amt) {
+        this.x *= amt.x;
+        this.y *= amt.y;
+        return this;
+    }
 }
