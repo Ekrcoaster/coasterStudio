@@ -6,7 +6,7 @@ class AssetEngine {
 
     constructor() {
         this.createFalseDirectory("engine");
-        this.createFalseDirectory("engine/textures");
+        this.createFalseDirectory("engine/images");
         this.createFalseDirectory("engine/audio");
         this.createFalseDirectory("engine/scenes");
         this.createFalseDirectory("editor/icons");
@@ -18,6 +18,7 @@ class AssetEngine {
 
     setupDefaultImages() {
         this.saveAsset("editor/colorWheel", new LocalImageAsset("./res/editor/colorWheel.png"));
+        this.saveAsset("engine/images/default", new LocalImageAsset("./res/engine/missing.png"));
     }
     setupDefaultShapes() {
         this.saveAsset("engine/shapes/square", new ShapeAsset([
@@ -66,6 +67,11 @@ class AssetEngine {
         this.saveAsset("editor/primitives/hexagon", new ObjectPrimitiveAsset((obj) => {
             obj.name = "New Hexagon";
             obj.addComponent(new ShapeRenderer(obj, assets.getAsset("engine/shapes/hexagon")));
+        }));
+
+        this.saveAsset("editor/primitives/image", new ObjectPrimitiveAsset((obj) => {
+            obj.name = "New Image";
+            obj.addComponent(new ImageRenderer(obj, assets.getAsset("engine/images/default")));
         }));
     }
 

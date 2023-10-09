@@ -74,7 +74,7 @@ class UIAutoLayout {
     assetComponentField(label, assetObj, type, callback = (asset) => {}) {
         this.elements.push(new UIAutoLayoutElement(this.indent, ["id", label, assetObj, type, this.enabled, "x1", "y1", "x2", "y2"], UI_WIDGET.editorGUIAssetComponent, (res) => {
             if(res.applied)
-                callback(res.selected.obj);
+                callback(res.selected?.obj);
         }));
     }
 

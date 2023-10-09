@@ -381,6 +381,18 @@ class DrawImageOption {
             {x: 1, y: 1}
         ]
     }
+
+    setTopLeftUV(x, y) {
+        this.uvs[0].x = x;
+        this.uvs[0].y = y;
+        return this;
+    }
+
+    setBottomRightUV(x, y) {
+        this.uvs[1].x = x;
+        this.uvs[1].y = y;
+        return this;
+    }
 }
 
 const UI_LIBRARY = {
