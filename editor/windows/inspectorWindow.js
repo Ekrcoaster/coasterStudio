@@ -19,6 +19,19 @@ class InspectorWindow extends EditorWindow {
             y += res.height;
         }
 
+        if(UI_WIDGET.button("Add Component", x1+10, y+10, x2-10, y+40)) {
+            let components = assets.getAssetsOfType("engine/", ComponentAsset);
+            let options = [];
+            for(let i = 0; i < components.length; i++) {
+                options.push(new DropdownItem(i, components[i].scriptName(), components[i]));
+            }
+
+            UI_WIDGET.popUpDropdownList("addComponent" + t.container?.id, options, -1, x1+10, y+10, x2-10, y+40, (index) => {
+                options[index].obj.addComponent(editor.selectedGameObjects[0]);
+                editor._updateSelected();
+            });
+        }
+
         function drawHeader(y) {
             let height = 40;
             //UI_LIBRARY.drawRectCoords(x1, y, x2, y+height, 0, COLORS.windowDarkerBackground());

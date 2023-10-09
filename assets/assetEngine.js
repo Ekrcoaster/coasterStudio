@@ -14,6 +14,7 @@ class AssetEngine {
         this.setupDefaultImages();
         this.setupDefaultShapes();
         this.setupDefaultObjectPrimitives();
+        this.setupDefaultComponents();
     }
 
     setupDefaultImages() {
@@ -49,6 +50,10 @@ class AssetEngine {
         ]));
     }
     setupDefaultObjectPrimitives() {
+        this.saveAsset("editor/primitives/empty", new ObjectPrimitiveAsset((obj) => {
+            obj.name = "New Empty";
+        }));
+
         this.saveAsset("editor/primitives/square", new ObjectPrimitiveAsset((obj) => {
             obj.name = "New Square";
             obj.addComponent(new ShapeRenderer(obj, assets.getAsset("engine/shapes/square")));
@@ -73,6 +78,11 @@ class AssetEngine {
             obj.name = "New Image";
             obj.addComponent(new ImageRenderer(obj, assets.getAsset("engine/images/default")));
         }));
+    }
+    setupDefaultComponents() {
+        this.saveAsset("engine/internal/components/transform", new InternalComponentAsset("Transform"));
+        this.saveAsset("engine/internal/components/shapeRenderer", new InternalComponentAsset("ShapeRenderer"));
+        this.saveAsset("engine/internal/components/imageRenderer", new InternalComponentAsset("ImageRenderer"));
     }
 
     /**

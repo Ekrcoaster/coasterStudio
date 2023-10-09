@@ -88,6 +88,7 @@ function updateCanvasSize() {
 
 window.onresize = () => {
     updateCanvasSize();
+    needsRendering = true;
 }
 
 canvas.addEventListener('mousemove', function(evt) {

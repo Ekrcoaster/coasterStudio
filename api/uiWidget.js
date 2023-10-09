@@ -824,6 +824,7 @@ const UI_WIDGET = {
     popUpDropdownList: function(id, options, selectedIndex, x1, y1, x2, y2, onSelect = (index) => {}) {
         let itemHeight = 45;
 
+        mouse.clickUp = false;
         editor.createModal(new EditorModal(id, (x2-x1), itemHeight * options.length, {
             selectedIndex: selectedIndex
         }, (x1, y1, x2, y2, data) => {

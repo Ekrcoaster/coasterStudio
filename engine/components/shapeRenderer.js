@@ -40,6 +40,7 @@ class ShapeRenderer extends RenderingComponent {
 
     getWorldPoints(scale = 1) {
         let points = []
+        if(this.gameObject == null) return points;
         for(let i = 0; i < this.shape.points.length; i++) {
             let local = {x: this.shape.points[i].x, y: this.shape.points[i].y};
             local.x *= scale;
