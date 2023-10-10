@@ -340,6 +340,15 @@ const UI_WIDGET = {
         return isDown;
     },
 
+    inspectorComponentHeight: function(id, component, editor) {
+        let height = 30;
+
+        if(editor.isExpanded) {
+            let calculatedHeight = editor.calculateExpandedHeight();
+            height += calculatedHeight;
+        }
+        return height;
+    },
     /**
      * @param {Component} component 
      * @param {EditorComponent} editor
@@ -844,5 +853,57 @@ const UI_WIDGET = {
         }, (reason, data) => {
             widgetCacheData[id] = data;
         }).setDesiredXY(x1, y2, 0));
+    },
+
+    /**
+     * renders the inside content as a scroll field
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     * @param {Vector2} scrollPos 
+     * @param {Number} contentWidth 
+     * @param {Number} contentHeight 
+     * @param {Function(Number, Number)} onRender 
+     * @returns 
+     */
+    scrollView: function(x1, y1, x2, y2, scrollPos, contentWidth, contentHeight, onRender = (xOffset, yOffset) => {}) {
+        let horizontalOverflow = contentWidth > (x2-x1);
+        let verticalOverflow = contentHeight > (y2-y1);
+
+        let hovering = mouse.isHoveringOver(x1, y1, x2, y2);
+
+        if(horizontalOverflow || verticalOverflow) {
+            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption("alpha").makeMask());
+
+            if(hovering) {
+                if(verticalOverflow)
+                    scrollPos.y += mouse.getScrollVelocity() * -90;
+                if(horizontalOverflow) 
+                    scrollPos.x += mouse.getScrollVelocity() * -90;
+                
+
+                // handle overflow for y
+                if(scrollPos.y > 0)
+                    scrollPos.y = 0;
+
+                let bottom = scrollPos.y + contentHeight;
+                if(bottom < y2-y1)
+                    scrollPos.y = (y2-y1) - contentHeight;
+
+                // handle overflow for x
+                // TODO
+            }
+        } else {
+            scrollPos.x = 0;
+            scrollPos.y = 0;
+        }
+
+        onRender(scrollPos.x, scrollPos.y);
+
+        if(horizontalOverflow || verticalOverflow)
+            UI_LIBRARY.restore();
+
+        return scrollPos;
     }
 }
