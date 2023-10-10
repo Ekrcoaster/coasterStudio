@@ -53,6 +53,10 @@ class AssetEngine {
         this.saveAsset("editor/primitives/empty", new ObjectPrimitiveAsset((obj) => {
             obj.name = "New Empty";
         }));
+        this.saveAsset("editor/primitives/camera", new ObjectPrimitiveAsset((obj) => {
+            obj.name = "New Camera";
+            obj.addComponent(new Camera(obj));
+        }));
 
         this.saveAsset("editor/primitives/square", new ObjectPrimitiveAsset((obj) => {
             obj.name = "New Square";
@@ -81,6 +85,7 @@ class AssetEngine {
     }
     setupDefaultComponents() {
         this.saveAsset("engine/internal/components/transform", new InternalComponentAsset("Transform"));
+        this.saveAsset("engine/internal/components/camera", new InternalComponentAsset("Camera"));
         this.saveAsset("engine/internal/components/shapeRenderer", new InternalComponentAsset("ShapeRenderer"));
         this.saveAsset("engine/internal/components/imageRenderer", new InternalComponentAsset("ImageRenderer"));
     }

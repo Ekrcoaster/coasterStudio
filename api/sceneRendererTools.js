@@ -41,18 +41,22 @@ class SceneRendererTools {
         return this.pixelTileSize * this.screenScale;
     }
 
-    _screenSpaceToCoord(x, y) {
+    _screenSpaceToCoord(x, y, width, height) {
         let center = new Vector2(this.x1 + this.width / 2, this.y1 + this.height/2);
         x -= center.x;
         y -= center.y;
         x /= this.getRealPixelTileSize();
         y /= this.getRealPixelTileSize();
+        width /= this.getRealPixelTileSize();
+        height /= this.getRealPixelTileSize();
         x -= this.screenX;
         y -= this.screenY;
 
         return {
             x: x,
-            y: y
+            y: y,
+            width: width,
+            height: height
         }
     }
 
@@ -67,7 +71,7 @@ class SceneRendererTools {
      */
     text(text, x, y, width, height, draw) {
         let center = this._coordToScreenSpace(x, y, width, height);
-        UI_LIBRARY.drawText(text, center.x, center.y, center.x + center.width, center.y + center.height, draw.drawDebug());
+        UI_LIBRARY.drawText(text, center.x, center.y, center.x + center.width, center.y + center.height, draw);
     }
 
     /**
