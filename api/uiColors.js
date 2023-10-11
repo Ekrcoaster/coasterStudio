@@ -63,5 +63,7 @@ const COLORS = {
     moveGizmoYNormal: new DrawShapeOption("#3250b3"),
     moveGizmoYHover: new DrawShapeOption("#3f6cff"),
     rotateGizmoNormal: new DrawShapeOption("#00000000", "#a0a740", 5),
-    rotateGizmoHover: new DrawShapeOption("#00000000", "#c5d022", 10)
+    rotateGizmoHover: new DrawShapeOption("#00000000", "#c5d022", 10),
+
+    cameraColor: new DrawShapeOption("alpha", "#ffffff52", 5)
 }

@@ -33,7 +33,7 @@ class EditorCamera extends EditorComponent {
             {x: center.x + coordSize.width/2, y: center.y - coordSize.height/2},
             {x: center.x + coordSize.width/2, y: center.y + coordSize.height/2},
             {x: center.x - coordSize.width/2, y: center.y + coordSize.height/2}
-        ], new DrawShapeOption("transparent", "#ffffff", 5));
+        ], COLORS.cameraColor);
         tools.text(transform.gameObject.name, center.x-1, center.y - coordSize.height/2 - 0.2, 2, 0.1, new DrawTextOption(25, "default", "#ffffff", "center", "center"));
     }
 

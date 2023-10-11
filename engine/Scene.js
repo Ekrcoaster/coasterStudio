@@ -16,6 +16,29 @@ class Scene {
 
         this.header = new GameObject(this, this.name, true);
         this.header.transform.isHeader = false;
+
+        this.setupDefaultObjects();
+    }
+
+    setupDefaultObjects() {
+        let obj = new GameObject(this, "Object 1");
+        obj.transform.setLocalAngle(45);
+        obj.addComponent(new ShapeRenderer(obj));
+        let obj3 = new GameObject(this, "Object 2").setParent(obj);
+        obj3.transform.setLocalPosition(new Vector2(5, 2));
+        obj3.addComponent(new ShapeRenderer(obj));
+        let t = new GameObject(this, "Object 3").setParent(obj3);
+        t.transform.setLocalPosition(new Vector2(0, -4));
+        t.addComponent(new ShapeRenderer(obj));
+        let t2 = new GameObject(this, "Object 4").setParent(t);
+        t2.transform.setLocalPosition(new Vector2(0, -4));
+        t2.transform.setLocalAngle(-45);
+        t2.addComponent(new ShapeRenderer(obj));
+    
+        editor.setSelected(obj, true);
+        
+        let camera = new GameObject(this, "Camera");
+        camera.addComponent(new Camera(camera));
     }
     
     _registerRootGameObject(obj) {
