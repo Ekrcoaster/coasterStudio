@@ -23,9 +23,10 @@ class EditorCamera extends EditorComponent {
     /**@param {Transform} transform @param {SceneRendererTools} tools */
     onSceneRender(transform, tools) {
         let center = transform.getWorldPosition();
+        let worldScale = transform.getWorldScale();
         let coordSize = {
-            width: this.target.width / tools.pixelTileSize,
-            height: this.target.height / tools.pixelTileSize
+            width: this.target.width / tools.pixelTileSize * worldScale.x,
+            height: this.target.height / tools.pixelTileSize * worldScale.y
         }
         /**@type {ImageRenderer} */
         tools.polygon([

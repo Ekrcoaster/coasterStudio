@@ -141,4 +141,18 @@ class GameObject {
 
         this.children.splice(newIndex, 0, child);
     }
+
+    findByType(type) {
+        for(let i = 0; i < this.components.length; i++) {
+            if(this.components[i] instanceof type)
+                return this.components[i];
+        }
+
+        for(let i = 0; i < this.children.length; i++) {
+            let res = this.children[i].findByType(type);
+            if(res)
+                return res;
+        }
+        return null;
+    }
 }

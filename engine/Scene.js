@@ -8,6 +8,9 @@ class Scene {
     /**@type {GameObject[]} */
     rootGameObjects = [];
 
+    /**@type {Camera} */
+    activeCamera;
+
     constructor(name) {
         this.id = UTILITY.generateCode(14);
         this.name = name;
@@ -18,6 +21,7 @@ class Scene {
         this.header.transform.isHeader = false;
 
         this.setupDefaultObjects();
+        this.updateActiveCamera();
     }
 
     setupDefaultObjects() {
@@ -64,5 +68,22 @@ class Scene {
             newIndex--;
 
         this.rootGameObjects.splice(newIndex, 0, child);
+    }
+
+    findGameObjectByType(type) {
+       return this.findGameObjectComponentByType(type)?.gameObject;
+    }
+
+    findGameObjectComponentByType(type) {
+        for(let i = 0; i < this.rootGameObjects.length; i++) {
+            let res = this.rootGameObjects[i].findByType(type);
+            if(res)
+                return res;
+        }
+        return null;
+    }
+
+    updateActiveCamera() {
+        this.activeCamera = this.findGameObjectComponentByType(Camera);
     }
 }
