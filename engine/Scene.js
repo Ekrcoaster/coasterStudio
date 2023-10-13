@@ -11,6 +11,9 @@ class Scene {
     /**@type {Camera} */
     activeCamera;
 
+    /**@type {SceneController} */
+    controller;
+
     constructor(name) {
         this.id = UTILITY.generateCode(14);
         this.name = name;
@@ -19,6 +22,7 @@ class Scene {
 
         this.header = new GameObject(this, this.name, true);
         this.header.transform.isHeader = false;
+        this.controller = this.header.addComponent(new SceneController(this.header));
 
         this.setupDefaultObjects();
         this.updateActiveCamera();

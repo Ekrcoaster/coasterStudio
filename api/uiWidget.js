@@ -12,7 +12,7 @@ class StringFieldOption {
     maxLength = Infinity;
 
     /**@type {Number} what to multiply to round */
-    roundDecimalPlaces = 10000;
+    roundDecimalPlaces = 1000;
 
     /**@type {StringFieldClickMethod} */
     clickMethod = "single";
@@ -25,7 +25,7 @@ class StringFieldOption {
         this.format = format || "any";
         this.minLength = 0;
         this.maxLength = Infinity;
-        this.roundDecimalPlaces = 10000;
+        this.roundDecimalPlaces = 1000;
         this.clickMethod = "single";
         this.firstClickMethod = "selectAll";
     }

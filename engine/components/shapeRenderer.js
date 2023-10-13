@@ -46,7 +46,7 @@ class ShapeRenderer extends RenderingComponent {
             local.x *= scale;
             local.y *= scale;
             points.push(this.gameObject.transform.localToWorldSpace(local));
-        }  
+        }
         return points;
     }
 

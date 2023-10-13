@@ -111,6 +111,11 @@ class Matrix {
         return this.elementRows[r][c];
     }
 
+    setElement(r, c, value) {
+        this.elementRows[r][c] = value;
+        return this;
+    }
+
     inverse() {
         this.elementRows = this._inverse();
         return this;

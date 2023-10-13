@@ -5,6 +5,9 @@ class SceneRendererTools {
 
     pixelTileSize;
 
+    /**@type {Matrix} */
+    matrix;
+
     constructor() {
         this.pixelTileSize = 64;
     }
@@ -22,8 +25,11 @@ class SceneRendererTools {
     }
 
     _coordToScreenSpace(x, y, width, height) {
-        x += this.screenX;
-        y += this.screenY;
+        
+        let result = this._getMatrix().multiplyNew(new Matrix([[x], [y], [1]]));
+        x = result.getElement(0, 0);
+        y = result.getElement(1, 0);
+
         x *= this.getRealPixelTileSize();
         y *= this.getRealPixelTileSize();
         width *= this.getRealPixelTileSize();
@@ -49,8 +55,10 @@ class SceneRendererTools {
         y /= this.getRealPixelTileSize();
         width /= this.getRealPixelTileSize();
         height /= this.getRealPixelTileSize();
-        x -= this.screenX;
-        y -= this.screenY;
+
+        let result = this._getMatrix().inverseNew().multiplyNew(new Matrix([[x], [y], [1]]));
+        x = result.getElement(0, 0);
+        y = result.getElement(1, 0);
 
         return {
             x: x,
@@ -58,6 +66,17 @@ class SceneRendererTools {
             width: width,
             height: height
         }
+    }
+
+    _getMatrix() {
+        if(this.matrix == null)
+            return new Matrix().setAsTransformMatrix(this.screenX, this.screenY, 0, 1, 1, 0, 0);
+        return this.matrix;
+    }
+
+    /**@param {Matrix} matrix  */
+    _setMatrix(matrix) {
+        this.matrix = matrix;
     }
 
     /**

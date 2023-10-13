@@ -6,18 +6,20 @@ class GameWindow extends EditorWindow {
     barColor;
 
     constructor() {
-        super("Game");
+        super("Preview");
 
         this.tools = new SceneRendererTools();
         this.barColor = new DrawShapeOption("#ff0000");
     }
 
     render(x1, y1, x2, y2, width, height) {
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption("#000000"));
-        if(editor.activeScene.activeCamera == null) {
+        let scene = editor.activeScene;
+        
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption(scene.controller.backgroundColor));
+        if(scene.activeCamera == null) {
             UI_LIBRARY.drawText("No Active Camera", x1, y1, x2, y2, new DrawTextOption(35, "default", "#ffffff", "center", "center"));
         }
-        let cam = editor.activeScene.activeCamera;
+        let cam = scene.activeCamera;
         let camPos = cam.transform.getWorldPosition();
         let camScale = cam.transform.getWorldScale();
 
@@ -46,7 +48,8 @@ class GameWindow extends EditorWindow {
             topBarHeight = 0;
         }
 
-        this.tools._setScreenView(x1, y1, x2, y2, width, height, -camPos.x, -camPos.y, scale);
+        this.tools._setScreenView(x1, y1, x2, y2, width, height, 0, 0, scale);
+        this.tools._setMatrix(cam.transform.getLocalToWorldMatrix().inverseNew());
 
         // render all of the onSceneRenders for each component in the scene
         for(let id in editor.allComponentsCache) {

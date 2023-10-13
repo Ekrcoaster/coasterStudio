@@ -103,6 +103,7 @@ class GameObject {
         // one day remove all references to the editor from the engine!
         if(window.editor != null)
             editor.createEditorComponent(component);
+        return component;
     }
 
     /**@param {Component} component*/

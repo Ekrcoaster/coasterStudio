@@ -24,18 +24,23 @@ class EditorCamera extends EditorComponent {
     onSceneRender(transform, tools) {
         let center = transform.getWorldPosition();
         let worldScale = transform.getWorldScale();
-        let coordSize = {
-            width: this.target.width / tools.pixelTileSize * worldScale.x,
-            height: this.target.height / tools.pixelTileSize * worldScale.y
+
+        let width = this.target.width / tools.pixelTileSize / 2;
+        let height = this.target.height / tools.pixelTileSize / 2;
+        let points = [
+            {x: -width, y: -height},
+            {x: width, y: -height},
+            {x: width, y: height},
+            {x: -width, y: height}
+        ]
+
+        for(let i = 0; i < points.length; i++) {
+            points[i] = transform.localToWorldSpace(points[i])
         }
-        /**@type {ImageRenderer} */
-        tools.polygon([
-            {x: center.x - coordSize.width/2, y: center.y - coordSize.height/2},
-            {x: center.x + coordSize.width/2, y: center.y - coordSize.height/2},
-            {x: center.x + coordSize.width/2, y: center.y + coordSize.height/2},
-            {x: center.x - coordSize.width/2, y: center.y + coordSize.height/2}
-        ], COLORS.cameraColor);
-        tools.text(transform.gameObject.name, center.x-1, center.y - coordSize.height/2 - 0.2, 2, 0.1, new DrawTextOption(25, "default", "#ffffff", "center", "center"));
+
+        tools.polygon(points, COLORS.cameraColor);
+        
+        //tools.text(transform.gameObject.name, center.x-1, center.y - coordSize.height/2 - 0.2, 2, 0.1, new DrawTextOption(25, "default", "#ffffff", "center", "center"));
     }
 
     onSelectedSceneRender(transform, tools) {
