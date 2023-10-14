@@ -3,7 +3,7 @@ class Editor {
     /**@type {EditorWindowManager} */
     windowManager;
 
-    fps = 0;
+    fps;
 
     /**@type {Scene} */
     activeScene;
@@ -25,9 +25,9 @@ class Editor {
     /**@type {EditorModal} */
     activeModal;
 
-    constructor() {
+    constructor(fps) {
         this.windowManager = new EditorWindowManager();
-        this.fps = 60;
+        this.fps = fps;
 
         let row1 = this.windowManager.flex.registerFlex(new EditorWindowFlex(0.8, "horizontal"));
         row1.registerWindow(new EditorWindowContainer(0.1, "vertical")

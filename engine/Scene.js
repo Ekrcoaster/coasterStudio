@@ -14,6 +14,9 @@ class Scene {
     /**@type {SceneController} */
     controller;
 
+    /**@type {Component[]} */
+    allComponentsRuntime;
+
     constructor(name) {
         this.id = UTILITY.generateCode(14);
         this.name = name;
@@ -26,6 +29,39 @@ class Scene {
 
         this.setupDefaultObjects();
         this.updateActiveCamera();
+    }
+
+    init() {
+        this.allComponentsRuntime = [];
+        const t = this;
+
+        for(let i = 0; i < this.rootGameObjects.length; i++)
+            addCompoments(this.rootGameObjects[i]);
+
+        
+        for(let i = 0; i < this.allComponentsRuntime.length; i++)
+            this.allComponentsRuntime[i].onStart();
+
+        /** go through and add all components
+         * @param {GameObject} obj  */
+        function addCompoments(obj) {
+            // add my components
+            for(let i = 0; i < obj.components.length; i++) {
+                t.allComponentsRuntime.push(obj.components[i]);
+                obj.components[i].onWeakStart();
+            }
+
+            // now recurse deeper
+            for(let i = 0; i < obj.children.length; i++)
+                addCompoments(obj.children[i]);
+        }
+    }
+
+    onUpdate() {
+        for(let i = 0; i < this.allComponentsRuntime.length; i++) {
+            if(this.allComponentsRuntime[i].gameObject.activeInHierarchy)
+                this.allComponentsRuntime[i].onUpdate();
+        }
     }
 
     setupDefaultObjects() {
@@ -59,6 +95,7 @@ class Scene {
         let index = this.rootGameObjects.indexOf(obj);
         if(index > -1) this.rootGameObjects.splice(index, 1);
     }
+
     /**
      * @param {GameObject} child 
      * @param {Number} index 

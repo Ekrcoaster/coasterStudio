@@ -19,7 +19,7 @@ class Component {
 
     onCreated() {}
 
-    onAwake() {}
+    onWeakStart() {}
     onStart() {}
 
     onUpdate() {}

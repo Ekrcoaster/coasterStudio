@@ -18,6 +18,10 @@ class Transform extends Component {
         this._updateTransform();
     }
 
+    onUpdate() {
+        this.localAngle += 90 * engine.deltaTime;
+    }
+
     /**@param {Vector2} position */
     setLocalPosition(position) {
         if(position == this.localPosition) return;
@@ -72,6 +76,7 @@ class Transform extends Component {
     }
 
     _updateTransform() {
+        return;
         // then make sure all of the children have been updated
         for(let i = 0; i < this.gameObject.children.length; i++)
             this.gameObject.children[i].transform._updateTransform();

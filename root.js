@@ -23,8 +23,9 @@ window.onload = Initalize;
 let needsRendering = true;
 function Initalize() {
     assets = new AssetEngine();
-    engine = new Engine();
-    editor = new Editor();
+    let fps = 60;
+    engine = new Engine(fps);
+    editor = new Editor(fps);
 
     engine.activeScene = new Scene("testingScene");
     editor.setActiveScene(engine.activeScene);
@@ -35,10 +36,10 @@ function Initalize() {
     updateCanvasSize();
     setInterval(() => {
         Tick();
-        if(needsRendering)
+        if(needsRendering || engine.isPlaying)
             Render();
         PostTick();
-    }, 1000 / editor.fps);
+    }, 1000 / fps);
 }
 
 function Tick() {
@@ -57,7 +58,6 @@ function PostTick() {
 function Render() {
     needsRendering = false;
     if(editor) editor.render(0, 0, canvas.width, canvas.height);
-    engine.render(0, 0, canvas.width, canvas.height);
     mouse.render();
 }
 
