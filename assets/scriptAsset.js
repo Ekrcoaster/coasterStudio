@@ -14,18 +14,27 @@ class ScriptAsset extends Asset {
 
         // read custom types
         this.discoveredCustomTypes = {};
-        const matches = code.match(/\[([a-zA-Z0-9_$]+)\][ \t\n]*[a-zA-Z0-9_$]+/igm);
-        if(matches) {
-            // for each type, use the regex to extract the [Type] & name
-            for(let i = 0; i < matches.length; i++) {
-                let split = matches[i].replace(/\t/gi, " ").replace(/\n/gi, " ").split(" ");
-                let type = split[0].substring(1, split[0].length - 1);
-                let name = split[1];
-                this.discoveredCustomTypes[name] = type;
+        /**@type {String[]} */
+        let lines = code.replace(/\;/gi, "\n").split("\n");
 
-                // then remove these tags from the code so it can be executed
-                this.code = this.code.replace(split[0], "");
+        for(let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+
+            // check for the format
+            // TYPE varName = or TYPE varName;
+            let matches = line.match(/^[a-z0-9$]+[ \t][a-z0-9$]+ *[=;]+/gmi);
+            if(matches != null && matches.length == 1) {
+                let split = matches[0].split(" ");
+                let type = split[0];
+                let varName = split[1];
+                line = line.replace(type, "");  
+
+                this.discoveredCustomTypes[varName] = type;
             }
+
+            lines[i] = line;
         }
+        
+        this.code = lines.join("\n");
     }
 }
