@@ -90,7 +90,7 @@ class AssetEngine {
         this.saveAsset("engine/internal/components/imageRenderer", new InternalComponentAsset("ImageRenderer"));
         this.saveAsset("engine/internal/components/script", new InternalComponentAsset("Script"));
 
-        this.saveAsset("engine/internal/scripts/SpinTest", new ScriptAsset(BUILD_IN_COMPONENTS.SpinTest));
+        this.saveAsset("engine/internal/scripts/Rotator", new ScriptAsset(BUILD_IN_COMPONENTS.Rotator));
     }
 
     /**

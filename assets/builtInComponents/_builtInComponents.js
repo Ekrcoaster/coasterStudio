@@ -1,3 +1,3 @@
 const BUILD_IN_COMPONENTS = {
-    "SpinTest": " class SpinTest extends Component { onUpdate() { this.gameObject.transform.localAngle += engine.deltaTime * 90; } }"
+    "Rotator": " class Rotator extends Component { [Number] degPerSecond = 90; onUpdate() { this.gameObject.transform.localAngle += engine.deltaTime * this.amt; } }"
 }

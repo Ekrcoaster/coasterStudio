@@ -78,6 +78,20 @@ class UIAutoLayout {
         }));
     }
 
+    /**
+     * @callback UIAutoLayoutStringField gets the string
+     * @returns {Number}
+     */
+    /**
+     * @param {UIAutoLayoutStringField} number 
+     * @param {StringFieldOption} option */
+    stringField(label, text = () => {}, option, callback = (text) => {}) {
+        this.elements.push(new UIAutoLayoutElement(this.indent, ["id", label, text, this.enabled, "x1", "y1", "x2", "y2", option], UI_WIDGET.editorGUIString, (res) => {
+            if(res.applied)
+                callback(res.text);
+        }));
+    }
+
     renderSpace(x1, y1, x2) {
         let y = y1;
         for(let i = 0; i < this.elements.length; i++) {
