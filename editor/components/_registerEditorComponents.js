@@ -3,5 +3,6 @@ const COMPONENT_REGISTER = {
     "Shape Renderer": "EditorShapeRenderer",
     "Image Renderer": "EditorImageRenderer",
     "Camera": "EditorCamera",
-    "Scene Controller": "EditorSceneController"
+    "Scene Controller": "EditorSceneController",
+    "Script": "EditorScript"
 }
