@@ -10,7 +10,7 @@ class ImageRenderer extends RenderingComponent {
 
     /**@param {ImageAsset} imageAsset  */
     constructor(gameObject, imageAsset) {
-        super("Image Renderer", gameObject);
+        super("ImageRenderer", gameObject);
         this.imageAsset = imageAsset;
         this.topLeftUV = new Vector2();
         this.bottomRightUV = new Vector2(1, 1);
@@ -52,5 +52,21 @@ class ImageRenderer extends RenderingComponent {
 
     getBounds() {
         return new Bounds(this.getWorldPoints(1));
+    }
+
+    saveSerialize() {
+        return {
+            ...super.saveSerialize(),
+            imageAsset: this.imageAsset?.path,
+            topLeftUV: this.topLeftUV,
+            bottomRightUV: this.bottomRightUV
+        }
+    }
+
+    loadSerialize(data) {
+        super.loadSerialize(data);
+        this.setImage(assets.getAsset(data.imageAsset));
+        this.setTopLeftUV(assets.topLeftUV);
+        this.setBottomRightUV(assets.bottomRightUV);
     }
 }

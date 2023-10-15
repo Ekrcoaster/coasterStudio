@@ -26,4 +26,16 @@ class Component {
 
     /**@param {SceneRendererTools} tools  */
     onGizmosSelected(tools) {}
+
+    saveSerialize() {
+        return {
+            id: this.id,
+            name: this.name
+        }
+    }
+
+    loadSerialize(data) {
+        this.id = data.id;
+        this.name = data.name;
+    }
 }

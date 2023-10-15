@@ -24,6 +24,8 @@ class Engine {
 
     stopPlaying() {
         this.isPlaying = false;
+        this.deltaTime = 0;
+        this.lastTick = null;
     }
 
     tick() {

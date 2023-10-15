@@ -905,5 +905,23 @@ const UI_WIDGET = {
             UI_LIBRARY.restore();
 
         return scrollPos;
+    },
+
+    gamePlayingControl: function(x1, y1, x2, y2, isPlaying) {
+        let startPlaying = false;
+        let stopPlaying = false;
+
+        let width = 180;
+        if(!isPlaying && UI_WIDGET.button("Start Playing", x2-width, y1, x2, y2))
+            startPlaying = true;
+    
+        
+        if(isPlaying && UI_WIDGET.button("Stop Playing", x2-width, y1, x2, y2))
+            stopPlaying = true;
+
+        return {
+            startPlaying: startPlaying,
+            stopPlaying: stopPlaying
+        }
     }
 }

@@ -156,4 +156,50 @@ class GameObject {
         }
         return null;
     }
+
+    saveSerialize() {
+        return {
+            id: this.id,
+            name: this.name,
+            isActive: this.isActive,
+            children: this.children.map((obj) => obj.saveSerialize()),
+            components: this.components.map((obj) => obj.saveSerialize()),
+            isHeader: this.isHeader
+        }
+    }
+
+    loadSerialize(data) {
+        this.id = data.id;
+        this.name = data.name;
+        this.setActive(data.isActive);
+        const t = this;
+
+        loadChildren();
+        loadComponent();
+
+        function loadChildren() {
+            // add all of the new gameobjects added
+            for(let i = 0; i < data.children.length; i++) {
+                let obj = data.children[i];
+                new GameObject(t.scene, obj.name, obj.isHeader).setParent(t).loadSerialize(obj);
+                if(obj.isHeader)
+                    this.header = obj;
+            }
+        }
+
+        function loadComponent() {
+            for(let i = 0; i < data.components.length; i++) {
+                let c = data.components[i];
+                if(c.name == "Transform") {
+                    t.transform.loadSerialize(c);
+                    continue;
+                }
+                let component;
+                let params = [t];
+                eval(`component = new ${c.name}(...params)`);
+                t.addComponent(component);
+                component.loadSerialize(c);
+            }
+        }
+    }
 }

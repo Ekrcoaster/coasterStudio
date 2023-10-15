@@ -14,7 +14,7 @@ class ShapeRenderer extends RenderingComponent {
     outlineWorldSpace;
 
     constructor(gameObject, shape) {
-        super("Shape Renderer", gameObject);
+        super("ShapeRenderer", gameObject);
         if(shape == null)
             this.setShape(assets.getAsset("engine/shapes/square"));
         else
@@ -68,5 +68,27 @@ class ShapeRenderer extends RenderingComponent {
         let points = this.getWorldPoints();
         this.bounds = new Bounds(points);
         return this.bounds;
+    }
+
+    saveSerialize() {
+        return {
+            ...super.saveSerialize(),
+            shape: this.shape?.path,
+            fillColor: this.fillColor,
+            outlineColor: this.outlineColor,
+            outlineWidth: this.outlineWidth,
+            borderRadius: this.borderRadius,
+            outlineWorldSpace: this.outlineWorldSpace
+        }
+    }
+
+    loadSerialize(data) {
+        super.loadSerialize(data);
+        this.setShape(assets.getAsset(data.shape));
+        this.setFillColor(data.fillColor);
+        this.setOutlineColor(data.outlineColor);
+        this.setOutlineWidth(data.outlineWidth);
+        this.setBorderRadius(data.borderRadius);
+        this.setOutlineWorldSpace(data.outlineWorldSpace);
     }
 }

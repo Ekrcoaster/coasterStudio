@@ -1,4 +1,4 @@
-class EditorTransformComponent extends EditorComponent {
+class EditorTransform extends EditorComponent {
 
     /**@type {UIAutoLayout} */
     layout;

@@ -65,5 +65,7 @@ const COLORS = {
     rotateGizmoNormal: new DrawShapeOption("#00000000", "#a0a740", 5),
     rotateGizmoHover: new DrawShapeOption("#00000000", "#c5d022", 10),
 
-    cameraColor: new DrawShapeOption("alpha", "#ffffff52", 5)
+    cameraColor: new DrawShapeOption("alpha", "#ffffff52", 5),
+
+    playmodeTint: new DrawShapeOption("#398ce41c")
 }

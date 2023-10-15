@@ -21,6 +21,9 @@ class SceneWindow extends EditorWindow {
 
     render(x1, y1, x2, y2, width, height) {
         UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.sceneBackgroundColor);
+        let ogY1 = y1;
+
+        y1 += 40;
 
         // setup the tool
         this.tools._setScreenView(x1, y1, x2, y2, width, height, this.screenX, this.screenY, this.screenScale);
@@ -79,6 +82,13 @@ class SceneWindow extends EditorWindow {
         if(hover) {
             this.changeScale(mouse.getScrollVelocity());
         }
+
+        UI_LIBRARY.drawRectCoords(x1, ogY1, x2, ogY1+40, 0, COLORS.sceneBackgroundColor);
+        let res = UI_WIDGET.gamePlayingControl(x1, ogY1, x2-10, ogY1+40, engine.isPlaying);
+        if(res.startPlaying)
+            editor.startPlaying();
+        else if(res.stopPlaying)
+            editor.stopPlaying();
     }
 
     getHoveringObjects() {

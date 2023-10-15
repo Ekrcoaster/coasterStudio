@@ -110,4 +110,22 @@ class Transform extends Component {
         if(this.gameObject.parent == null) return this.localScale;
         return new Vector2(this.gameObject.parent.transform.getWorldScale()).multiply(this.localScale)
     }
+
+    saveSerialize() {
+        return {
+            ...super.saveSerialize(),
+            localPosition: this.localPosition,
+            localAngle: this.localAngle,
+            localScale: this.localScale,
+            localSheer: this.localSheer
+        }
+    }
+
+    loadSerialize(data) {
+        super.loadSerialize(data);
+        this.setLocalPosition(data.localPosition);
+        this.setLocalAngle(data.localAngle);
+        this.setLocalScale(data.localScale);
+        this.setLocalSheer(data.localSheer);
+    }
 }

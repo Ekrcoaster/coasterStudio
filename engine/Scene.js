@@ -64,6 +64,53 @@ class Scene {
         }
     }
 
+    saveSerialize() {
+        return {
+            id: this.id,
+            name: this.name,
+            rootGameObjects: this.rootGameObjects.map((obj) => obj.saveSerialize())
+        }
+    }
+
+    loadSerialize(data) {
+        this.id = data.id;
+        this.name = data.name;
+
+        this.rootGameObjects = [];
+        this.header = null;
+
+        // add all of the new gameobjects added
+        for(let i = 0; i < data.rootGameObjects.length; i++) {
+            let obj = data.rootGameObjects[i];
+            new GameObject(this, obj.name, obj.isHeader).loadSerialize(obj);
+            if(obj.isHeader)
+                this.header = obj;
+        }
+
+        editor._updateSelected();
+    }
+
+    getAllComponents() {
+        let res = [];
+
+        for(let i = 0; i < this.rootGameObjects.length; i++)
+            addCompoments(this.rootGameObjects[i]);
+
+        /** go through and add all components
+         * @param {GameObject} obj  */
+        function addCompoments(obj) {
+            // add my components
+            for(let i = 0; i < obj.components.length; i++) {
+                res.push(obj.components[i]);
+            }
+
+            // now recurse deeper
+            for(let i = 0; i < obj.children.length; i++)
+                addCompoments(obj.children[i]);
+        }
+        return res;
+    }
+
     setupDefaultObjects() {
         let obj = new GameObject(this, "Object 1");
         obj.transform.setLocalAngle(45);

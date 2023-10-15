@@ -164,6 +164,10 @@ class Color {
     lerp(other, time) {
         return UI_UTILITY.lerpColor(this, other, time);
     }
+
+    toJSON() {
+        return {r: this.r, g: this.g, b: this.b, a: this.a}
+    }
 }
 
 // this doenst work??

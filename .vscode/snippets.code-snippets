@@ -8,6 +8,12 @@
           "        super(\"${1:Name}\", gameObject);",
           "    }",
           "",
+          "saveSerialize() {",
+          "  return {",
+          "      ...super.saveSerialize()",
+          "  }",
+          "}",
+          "",
           "}"
         ],
         "description": "New Component"

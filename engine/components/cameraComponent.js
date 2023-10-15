@@ -10,4 +10,18 @@ class Camera extends Component {
 
     setWidth(width) {this.width = width;}
     setHeight(height) {this.height = height;}
+
+    saveSerialize() {
+        return {
+            ...super.saveSerialize(),
+            width: this.width,
+            height: this.height
+        }
+    }
+
+    loadSerialize(data) {
+        super.loadSerialize(data);
+        this.setWidth(data.width);
+        this.setHeight(data.height);
+    }
 }

@@ -25,6 +25,8 @@ class Editor {
     /**@type {EditorModal} */
     activeModal;
 
+    playmodeSceneSave;
+
     constructor(fps) {
         this.windowManager = new EditorWindowManager();
         this.fps = fps;
@@ -39,9 +41,20 @@ class Editor {
         this.windowManager.flex.registerWindow(new EditorWindowContainer(0.2, "horizontal").registerWindow(new AssetWindow()))
     }
 
-    /**@type {Scene} */
+    /**@param {Scene} scene */
     setActiveScene(scene) {
+        this.selectedGameObjects = [];
+        this.selectedComponentsCache = [];
+        this.selectedEditorComponentsCache = [];
+        this.allComponentsCache = {};
+        this.closeActiveModal();
+
         this.activeScene = scene;
+        let allComponents = scene.getAllComponents();
+        for(let i = 0; i < allComponents.length; i++) {
+            this.createEditorComponent(allComponents[i]);
+        }
+        this._updateSelected();
     }
 
     tick() {
@@ -64,6 +77,8 @@ class Editor {
             }
         }
         
+        if(engine.isPlaying)
+            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.playmodeTint);
     }
 
     /**
@@ -130,7 +145,7 @@ class Editor {
 
     /**@param {Component} component */
     createEditorComponent(component) {
-        let editorScript = COMPONENT_REGISTER[component.name];
+        let editorScript = "Editor" + component.name;
         if(editorScript == null) {
             console.error("No editor script found for component " + component.name);
             return;
@@ -187,5 +202,16 @@ class Editor {
             }
         }
     }
-    
+
+    startPlaying() {
+        this.playmodeSceneSave = engine.activeScene.saveSerialize();
+        engine.startPlaying();
+    }
+
+    stopPlaying() {
+        engine.stopPlaying();
+        engine.activeScene.loadSerialize(this.playmodeSceneSave);
+        this.playmodeSceneSave = "";
+        this.setActiveScene(engine.activeScene);
+    }
 }

@@ -61,4 +61,28 @@ class Script extends Component {
         if(this.script == null) return;
         this.instance.onUpdate();
     }
+
+    saveSerialize() {
+        let instFields = {};
+
+        for(let i = 0; i < this.instanceFields.length; i++)
+            instFields[this.instanceFields[i]] = this.instance[this.instanceFields[i]];
+
+        return {
+            ...super.saveSerialize(),
+            script: this.script?.path,
+            instFields: instFields
+        }
+
+        return temp;
+    }
+
+    loadSerialize(data) {
+        super.loadSerialize(data);
+        this.setScript(assets.getAsset(data.script));
+
+        for(let name in data.instFields) {
+            this.instance[name] = data.instFields[name];
+        }
+    }
 }
