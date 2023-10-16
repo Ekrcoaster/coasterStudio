@@ -83,7 +83,7 @@ class SceneWindow extends EditorWindow {
             this.changeScale(mouse.getScrollVelocity());
         }
 
-        UI_LIBRARY.drawRectCoords(x1, ogY1, x2, ogY1+40, 0, COLORS.sceneBackgroundColor);
+        UI_LIBRARY.drawRectCoords(x1, ogY1, x2, ogY1+40, 0, COLORS.windowDarkerBackground());
         let res = UI_WIDGET.gamePlayingControl(x1, ogY1, x2-10, ogY1+40, engine.isPlaying);
         if(res.startPlaying)
             editor.startPlaying();

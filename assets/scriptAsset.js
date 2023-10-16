@@ -2,15 +2,25 @@ class ScriptAsset extends Asset {
 
     /**@type {String} */
     code;
+    /**@type {String} */
+    rawCode;
 
     codeClassName;
 
     discoveredCustomTypes = {};
 
+    notifyOnCodeChange = new Set();
+
     constructor(code) {
         super();
-        this.code = code;
-        this.codeClassName = code.split(" ")[2];
+        this.notifyOnCodeChange = new Set();
+        this.setCode(code);
+    }
+
+    setCode(code) {
+        code = code.trim();
+        this.rawCode = code;
+        this.codeClassName = code.split(" ")[1];
 
         // read custom types
         this.discoveredCustomTypes = {};
@@ -36,5 +46,15 @@ class ScriptAsset extends Asset {
         }
         
         this.code = lines.join("\n");
+        this.notifyOnCodeChange.forEach(x => {
+            if(x != null) x();
+        });
+    }
+
+    addNotifyOnChangeListener(callback) {
+        this.notifyOnCodeChange.add(callback)
+    }
+    removeNotifyOnChangeListener(callback) {
+        this.notifyOnCodeChange.delete(callback)
     }
 }

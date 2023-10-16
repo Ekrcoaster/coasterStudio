@@ -4,6 +4,7 @@ class StringFieldOption {
     /**@typedef {("insert-regex-here"|"alphabet_only"|"numbers_only"|"any")} StringFieldFormatType */
     /**@typedef {("single"|"double")} StringFieldClickMethod */
     /**@typedef {("normal"|"selectAll")} StringFieldFirstClickMethod */
+    /**@typedef {("onDone"|"onType")} StringFieldSaveMethod */
 
     /**@type {StringFieldFormatType} */
     format = "any";
@@ -19,6 +20,9 @@ class StringFieldOption {
 
     /**@type {StringFieldFirstClickMethod} */
     firstClickMethod = "normal";
+    
+    /**@type {StringFieldSaveMethod} */
+    saveMethod = "onDone";
 
     /**@param {StringFieldFormatType} format */
     constructor(format) {
@@ -28,6 +32,7 @@ class StringFieldOption {
         this.roundDecimalPlaces = 1000;
         this.clickMethod = "single";
         this.firstClickMethod = "selectAll";
+        this.saveMethod = "onDone";
     }
 
     doesStringMatch(text) {
@@ -100,6 +105,14 @@ class StringFieldOption {
      */
     setFirstClickMethod(type) {
         this.firstClickMethod = type;
+        return this;
+    }
+
+    /**
+     * @param {StringFieldSaveMethod} type 
+     */
+    setSaveMethod(type) {
+        this.saveMethod = type;
         return this;
     }
 }
@@ -418,6 +431,8 @@ const UI_WIDGET = {
                 // well, then type a character
                 } else {
                     let character = keyboard.getAlphabeticNumbericSymbolic(element);
+                    if(element == "TAB")
+                        character = "\t";
                     // before we type a character, if there is an existing selection, delete it
                     if(character != "" && meta.select > -1) {
                         deleteSelected();
@@ -500,10 +515,18 @@ const UI_WIDGET = {
 
             widgetCacheData[id] = meta;
 
-            if((click && !mouse.isHoveringOver(x1, y1, x2, y2)) || keyboard.downFirst.has("ENTER")) {
+            let trySave = (click && !mouse.isHoveringOver(x1, y1, x2, y2)) || keyboard.downFirst.has("ENTER");
+            if(option.saveMethod == "onType" && keyboard.downFirst.size > 0) trySave = true;
+            if(trySave) {
                 if(option.doesStringMatch(meta.tempText))
                     text = meta.tempText;
-                delete widgetCacheData[id];
+
+                if(option.saveMethod == "onType")
+                    widgetCacheData[id].tempText = null;
+                
+                if(option.saveMethod == "onDone" || (click && !mouse.isHoveringOver(x1, y1, x2, y2)))
+                    delete widgetCacheData[id];
+                
                 appliedChange = true;
             }
         }
@@ -514,7 +537,88 @@ const UI_WIDGET = {
             meta: meta,
             text: text,
             height: y2-y1,
-            applied: appliedChange
+            applied: appliedChange,
+            isActive: meta.isActive,
+            select: meta.select,
+            cursor: meta.cursor
+        }
+    },
+
+    /**
+     * 
+     * @param {String} id 
+     * @param {String} text 
+     * @param {Boolean} isEditable 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     * @param {DrawTextOption} draw 
+     * @param {StringFieldOption} option 
+     */
+    multilineEditableText:function(id, text, isEditable, x1, y1, x2, y2, draw, option) {
+        if(option == null) option = new StringFieldOption("any");
+        option.setClickMethod("single");
+        option.setFirstClickMethod("normal");
+        option.setSaveMethod("onType");
+        let lines = text.split("\n");
+        let applied = false;
+
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
+
+        let y = y1;
+        let cursorX = -1;
+        let cursorY = -1;
+        for(let i = 0; i < lines.length; i++) {
+            let space = UI_UTILITY.measureText(lines[i], draw);
+            
+            let height = space.fontHeight+5;
+            if(draw.debugBoxes)
+                UI_LIBRARY.drawRectCoords(x1, y, x2, y+height, 0, new DrawShapeOption("#ff000052"));
+            let res = UI_WIDGET.editableText(id + i, lines[i], true, x1, y, x1+space.width + 10, y+height, draw, option);
+            
+            if(res.isActive) {
+                cursorX = res.cursor;
+                cursorY = i;
+
+                // handle moving between lines
+                let newCursor = -1;
+                if(i > 0 && keyboard.downFirst.has("ARROWUP")) {
+                    newCursor = cursorY - 1;
+                }
+                if(i <= lines.length - 1 && keyboard.downFirst.has("ARROWDOWN")) {
+                    newCursor = cursorY + 1;
+                }
+
+                if(keyboard.downFirst.has("ENTER")) {
+                    keyboard.downFirst.delete("ENTER");
+                    lines.splice(i+1, 0, "");
+                    newCursor = i+1;
+                }
+
+                // then actually move the cursor
+                if(newCursor > -1) {
+                    widgetCacheData[id + (newCursor)] = widgetCacheData[id + i];
+                    widgetCacheData[id + (newCursor)].tempText = null;
+                    delete widgetCacheData[id + i];
+
+                    keyboard.downFirst.delete("ARROWUP");
+                    keyboard.downFirst.delete("ARROWDOWN");
+                    newCursor = -1;
+                }
+                
+            }
+
+            if(res.applied) {
+                applied = true;
+                lines[i] = res.text;
+            }
+            y += height+1;
+        }
+
+        return {
+            applied: applied,
+            text: lines.join("\n")
         }
     },
 

@@ -676,9 +676,9 @@ const UI_LIBRARY = {
             xOffset = Math.max(0, ((x2-x1) - space.width));
 
         if(draw.verticalAlign == "center")
-            yOffset = Math.max(0, ((y2-y1) - space.height)/2);
+            yOffset = Math.max(0, ((y2-y1) - space.coasterHeight) /2);
         else if(draw.verticalAlign == "bottom")
-            yOffset = Math.max(0, ((y2-y1) - space.height));
+            yOffset = Math.max(0, ((y2-y1) - space.coasterHeight));
 
         // draw the text box
         if(draw.debugBoxes) {
@@ -744,7 +744,9 @@ const UI_UTILITY = {
 
         return {
             "width": data.width, 
-            "height": data.fontBoundingBoxDescent - data.fontBoundingBoxAscent
+            "fontHeight": data.fontBoundingBoxAscent + data.fontBoundingBoxDescent,
+            "actualHeight": data.actualBoundingBoxAscent + data.actualBoundingBoxDescent,
+            "coasterHeight": data.fontBoundingBoxDescent - data.fontBoundingBoxAscent
         }
     },
     /**@param {Filter[]} filters */

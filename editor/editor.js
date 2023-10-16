@@ -36,7 +36,7 @@ class Editor {
             .registerWindow(new HierarchyWindow())
         );
         row1.registerWindow(new EditorWindowContainer(0.7, "vertical").registerWindow(new SceneWindow()).registerWindow(new GameWindow()));
-        row1.registerWindow(new EditorWindowContainer(0.2, "vertical").registerWindow(new InspectorWindow()));
+        row1.registerWindow(new EditorWindowContainer(0.2, "vertical").registerWindow(new ScriptingWindow()).registerWindow(new InspectorWindow()));
 
         this.windowManager.flex.registerWindow(new EditorWindowContainer(0.2, "horizontal").registerWindow(new AssetWindow()))
     }

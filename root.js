@@ -127,12 +127,14 @@ window.addEventListener('keydown',function(e) {
     needsRendering = true;
 
     keyboard.isCapsLockDown = e.getModifierState("CapsLock");
+    e.preventDefault();
 },false);
 
 window.addEventListener('keyup',function(e) {
     keyboard.keyUpQueue.push(e.key);
     needsRendering = true;
     keyboard.isCapsLockDown = e.getModifierState("CapsLock");
+    e.preventDefault();
 },false);
 
 function getMousePos(canvas, evt) {
