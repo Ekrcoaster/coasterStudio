@@ -268,12 +268,12 @@ class EditorWindowFlex extends EditorWindowBase {
         if(this.insideDirection == "horizontal") {
             let avg = (y2+y1)/2;
             UI_LIBRARY.drawRectCoords(x1, avg-height/3, x2, avg+height/3, 0, color);
-            UI_LIBRARY.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(25, "default", "black", "center", "center"));
+            UI_LIBRARY.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(22, "default", "black", "center", "center"));
         }
         if(this.insideDirection == "vertical") {
             let avg = (x2+x1)/2;
             UI_LIBRARY.drawRectCoords(avg-width/3, y1, avg+width/3, y2, 0, color);
-            UI_LIBRARY.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(25, "default", "red", "center", "center"));
+            UI_LIBRARY.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(22, "default", "red", "center", "center"));
         }
 
         let soFar = { x: x1, y: y1 };

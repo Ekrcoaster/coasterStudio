@@ -9,7 +9,7 @@ const COLORS = {
     windowModalBackground: ()=>{ return new DrawShapeOption("#323232ef", "#2c2c2c", 5).setRoundedCorners(20)},
     windowDarkerBackground: () => { return new DrawShapeOption("#33343489", "#1a1a1a", 2).setRoundedCorners(10)},
     windowEvenDarkerBackground: () => { return new DrawShapeOption("#232323", "#131313", 2).setRoundedCorners(10)},
-    windowTabLabel: new DrawTextOption(25, "default", "#979797", "center", "center"),
+    windowTabLabel: new DrawTextOption(22, "default", "#979797", "center", "center"),
 
     windowTabDefault: new DrawShapeOption("#363636", "#c5c5c5", 3).setRoundedCorners(10),
     windowTabHover: new DrawShapeOption("#636363", "#c5c5c5", 3).setRoundedCorners(10),
@@ -18,21 +18,21 @@ const COLORS = {
     windowTabMoving: new DrawShapeOption("#6b758012").setRoundedCorners(10),
     windowTabInsert: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
 
-    hierarchyWindowGameObjectNormalText: new DrawTextOption(28, "default", "#ffffff", "left", "center"),
-    hierarchyWindowGameObjectDisabledText: new DrawTextOption(28, "default", "#ffffff62", "left", "center"),
+    hierarchyWindowGameObjectNormalText: new DrawTextOption(22, "default", "#ffffff", "left", "center"),
+    hierarchyWindowGameObjectDisabledText: new DrawTextOption(22, "default", "#ffffff62", "left", "center"),
     hierarchyWindowSceneGameObjectBackground: new DrawShapeOption("#33343489", "#000000", 2),
-    hierarchyWindowSceneGameObjectText: new DrawTextOption(28, "default", "#ffffff7d", "left", "center"),
+    hierarchyWindowSceneGameObjectText: new DrawTextOption(22, "default", "#ffffff7d", "left", "center"),
     hierarchyWindowSelect: new DrawShapeOption("#2986ea5e"),
 
     inspectorComponentHeader: new DrawShapeOption("#33343489", "#24242489", 3),
-    inspectorComponentHeaderText: new DrawTextOption(25, "default", "#ffffff", "left", "center"),
+    inspectorComponentHeaderText: new DrawTextOption(22, "default", "#ffffff", "left", "center"),
     inspectorComponentBox: new DrawShapeOption("#40404089", "#333333", 2).setRoundedCorners(10),
-    inspectorLabel: new DrawTextOption(25, "default", "#ffffff7d", "left", "center"),
+    inspectorLabel: new DrawTextOption(22, "default", "#ffffff7d", "left", "center"),
 
     textCursor: new DrawShapeOption("#ffffff"),
     textSelect: new DrawShapeOption("#2986ea5e"),
 
-    stringEditorText: new DrawTextOption(25, "default", "#ffffff", "left", "center"),
+    stringEditorText: new DrawTextOption(22, "default", "#ffffff", "left", "center"),
     stringEditorTextBackground: new DrawShapeOption("#33343489", "#131313", 2).setRoundedCorners(10),
 
     normalDropdownHandle: new DrawShapeOption("#656565"),
@@ -47,13 +47,13 @@ const COLORS = {
 
     colorPickerHueRotate: new DrawShapeOption("#18181893", "#ffffff", 3),
 
-    assetWindowAssetText: new DrawTextOption(25, "default", "#aaaaaa", "center", "center"),
+    assetWindowAssetText: new DrawTextOption(22, "default", "#aaaaaa", "center", "center"),
 
     buttonDefaultBackground: new DrawShapeOption("#555555", "#2c2c2c", 3).setRoundedCorners(10),
     buttonHoverBackground: new DrawShapeOption("#878787", "#2c2c2c", 3).setRoundedCorners(10),
 
-    dropdownCurrentText:  new DrawTextOption(25, "default", "#ffffff", "left", "center"),
-    dropdownItemText:  new DrawTextOption(25, "default", "#ffffffd8", "left", "center"),
+    dropdownCurrentText:  new DrawTextOption(22, "default", "#ffffff", "left", "center"),
+    dropdownItemText:  new DrawTextOption(22, "default", "#ffffffd8", "left", "center"),
     dropdownHoverBackground: new DrawShapeOption("#9496995e").setRoundedCorners(10),
     dropdownSelectedBackground: new DrawShapeOption("#2986ea5e").setRoundedCorners(10),
 

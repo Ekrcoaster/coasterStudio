@@ -21,13 +21,13 @@ class ScriptingWindow extends EditorWindow {
         let visualizedCode = this.visualizeCode(this.tempScriptCode);
 
         let option = new MultilineStringFieldOption("any");
-        let draw = new DrawTextOption(25, "default", "#ffffff", "left", "center");
+        let draw = new DrawTextOption(22, "default", "#ffffff", "left", "center");
         option.setOnRender((lineCount, lineIndex, x1, y1, x2, y2) => {
             lineCount = Math.max(10, lineCount);    // start with double digits
             let longest = UI_UTILITY.measureText(lineCount + "", draw);
             let w = longest.width + 10+2;
             UI_LIBRARY.drawRectCoords(x1-1, y1-1, x1+w+3, y2+1, 0, COLORS.windowEvenDarkerBackground().setStrokeWidth(0).setRoundedCorners(0));
-            UI_LIBRARY.drawText(lineIndex + "", x1, y1, x1+w, y2, new DrawTextOption(25, "default", "#ffffff6f", "right", "center"));
+            UI_LIBRARY.drawText(lineIndex + "", x1, y1, x1+w, y2, new DrawTextOption(22, "default", "#ffffff6f", "right", "center"));
             return w+5;
         });
         let codeRes = UI_WIDGET.multilineEditableText(this.container?.id + "code", visualizedCode, true, x1+5, y1+5, x2-5, y2-tabHeight-5, draw, option);

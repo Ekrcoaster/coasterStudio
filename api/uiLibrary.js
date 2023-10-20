@@ -323,7 +323,7 @@ class DrawTextOption {
      * @param {HorizontalAlignTypes} horizontalAlign
      * @param {VerticalAlignTypes} verticalAlign
      * */
-    constructor(size = 25, font = "default", fillColor = "#ffffff", horizontalAlign = "left", verticalAlign = "center") {
+    constructor(size = 22, font = "default", fillColor = "#ffffff", horizontalAlign = "left", verticalAlign = "center") {
         this.size = size;
         this.font = font;
         this.fillColor = new Color(fillColor);
@@ -339,7 +339,7 @@ class DrawTextOption {
 
     getFont() {
         if(this.font == "default")
-            return "Courier";
+            return "Nato Sans Moto";
         return this.font;
     }
 

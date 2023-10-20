@@ -262,7 +262,7 @@ const UI_WIDGET = {
      */
     windowTabLabel: function (id, name, x1, y1, y2, state) {
         let size = UI_UTILITY.measureText(this.name, COLORS.windowTabLabel);
-        let myLength = Math.max(100, size.width);
+        let myLength = Math.max(100, size.width+20);
         let x2 = x1 + myLength;
         let color = COLORS.windowTabDefault;
 
@@ -953,7 +953,7 @@ const UI_WIDGET = {
         let click = mouse.isToolFirstUp("button" + text);
 
         if(optionalTextDraw == null)
-            optionalTextDraw = new DrawTextOption(25, "default", "#ffffffa2", optionalIcon == null ? "center" : "left", "center");
+            optionalTextDraw = new DrawTextOption(22, "default", "#ffffffa2", optionalIcon == null ? "center" : "left", "center");
 
         if(optionalBackgroundDraw == null)
             optionalBackgroundDraw = hover ? COLORS.buttonHoverBackground : COLORS.buttonDefaultBackground;

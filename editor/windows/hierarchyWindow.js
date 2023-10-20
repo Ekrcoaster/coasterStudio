@@ -13,7 +13,7 @@ class HierarchyWindow extends EditorWindow {
         const t = this;
         let scene = editor.activeScene;
         if(scene == null) {
-            UI_LIBRARY.drawText("No scene loaded!", x1, y1, x2, y2, new DrawTextOption(25, "default", "red", "center", "center"));
+            UI_LIBRARY.drawText("No scene loaded!", x1, y1, x2, y2, new DrawTextOption(22, "default", "red", "center", "center"));
             return;
         }
 

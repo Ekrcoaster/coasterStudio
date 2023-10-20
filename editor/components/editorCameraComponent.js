@@ -40,7 +40,7 @@ class EditorCamera extends EditorComponent {
 
         tools.polygon(points, COLORS.cameraColor);
         
-        //tools.text(transform.gameObject.name, center.x-1, center.y - coordSize.height/2 - 0.2, 2, 0.1, new DrawTextOption(25, "default", "#ffffff", "center", "center"));
+        //tools.text(transform.gameObject.name, center.x-1, center.y - coordSize.height/2 - 0.2, 2, 0.1, new DrawTextOption(22, "default", "#ffffff", "center", "center"));
     }
 
     onSelectedSceneRender(transform, tools) {

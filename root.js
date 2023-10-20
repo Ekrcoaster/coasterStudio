@@ -21,7 +21,7 @@ var keyboard;
 
 window.onload = Initalize;
 let needsRendering = true;
-function Initalize() {
+async function Initalize() {
     assets = new AssetEngine();
     let fps = 60;
     engine = new Engine(fps);
@@ -32,6 +32,10 @@ function Initalize() {
 
     mouse = new Mouse();
     keyboard = new Keyboard();
+
+    const font = new FontFace("Nato Sans Moto", "url(./res/NotoSansMono-VariableFont_wdth\,wght.ttf)", {});
+    await font.load();
+    document.fonts.add(font);
 
     updateCanvasSize();
     setInterval(() => {

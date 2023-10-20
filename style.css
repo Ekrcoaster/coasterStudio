@@ -17,3 +17,8 @@ canvas {
     height: 100%;
     background-color: rgb(24, 24, 24);
 }
+
+@font-face {
+    font-family: "Nato Sans Moto";
+    src: url('./res/NotoSansMono-VariableFont_wdth\,wght.ttf');
+}
