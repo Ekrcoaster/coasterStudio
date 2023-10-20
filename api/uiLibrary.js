@@ -273,7 +273,7 @@ class DrawShapeOption {
         return this.outlineColor.toRGBA(); 
     }
     getStrokeWidth() { return this.outlineWidth; }
-    setStrokeWidth(width) {this.outlineWidth = width; }
+    setStrokeWidth(width) {this.outlineWidth = width; return this;}
     shouldStroke() { return this.outlineWidth > 0; }
     getRoundedCorners() {
         if(this.roundedCorners.length == 0)

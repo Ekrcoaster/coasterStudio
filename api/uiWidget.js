@@ -1,4 +1,5 @@
 let widgetCacheData = {}
+let alphabet = new Set("abcdefghjijlmnopqrstuvwxyz".split(""));
 
 class StringFieldOption {
     /**@typedef {("insert-regex-here"|"alphabet_only"|"numbers_only"|"any")} StringFieldFormatType */
@@ -114,6 +115,34 @@ class StringFieldOption {
     setSaveMethod(type) {
         this.saveMethod = type;
         return this;
+    }
+}
+
+class MultilineStringFieldOption extends StringFieldOption {
+
+    /**
+     * @callback MultilineStringFieldOptionRenderCallback 
+     * @param {Number} lineCount
+     * @param {Number} currentLine
+     * @param {Number} x1
+     * @param {Number} y1
+     * @param {Number} x2
+     * @param {Number} y2
+     * @returns {Number} xOffset
+    */
+
+    /**@type {MultilineStringFieldOptionRenderCallback} */
+    onRender;
+
+    /**@param {StringFieldFormatType} format */
+    constructor(format) {
+        super(format);
+        this.onRender = () => {return 0;}
+    }
+
+    /**@param {MultilineStringFieldOptionRenderCallback} callback */
+    setOnRender(callback = (lineCount, currentLine, x1, y1, x2, y2) => {}) {
+        this.onRender = callback;
     }
 }
 
@@ -401,7 +430,7 @@ const UI_WIDGET = {
         let appliedChange = false;
         // even if we want a double click, if we are active we should still cancel from a single outside click
         if(meta.isActive) option.clickMethod = "single";
-        let click = (option.clickMethod == "single" ? mouse.isToolFirstUp(id) : mouse.isToolDoubleClick(id)) && isEditable;
+        let click = (option.clickMethod == "single" ? mouse.isToolDown(id) : mouse.isToolDoubleClick(id)) && isEditable;
 
         let tempText = text;
         if(meta.tempText != null) tempText = meta.tempText;
@@ -487,26 +516,49 @@ const UI_WIDGET = {
         let space = UI_LIBRARY.drawText(tempText, x1, y1, x2, y2, new DrawTextOption(draw.size, draw.font, draw.fillColor.setAlpha(isEditable ? 1 : 0.5), draw.horizontalAlign, draw.verticalAlign));
 
         if(click && hover) {
+            let wasActive = meta.isActive || false;
             meta.isActive = true;
-            if(keyboard.isShiftDown) {
+            if(keyboard.isShiftDown || mouse.getDownDistance() > 5) {
                 if(meta.select == -1)
                     meta.select = meta.cursor;
             } else {
                 meta.select = -1;
             }
-            if(option.firstClickMethod == "normal") {
+
+            if(option.firstClickMethod == "normal" || wasActive) {
                 meta.cursor = Math.round(Math.max(0, Math.min(1, (mouse.x - x1) / ((x1+space.width)-x1))) * tempText.length);
-            } else {
+            } else if(!wasActive){
                 meta.cursor = tempText.length;
+                mouse.clickDown = false;
                 meta.select = 0;
             }
             if(meta.tempText == null) meta.tempText = text;
             
+            // select a whole word on double click
+            if(mouse.doubleClickFirstDown) {
+                let startOfWord = meta.select == -1 ? meta.cursor : meta.select;
+                for(startOfWord; startOfWord >= 0; startOfWord--) {
+                    if(!alphabet.has(tempText[startOfWord].toLowerCase()))
+                        break;
+                }
+                let endOfWord = meta.cursor;
+                for(endOfWord; endOfWord < tempText.length; endOfWord++) {
+                    if(!alphabet.has(tempText[endOfWord].toLowerCase()))
+                        break;
+                }
+                meta.select = startOfWord+1;
+                meta.cursor = endOfWord;
+                mouse.down = false;
+            }
         }
 
+        // if the field is actually active, draw it
         if(meta.isActive) {
+            // draw the cursor
             let cursorOffset = x1 + space.getLocalXOffsetOfLetter(meta.cursor);
             UI_LIBRARY.drawRectCoords(cursorOffset-1, y1, cursorOffset+1, y2, 0, COLORS.textCursor);
+            
+            // draw the selection box
             if(meta.select > -1) {
                 let smallest = Math.min(meta.cursor, meta.select);
                 let largest = Math.max(meta.cursor, meta.select);
@@ -515,6 +567,7 @@ const UI_WIDGET = {
 
             widgetCacheData[id] = meta;
 
+            // try to save the text
             let trySave = (click && !mouse.isHoveringOver(x1, y1, x2, y2)) || keyboard.downFirst.has("ENTER");
             if(option.saveMethod == "onType" && keyboard.downFirst.size > 0) trySave = true;
             if(trySave) {
@@ -554,71 +607,124 @@ const UI_WIDGET = {
      * @param {Number} x2 
      * @param {Number} y2 
      * @param {DrawTextOption} draw 
-     * @param {StringFieldOption} option 
+     * @param {MultilineStringFieldOption} option 
      */
     multilineEditableText:function(id, text, isEditable, x1, y1, x2, y2, draw, option) {
-        if(option == null) option = new StringFieldOption("any");
+        // setup settings
+        if(option == null) option = new MultilineStringFieldOption("any");
         option.setClickMethod("single");
         option.setFirstClickMethod("normal");
         option.setSaveMethod("onType");
+
+        // setup vars
         let lines = text.split("\n");
         let applied = false;
-
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
-
-        let y = y1;
+        const newLineDeleterChar = "֎-֎";
         let cursorX = -1;
         let cursorY = -1;
-        for(let i = 0; i < lines.length; i++) {
-            let space = UI_UTILITY.measureText(lines[i], draw);
-            
-            let height = space.fontHeight+5;
-            if(draw.debugBoxes)
-                UI_LIBRARY.drawRectCoords(x1, y, x2, y+height, 0, new DrawShapeOption("#ff000052"));
-            let res = UI_WIDGET.editableText(id + i, lines[i], true, x1, y, x1+space.width + 10, y+height, draw, option);
-            
-            if(res.isActive) {
-                cursorX = res.cursor;
-                cursorY = i;
 
-                // handle moving between lines
-                let newCursor = -1;
-                if(i > 0 && keyboard.downFirst.has("ARROWUP")) {
-                    newCursor = cursorY - 1;
-                }
-                if(i <= lines.length - 1 && keyboard.downFirst.has("ARROWDOWN")) {
-                    newCursor = cursorY + 1;
-                }
+        const lineVerticalPadding = 5;
+        const lineMargin = 1;
 
+        // draw background color
+        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
+
+        // calculate bounds
+        let textWidth = 0;
+        let textHeight = y1;
+        calculateTextBounds();
+
+        let scrollPos = widgetCacheData[id + "scrollPos"] || new Vector2();
+
+        // draw the scroll
+        let scroll = UI_WIDGET.scrollView(x1, y1, x2, y2, scrollPos, textWidth, textHeight, (xOffset, yOffset) => {
+            let y = y1+yOffset;
+            // go line by line and draw everything
+            for(let i = 0; i < lines.length; i++) {
+                let space = UI_UTILITY.measureText(lines[i], draw);
+                
+                let height = space.fontHeight+lineVerticalPadding;
+                let realX1 = x1 + option.onRender(lines.length, i, x1, y, x2, y+height)+xOffset;
+                let res = UI_WIDGET.editableText(id + i, lines[i], true, realX1, y, Math.max(x2, x1+space.width + 100+xOffset), y+height, draw, option);
+                
+                // not ideal to render this twice, but i gotta cover the code
+                option.onRender(lines.length, i, x1, y, x2, y+height);
+                
+                // set the current cursor
+                if(res.isActive) {
+                    cursorX = res.cursor;
+                    cursorY = i;
+                    UI_LIBRARY.drawRectCoords(x1, y, x2, y+height, 0, new DrawShapeOption("#ffffff13"));
+                    
+                }
+    
+                // if the line was changed
+                if(res.applied) {
+                    applied = true;
+                    lines[i] = res.text;
+                }
+    
+                y += height+lineMargin;
+            }
+    
+            // now, handle some multiline commnads
+            if(cursorY > -1 && cursorX > -1) {
+    
+                // enter should insert a new line character
                 if(keyboard.downFirst.has("ENTER")) {
-                    keyboard.downFirst.delete("ENTER");
-                    lines.splice(i+1, 0, "");
-                    newCursor = i+1;
+                    lines[cursorY] = lines[cursorY].substring(0, cursorX) + "\n" + lines[cursorY].substring(cursorX);
+                    changeLineSelection(cursorY, cursorY+1);
+                    widgetCacheData[id + (cursorY+1)].cursor = 0;
                 }
-
-                // then actually move the cursor
-                if(newCursor > -1) {
-                    widgetCacheData[id + (newCursor)] = widgetCacheData[id + i];
-                    widgetCacheData[id + (newCursor)].tempText = null;
-                    delete widgetCacheData[id + i];
-
-                    keyboard.downFirst.delete("ARROWUP");
-                    keyboard.downFirst.delete("ARROWDOWN");
-                    newCursor = -1;
+    
+                // delete should add the delete char to the end of the last line
+                if(cursorX == 0 && cursorY > 0 && keyboard.downFirst.has("DELETE")) {
+                    lines[cursorY-1]+=newLineDeleterChar;
+                    changeLineSelection(cursorY, cursorY-1);
+                    widgetCacheData[id + (cursorY-1)].cursor = lines[cursorY-1].length-3;
                 }
                 
+                // handle moving between lines
+                let newCursor = -1;
+                if(cursorY > 0 && keyboard.downFirst.has("ARROWUP")) {
+                    newCursor = cursorY - 1;
+                }
+                if(cursorY <= lines.length - 1 && keyboard.downFirst.has("ARROWDOWN")) {
+                    newCursor = cursorY + 1;
+                }
+    
+                // then actually move the cursor
+                if(newCursor > -1) {
+                    changeLineSelection(cursorY, newCursor);
+    
+                    newCursor = -1;
+                }
             }
-
-            if(res.applied) {
-                applied = true;
-                lines[i] = res.text;
-            }
-            y += height+1;
-        }
+        });
+        widgetCacheData[id + "scrollPos"] = scroll;
+        
+        text = lines.join("\n");
+        // delete the newline char + the newline
+        text = text.replace(newLineDeleterChar + "\n", "");
 
         return {
             applied: applied,
-            text: lines.join("\n")
+            text: text
+        }
+
+        function changeLineSelection(oldLine, newLine) {
+            widgetCacheData[id + (newLine)] = widgetCacheData[id + oldLine];
+            widgetCacheData[id + (newLine)].tempText = null;
+            delete widgetCacheData[id + oldLine];
+        }
+
+        function calculateTextBounds() {
+            for(let i = 0; i < lines.length; i++) {
+                let space = UI_UTILITY.measureText(lines[i], draw);
+                if(space.width > textWidth)
+                    textWidth = space.width;
+                textHeight += space.fontHeight + lineVerticalPadding + lineMargin;
+            }
         }
     },
 
@@ -977,15 +1083,24 @@ const UI_WIDGET = {
 
         let hovering = mouse.isHoveringOver(x1, y1, x2, y2);
 
-        if(horizontalOverflow || verticalOverflow) {
+        if(horizontalOverflow || verticalOverflow)
             UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption("alpha").makeMask());
-
+        
+        if(horizontalOverflow) {
             if(hovering) {
-                if(verticalOverflow)
-                    scrollPos.y += mouse.getScrollVelocity() * -90;
-                if(horizontalOverflow) 
-                    scrollPos.x += mouse.getScrollVelocity() * -90;
+                scrollPos.x += mouse.getScrollVelocity() * -90;
                 
+                // handle overflow for x
+                if(scrollPos.x > 0)
+                    scrollPos.x = 0;
+
+                let right = scrollPos.x + contentWidth;
+                if(right < x2-x1)
+                    scrollPos.x = (x2-x1) - contentWidth;
+            }
+        } else if(verticalOverflow) {
+            if(hovering) {
+                scrollPos.y += mouse.getScrollVelocity() * -90;
 
                 // handle overflow for y
                 if(scrollPos.y > 0)
@@ -994,9 +1109,6 @@ const UI_WIDGET = {
                 let bottom = scrollPos.y + contentHeight;
                 if(bottom < y2-y1)
                     scrollPos.y = (y2-y1) - contentHeight;
-
-                // handle overflow for x
-                // TODO
             }
         } else {
             scrollPos.x = 0;
