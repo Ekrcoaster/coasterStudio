@@ -25,6 +25,13 @@ class StringFieldOption {
     /**@type {StringFieldSaveMethod} */
     saveMethod = "onDone";
 
+    selectable = true;
+
+    overrideSelectMin = null;
+    overrideSelectMax = null;
+
+    setCursorNextDraw = null;
+
     /**@param {StringFieldFormatType} format */
     constructor(format) {
         this.format = format || "any";
@@ -34,6 +41,9 @@ class StringFieldOption {
         this.clickMethod = "single";
         this.firstClickMethod = "selectAll";
         this.saveMethod = "onDone";
+        this.selectable = true;
+        this.overrideSelectMin = null;
+        this.overrideSelectMax = null;
     }
 
     doesStringMatch(text) {
@@ -115,6 +125,20 @@ class StringFieldOption {
     setSaveMethod(type) {
         this.saveMethod = type;
         return this;
+    }
+
+    setSelectable(sel) {
+        this.selectable = sel;
+        return this;
+    }
+
+    setOverrideSelect(min, max) {
+        this.overrideSelectMin = min;
+        this.overrideSelectMax = max;
+    }
+
+    setCursorPosNextDraw(cursor) {
+        this.setCursorNextDraw = cursor;
     }
 }
 
@@ -427,6 +451,9 @@ const UI_WIDGET = {
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
         let meta = widgetCacheData[id] || {};
 
+        if(option.setCursorNextDraw != null)
+            meta.cursor = meta.setCursorNextDraw;
+
         let appliedChange = false;
         // even if we want a double click, if we are active we should still cancel from a single outside click
         if(meta.isActive) option.clickMethod = "single";
@@ -435,13 +462,19 @@ const UI_WIDGET = {
         let tempText = text;
         if(meta.tempText != null) tempText = meta.tempText;
 
+        // if the text box is active
         if(meta.isActive) {
+            // handle the keyboard downs
+            // doing this as a loop since any character could be entered
             keyboard.downFirst.forEach(element => {
                 let first = tempText.substring(0, meta.cursor);
                 let last = tempText.substring(meta.cursor);
 
                 // check for deletions
                 if(element == "DELETE") {
+                    if(tempText.substring(0, meta.cursor).length > 0)
+                        keyboard.downFirst.delete(element);
+
                     // if theres a selection, delete it
                     if(meta.select > -1) {
                         deleteSelected();
@@ -486,6 +519,8 @@ const UI_WIDGET = {
                     }
                     meta.cursor--;
                     if(meta.cursor < 0) meta.cursor = 0;
+                    else
+                        keyboard.downFirst.delete(element);
                 }
 
                 // if the right arrow is being pressed, shift the cursor right
@@ -498,7 +533,9 @@ const UI_WIDGET = {
                         meta.select = -1;
                     }
                     meta.cursor++;
-                    if(meta.cursor >= tempText.length) meta.cursor = tempText.length;
+                    if(meta.cursor > tempText.length) meta.cursor = tempText.length;
+                    else
+                        keyboard.downFirst.delete(element);
                 }
 
                 function deleteSelected() {
@@ -514,19 +551,22 @@ const UI_WIDGET = {
         meta.tempText = tempText;
 
         let cursorScreenPos = null;
-
         let space = UI_LIBRARY.drawText(tempText, x1, y1, x2, y2, new DrawTextOption(draw.size, draw.font, draw.fillColor.setAlpha(isEditable ? 1 : 0.5), draw.horizontalAlign, draw.verticalAlign));
 
-        if(click && hover) {
+        // if the space has been selected
+        if((click && hover) || option.setCursorNextDraw != null) {
             let wasActive = meta.isActive || false;
             meta.isActive = true;
-            if(keyboard.isShiftDown || mouse.getDownDistance() > 5) {
+
+            // handle create or destroy selection
+            if(option.selectable && (keyboard.isShiftDown || mouse.getDownDistance() > 3)) {
                 if(meta.select == -1)
                     meta.select = meta.cursor;
             } else {
                 meta.select = -1;
             }
 
+            // choose the cursor's position
             if(option.firstClickMethod == "normal" || wasActive) {
                 meta.cursor = Math.round(Math.max(0, Math.min(1, (mouse.x - x1) / ((x1+space.width)-x1))) * tempText.length);
             } else if(!wasActive){
@@ -537,15 +577,15 @@ const UI_WIDGET = {
             if(meta.tempText == null) meta.tempText = text;
             
             // select a whole word on double click
-            if(mouse.doubleClickFirstDown) {
+            if(mouse.doubleClickFirstDown && option.selectable) {
                 let startOfWord = meta.select == -1 ? meta.cursor : meta.select;
                 for(startOfWord; startOfWord >= 0; startOfWord--) {
-                    if(!alphabet.has(tempText[startOfWord].toLowerCase()))
+                    if(tempText[startOfWord] == null || !alphabet.has(tempText[startOfWord].toLowerCase()))
                         break;
                 }
                 let endOfWord = meta.cursor;
                 for(endOfWord; endOfWord < tempText.length; endOfWord++) {
-                    if(!alphabet.has(tempText[endOfWord].toLowerCase()))
+                    if(tempText[endOfWord] == null || !alphabet.has(tempText[endOfWord].toLowerCase()))
                         break;
                 }
                 meta.select = startOfWord+1;
@@ -559,13 +599,6 @@ const UI_WIDGET = {
             // draw the cursor
             cursorScreenPos = x1 + space.getLocalXOffsetOfLetter(meta.cursor);
             UI_LIBRARY.drawRectCoords(cursorScreenPos-1, y1, cursorScreenPos+1, y2, 0, COLORS.textCursor);
-            
-            // draw the selection box
-            if(meta.select > -1) {
-                let smallest = Math.min(meta.cursor, meta.select);
-                let largest = Math.max(meta.cursor, meta.select);
-                UI_LIBRARY.drawRectCoords(x1 + space.getLocalXOffsetOfLetter(smallest), y1, x1 + space.getLocalXOffsetOfLetter(largest), y2, 0, COLORS.textSelect);
-            }
 
             widgetCacheData[id] = meta;
 
@@ -584,6 +617,17 @@ const UI_WIDGET = {
                 
                 appliedChange = true;
             }
+        }
+        
+        // draw the selection box
+        if((meta.isActive && meta.select > -1) || (option.overrideSelectMin != null && option.overrideSelectMax != null)) {
+            let smallest = Math.min(meta.cursor, meta.select);
+            let largest = Math.max(meta.cursor, meta.select);
+            if(option.overrideSelectMin != null && option.overrideSelectMax != null) {
+                smallest = option.overrideSelectMin;
+                largest = option.overrideSelectMax;
+            }
+            UI_LIBRARY.drawRectCoords(x1 + space.getLocalXOffsetOfLetter(smallest), y1, x1 + space.getLocalXOffsetOfLetter(largest), y2, 0, COLORS.textSelect);
         }
 
         return {
@@ -618,6 +662,7 @@ const UI_WIDGET = {
         option.setClickMethod("single");
         option.setFirstClickMethod("normal");
         option.setSaveMethod("onType");
+        option.setSelectable(false);
 
         // setup vars
         let lines = text.split("\n");
@@ -629,6 +674,7 @@ const UI_WIDGET = {
         let cursorYScreenPos = null;
         let cursorYScreenHeight = null;
 
+        // setup draw consts
         const lineVerticalPadding = 5;
         const lineMargin = 1;
 
@@ -640,10 +686,79 @@ const UI_WIDGET = {
         let textHeight = y1;
         calculateTextBounds();
 
-        let scrollPos = widgetCacheData[id + "scrollPos"] || new Vector2();
+        let meta = widgetCacheData[id] || {
+            selectCursorX: -1,
+            selectCursorY: -1,
+            lastCursorX: -1,
+            lastCursorY: -1
+        };
+        let scrollPos = meta.scrollPos || new Vector2();
+
+        let selectionData = calculateSelectionIndexes();
+
+        // handle a selection delete before the lines are drawn... cause editableText will override DELETE!
+        let toSelectCursorX;
+        let toSelectCursorY;
+        if(meta.selectCursorX > -1 && keyboard.downFirst.has("DELETE")) {
+            keyboard.downFirst.delete("DELETE");
+
+            let first = Object.keys(selectionData)[0];
+            toSelectCursorX = selectionData[first].min;
+            toSelectCursorY = first;
+            
+            // delete from the respective lines
+            for(let i = Math.min(meta.selectCursorY, meta.lastCursorY); i <= Math.max(meta.selectCursorY, meta.lastCursorY); i++) {
+                let min = Math.min(selectionData[i].min, lines[i].length);
+                let max = Math.min(selectionData[i].max, lines[i].length);
+
+                lines[i] = lines[i].substring(0, min) + lines[i].substring(max, lines[i].length);
+                delete widgetCacheData[id + i];
+            }
+
+            // remove empty lines
+            for(let i = 0; i < lines.length; i++) {
+                if(lines[i].length == 0) {
+                    lines.splice(i, 1);
+                    i--;
+                }
+            }
+
+            selectionData = {};
+            meta.selectCursorX = -1;
+            meta.selectCursorY = -1;
+            applied = true;
+        }
 
         // draw the scroll
-        let scroll = UI_WIDGET.scrollView(x1, y1, x2, y2, scrollPos, textWidth, textHeight, (xOffset, yOffset) => {
+        meta.scrollPos = UI_WIDGET.scrollView(x1, y1, x2, y2, scrollPos, textWidth, textHeight, (xOffset, yOffset) => {
+            // draw the insides
+            drawInsideScroll(xOffset, yOffset);
+    
+            // now, handle some multiline commnads
+            if(cursorY > -1 && cursorX > -1)
+                handleCommands();
+        });
+
+        meta.lastCursorX = cursorX;
+        meta.lastCursorY = cursorY;
+        widgetCacheData[id] = meta;
+        
+        text = lines.join("\n");
+        // delete the newline char + the newline
+        text = text.replace(newLineDeleterChar + "\n", "");
+
+        return {
+            applied: applied,
+            text: text,
+            cursorX: cursorX,
+            cursorY: cursorY,
+            cursorXScreenPos: cursorXScreenPos,
+            cursorYScreenPos: cursorYScreenPos,
+            cursorYScreenHeight: cursorYScreenHeight
+        }
+
+        // draw the contents of the scrollbox
+        function drawInsideScroll(xOffset, yOffset) {
             let y = y1+yOffset;
             // go line by line and draw everything
             for(let i = 0; i < lines.length; i++) {
@@ -651,6 +766,13 @@ const UI_WIDGET = {
                 
                 let height = space.fontHeight+lineVerticalPadding;
                 let realX1 = x1 + option.onRender(lines.length, i, x1, y, x2, y+height)+xOffset;
+
+                option.setOverrideSelect(selectionData[i]?.min, selectionData[i]?.max);
+                if(toSelectCursorY == i)
+                    option.setCursorPosNextDraw(toSelectCursorX);
+                else
+                    option.setCursorPosNextDraw(null);
+
                 let res = UI_WIDGET.editableText(id + i, lines[i], true, realX1, y, Math.max(x2, x1+space.width + 100+xOffset), y+height, draw, option);
                 
                 // not ideal to render this twice, but i gotta cover the code
@@ -674,60 +796,108 @@ const UI_WIDGET = {
     
                 y += height+lineMargin;
             }
-    
-            // now, handle some multiline commnads
-            if(cursorY > -1 && cursorX > -1) {
-    
-                // enter should insert a new line character
-                if(keyboard.downFirst.has("ENTER")) {
-                    lines[cursorY] = lines[cursorY].substring(0, cursorX) + "\n" + lines[cursorY].substring(cursorX);
-                    changeLineSelection(cursorY, cursorY+1);
-                    widgetCacheData[id + (cursorY+1)].cursor = 0;
-                }
-    
-                // delete should add the delete char to the end of the last line
-                if(cursorX == 0 && cursorY > 0 && keyboard.downFirst.has("DELETE")) {
-                    lines[cursorY-1]+=newLineDeleterChar;
-                    changeLineSelection(cursorY, cursorY-1);
-                    widgetCacheData[id + (cursorY-1)].cursor = lines[cursorY-1].length-3;
-                }
-                
-                // handle moving between lines
-                let newCursor = -1;
-                if(cursorY > 0 && keyboard.downFirst.has("ARROWUP")) {
-                    newCursor = cursorY - 1;
-                }
-                if(cursorY <= lines.length - 1 && keyboard.downFirst.has("ARROWDOWN")) {
-                    newCursor = cursorY + 1;
-                }
-    
-                // then actually move the cursor
-                if(newCursor > -1) {
-                    changeLineSelection(cursorY, newCursor);
-    
-                    newCursor = -1;
-                }
-            }
-        });
-        widgetCacheData[id + "scrollPos"] = scroll;
-        
-        text = lines.join("\n");
-        // delete the newline char + the newline
-        text = text.replace(newLineDeleterChar + "\n", "");
-
-        return {
-            applied: applied,
-            text: text,
-            cursorX: cursorX,
-            cursorY: cursorY,
-            cursorXScreenPos: cursorXScreenPos,
-            cursorYScreenPos: cursorYScreenPos,
-            cursorYScreenHeight: cursorYScreenHeight
         }
 
-        function changeLineSelection(oldLine, newLine) {
+        // handle the commands (such as enter, delete, etc)
+        function handleCommands() {
+            // enter should insert a new line character
+            if(keyboard.downFirst.has("ENTER")) {
+                // insert a newline
+                lines[cursorY] = lines[cursorY].substring(0, cursorX) + "\n" + lines[cursorY].substring(cursorX);
+
+                let newCursorX = 0;
+
+                // if the newline is empty, add the last line's tabs in
+                if(lines[cursorY].substring(cursorX+1).length == 0) {
+                    let indent = calculateRowIndent(cursorY);
+                    // special case if the character above is a }, then go down 1 indent
+                    if(indent.length > 0 && lines[cursorY][cursorX-1] == "}")
+                        indent = indent.substring(0, indent.length - 1);
+                    lines[cursorY] += indent;
+                    newCursorX = indent.length;
+
+                }
+
+                // move the selection down
+                changeLineSelection(cursorY, cursorY+1, newCursorX);
+            }
+
+            // delete should add the delete char to the end of the last line
+            if(cursorX == 0 && cursorY > 0 && keyboard.downFirst.has("DELETE")) {
+                lines[cursorY-1]+=newLineDeleterChar;
+                changeLineSelection(cursorY, cursorY-1);
+                widgetCacheData[id + (cursorY-1)].cursor = lines[cursorY-1].length-3;
+            }
+
+            // handle moving between lines
+            let newCursorY = -1;
+            let newCursorX = -1;
+
+            // move up
+            if(cursorY > 0 && keyboard.downFirst.has("ARROWUP")) {
+                newCursorY = cursorY - 1;
+            }
+            // move down
+            if(cursorY <= lines.length - 1 && keyboard.downFirst.has("ARROWDOWN")) {
+                newCursorY = cursorY + 1;
+            }
+            // move left
+            if(cursorY > 0 && cursorX == 0 && keyboard.downFirst.has("ARROWLEFT")) {
+                newCursorY = cursorY - 1;
+                newCursorX = lines[newCursorY].length;
+            }
+            // move right
+            if(cursorY <= lines.length - 1 && cursorX == lines[cursorY].length && keyboard.downFirst.has("ARROWRIGHT")) {
+                newCursorY = cursorY + 1;
+                newCursorX = 0;
+            }
+
+            // then actually move the cursor
+            if(newCursorY > -1) {
+                changeLineSelection(cursorY, newCursorY, newCursorX);
+                newCursorY = -1;
+            }
+
+            // handle selecting
+            if((keyboard.isShiftDown && mouse.clickDown) || mouse.getDownDistance() > 3) {
+                if(meta.selectCursorX == -1) {
+                    meta.selectCursorX = cursorX;
+                    meta.selectCursorY = cursorY;
+                }
+            } else if(mouse.clickDown) {
+                meta.selectCursorX = -1;
+                meta.selectCursorY = -1;
+            }
+
+            // select a whole word on double click
+            if(mouse.doubleClickFirstDown) {
+                let line = lines[cursorY];
+                let startOfWord = meta.selectCursorX == -1 ? cursorX : meta.selectCursorX;
+                for(startOfWord; startOfWord >= 0; startOfWord--) {
+                    if(line[startOfWord] == null || !alphabet.has(line[startOfWord].toLowerCase()))
+                        break;
+                }
+                let endOfWord = cursorX;
+                for(endOfWord; endOfWord < line.length; endOfWord++) {
+                    if(line[endOfWord] == null || !alphabet.has(line[endOfWord].toLowerCase()))
+                        break;
+                }
+
+                // then set the cursor
+                meta.selectCursorX = startOfWord+1;
+                cursorX = endOfWord;
+                widgetCacheData[id + (cursorY)].cursor = cursorX;
+                meta.selectCursorY = cursorY;
+                mouse.down = false;
+                mouse.clickDown = false;
+            }
+        }
+
+        function changeLineSelection(oldLine, newLine, setCursorX = -1) {
             widgetCacheData[id + (newLine)] = widgetCacheData[id + oldLine];
             widgetCacheData[id + (newLine)].tempText = null;
+            if(setCursorX > -1)
+                widgetCacheData[id + (newLine)].cursor = setCursorX;
             delete widgetCacheData[id + oldLine];
         }
 
@@ -738,6 +908,43 @@ const UI_WIDGET = {
                     textWidth = space.width;
                 textHeight += space.fontHeight + lineVerticalPadding + lineMargin;
             }
+        }
+
+        function calculateRowIndent(index) {
+            let temp = "";
+            for(let i = 0; i < lines[index].length; i++)
+                if(lines[index][i] == "\t")
+                    temp += "\t"
+                else
+                    return temp;
+            return temp;
+        }
+
+        function calculateSelectionIndexes() {
+            if(meta.selectCursorX == -1 || meta.selectCursorY == -1) return {};
+
+            let minX = meta.selectCursorX;
+            let minY = Math.min(meta.selectCursorY, meta.lastCursorY);
+            let maxX = meta.lastCursorX;
+            let maxY = Math.max(meta.selectCursorY, meta.lastCursorY);
+
+            // invert the X if the y is inverted
+            if(meta.selectCursorY > meta.lastCursorY || (meta.selectCursorY == meta.lastCursorY && meta.lastCursorX < meta.selectCursorX)) {
+                minX = meta.lastCursorX;
+                maxX = meta.selectCursorX;
+            }
+
+            let l = {};
+            for(let i = 0; i < lines.length; i++) {
+                if(minY == i)
+                    l[i] = {min: minX, max: meta.selectCursorY == meta.lastCursorY ? maxX : Infinity};
+                else if(i > minY && i < maxY)
+                    l[i] = {min: 0, max: Infinity}
+                else if(i == maxY)
+                    l[i] = {min: 0, max: maxX};
+            }
+
+            return l;
         }
     },
 

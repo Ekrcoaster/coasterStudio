@@ -27,7 +27,7 @@ class ScriptingWindow extends EditorWindow {
             let longest = UI_UTILITY.measureText(lineCount + "", draw);
             let w = longest.width + 10+2;
             UI_LIBRARY.drawRectCoords(x1-1, y1-1, x1+w+3, y2+1, 0, COLORS.windowEvenDarkerBackground().setStrokeWidth(0).setRoundedCorners(0));
-            UI_LIBRARY.drawText(lineIndex + "", x1, y1, x1+w, y2, new DrawTextOption(22, "default", "#ffffff6f", "right", "center"));
+            UI_LIBRARY.drawText((lineIndex+1) + "", x1, y1, x1+w, y2, new DrawTextOption(22, "default", "#ffffff6f", "right", "center"));
             return w+5;
         });
         
@@ -85,7 +85,13 @@ class ScriptingWindow extends EditorWindow {
     }
 
     getAutofillOptions(cursorX, cursorY) {
-        let line = this.tempScriptCode.split("\n")[cursorY].trim();
+        let lineSplit = this.tempScriptCode.split("\n");
+        if(lineSplit.length == 0 || cursorY == -1) return {
+            options: [],
+            soFar: ""
+        };
+
+        let line = lineSplit[Math.min(lineSplit.length - 1, cursorY)].trim();
         let split = line.split(".");
         if(split.length <= 1) return {
             options: [],
@@ -100,12 +106,10 @@ class ScriptingWindow extends EditorWindow {
     }
 
     visualizeCode(code) {
-        code = code.replace(/\t/gi, "   ");
         return code;
     }
 
     unVisualizeCode(code) {
-        code = code.replace(/   /gi, "\t");
         return code;
     }
 }
