@@ -13,7 +13,7 @@ class Script extends Component {
         this.script = null;
     }
 
-    setScript(script, cameFromUpdate = false) {
+    setScript(script, cameFromUpdate = false, updateLayout = true) {
         if(script == this.script && !cameFromUpdate) return;
         const t = this;
         if(this.script != null) {
@@ -38,8 +38,10 @@ class Script extends Component {
                 this.instanceFields.splice(this.instanceFields.indexOf(normalFields[i]), 1);
             }
 
-            if(window.editor != null)
+            if(window.editor != null && updateLayout)
                 editor.allComponentsCache[this.id].updateLayout();
+
+            this.instance.runAutoFillCode = registerRunAutofillCode;
         } catch (e){
             console.error("Compiler error for script " + this.script.name, e);
         }
@@ -47,6 +49,20 @@ class Script extends Component {
 
         function onUpdate() {
             t.setScript(t.script, true);
+        }
+
+        function registerRunAutofillCode(code, split) {
+            let keys = [];
+            try {
+                eval(`
+                if(${split.join("?.")} == null) keys = [];
+                else keys = Object.keys(${code});
+                `);
+            } catch {
+                return [];
+            }
+            
+            return keys;
         }
     }
 
@@ -104,5 +120,10 @@ class Script extends Component {
         for(let name in data.instFields) {
             this.instance[name] = data.instFields[name];
         }
+    }
+
+    runAutoFillCode(code, split) {
+        if(this.instance == null) return 
+        return this.instance.runAutoFillCode(code, split);
     }
 }

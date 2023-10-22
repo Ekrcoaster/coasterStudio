@@ -513,6 +513,8 @@ const UI_WIDGET = {
         }
         meta.tempText = tempText;
 
+        let cursorScreenPos = null;
+
         let space = UI_LIBRARY.drawText(tempText, x1, y1, x2, y2, new DrawTextOption(draw.size, draw.font, draw.fillColor.setAlpha(isEditable ? 1 : 0.5), draw.horizontalAlign, draw.verticalAlign));
 
         if(click && hover) {
@@ -555,8 +557,8 @@ const UI_WIDGET = {
         // if the field is actually active, draw it
         if(meta.isActive) {
             // draw the cursor
-            let cursorOffset = x1 + space.getLocalXOffsetOfLetter(meta.cursor);
-            UI_LIBRARY.drawRectCoords(cursorOffset-1, y1, cursorOffset+1, y2, 0, COLORS.textCursor);
+            cursorScreenPos = x1 + space.getLocalXOffsetOfLetter(meta.cursor);
+            UI_LIBRARY.drawRectCoords(cursorScreenPos-1, y1, cursorScreenPos+1, y2, 0, COLORS.textCursor);
             
             // draw the selection box
             if(meta.select > -1) {
@@ -593,7 +595,8 @@ const UI_WIDGET = {
             applied: appliedChange,
             isActive: meta.isActive,
             select: meta.select,
-            cursor: meta.cursor
+            cursor: meta.cursor,
+            cursorScreenPos: cursorScreenPos
         }
     },
 
@@ -622,6 +625,9 @@ const UI_WIDGET = {
         const newLineDeleterChar = "֎-֎";
         let cursorX = -1;
         let cursorY = -1;
+        let cursorXScreenPos = null;
+        let cursorYScreenPos = null;
+        let cursorYScreenHeight = null;
 
         const lineVerticalPadding = 5;
         const lineMargin = 1;
@@ -655,7 +661,9 @@ const UI_WIDGET = {
                     cursorX = res.cursor;
                     cursorY = i;
                     UI_LIBRARY.drawRectCoords(x1, y, x2, y+height, 0, new DrawShapeOption("#ffffff13"));
-                    
+                    cursorXScreenPos = res.cursorScreenPos;
+                    cursorYScreenPos = y;
+                    cursorYScreenHeight = height;
                 }
     
                 // if the line was changed
@@ -709,7 +717,12 @@ const UI_WIDGET = {
 
         return {
             applied: applied,
-            text: text
+            text: text,
+            cursorX: cursorX,
+            cursorY: cursorY,
+            cursorXScreenPos: cursorXScreenPos,
+            cursorYScreenPos: cursorYScreenPos,
+            cursorYScreenHeight: cursorYScreenHeight
         }
 
         function changeLineSelection(oldLine, newLine) {

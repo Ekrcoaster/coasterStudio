@@ -30,9 +30,36 @@ class ScriptingWindow extends EditorWindow {
             UI_LIBRARY.drawText(lineIndex + "", x1, y1, x1+w, y2, new DrawTextOption(22, "default", "#ffffff6f", "right", "center"));
             return w+5;
         });
+        
         let codeRes = UI_WIDGET.multilineEditableText(this.container?.id + "code", visualizedCode, true, x1+5, y1+5, x2-5, y2-tabHeight-5, draw, option);
         if(codeRes.applied) {
             this.tempScriptCode = this.unVisualizeCode(codeRes.text);
+
+            let autoFill = this.getAutofillOptions(codeRes.cursorX, codeRes.cursorY);
+            if(autoFill.options.length > 0) {
+                let options = [];
+                for(let i = 0; i < autoFill.options.length; i++) {
+                    if(autoFill.options[i].startsWith(autoFill.soFar))
+                        options.push(new DropdownItem(i, autoFill.options[i], autoFill.options[i]));
+                }
+
+                if(options.length > 0) {
+                    UI_WIDGET.popUpDropdownList(this.container?.id + "autofill", options, -1, codeRes.cursorXScreenPos, codeRes.cursorYScreenPos, codeRes.cursorXScreenPos+200, codeRes.cursorYScreenPos+codeRes.cursorYScreenHeight, (i) => {
+                        autoComplete(options[i].label);
+                    });
+                }
+
+                function autoComplete(option) {
+                    let temp = t.tempScriptCode.split("\n");
+                    temp[codeRes.cursorY] += option;
+                    t.tempScriptCode = temp.join("\n");
+                    widgetCacheData[t.container?.id + "code" + codeRes.cursorY].tempText = null;
+                    widgetCacheData[t.container?.id + "code" + codeRes.cursorY].cursor += option.length;
+                }
+            } else {
+                if(editor.activeModal?.id == this.container?.id + "autofill")
+                    editor.closeActiveModal();
+            }
         }
 
         function renderTab(x1, y, x2) {
@@ -54,6 +81,21 @@ class ScriptingWindow extends EditorWindow {
 
             if(UI_WIDGET.button("Save", half+3, y1, x2, y2))
                 t.scriptAsset.setCode(t.tempScriptCode);
+        }
+    }
+
+    getAutofillOptions(cursorX, cursorY) {
+        let line = this.tempScriptCode.split("\n")[cursorY].trim();
+        let split = line.split(".");
+        if(split.length <= 1) return {
+            options: [],
+            soFar: ""
+        };
+        let soFar = split.pop();
+        let baseLine = split.join(".");
+        return {
+            options: this.scriptAsset.runAutoFillCode(baseLine, split),
+            soFar: soFar
         }
     }
 

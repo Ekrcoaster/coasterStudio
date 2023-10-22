@@ -20,12 +20,23 @@ class ScriptAsset extends Asset {
     setCode(code) {
         code = code.trim();
         this.rawCode = code;
-        this.codeClassName = code.split(" ")[1];
 
-        // read custom types
-        this.discoveredCustomTypes = {};
+        // compile the code
+        let compiled = this.compileUserCode(code);
+        this.discoveredCustomTypes = compiled.types;
+        this.code = compiled.code;
+        this.codeClassName = compiled.codeClassName;
+
+        this.notifyOnCodeChange.forEach(x => {
+            if(x != null) x();
+        });
+    }
+
+    compileUserCode(code) {
         /**@type {String[]} */
         let lines = code.replace(/\;/gi, "\n").split("\n");
+        let codeClassName = code.split(" ")[1];
+        let discoveredCustomTypes = {};
 
         for(let i = 0; i < lines.length; i++) {
             let line = lines[i].trim();
@@ -39,16 +50,17 @@ class ScriptAsset extends Asset {
                 let varName = split[1];
                 line = line.replace(type, "");  
 
-                this.discoveredCustomTypes[varName] = type;
+                discoveredCustomTypes[varName] = type;
             }
 
             lines[i] = line;
         }
-        
-        this.code = lines.join("\n");
-        this.notifyOnCodeChange.forEach(x => {
-            if(x != null) x();
-        });
+
+        return {
+            code: lines.join("\n"),
+            types: discoveredCustomTypes,
+            codeClassName: codeClassName
+        }
     }
 
     addNotifyOnChangeListener(callback) {
@@ -56,5 +68,15 @@ class ScriptAsset extends Asset {
     }
     removeNotifyOnChangeListener(callback) {
         this.notifyOnCodeChange.delete(callback)
+    }
+
+    runAutoFillCode(code, split) {
+        // dont run code that'll change values or create new objs
+        if(code.indexOf("=") > -1) return [];
+        if(code.indexOf("new") > -1) return [];
+
+        let tempScript = new Script(editor.activeScene.header);
+        tempScript.setScript(this, true, false);
+        return tempScript.runAutoFillCode(code, split);
     }
 }
