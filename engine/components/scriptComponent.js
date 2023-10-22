@@ -52,25 +52,36 @@ class Script extends Component {
         }
 
         function registerRunAutofillCode(code, split) {
-            let keys = [];
+            let keys = new Set();
+
             try {
-                eval(`
-                if(${split.join("?.")} == null) keys = [];
-                else keys = Object.keys(${code});
-                `);
-            } catch {
+                let ref;
+                eval(`ref = ${code}`);
+                let k = Object.getOwnPropertyNames(ref);
+                for(let i = 0; i < k.length; i++)
+                    keys.add(k[i]);
+
+                let currentObj = ref;
+                do {
+                    Object.getOwnPropertyNames(currentObj).map(item => {
+                        if(item.startsWith("_")) return;
+                        if(typeof(ref[item]) == "function")
+                            keys.add(item + "()")
+                        else keys.add(item)
+                    });
+                } while ((currentObj = Object.getPrototypeOf(currentObj)));
+
+            } catch (e){
                 return [];
             }
 
-            // filter out unwanted calls
-            for(let i = 0; i < keys.length; i) {
-                if(keys[i] == "runAutoFillCode")
-                    keys.splice(i, 1);
-                else
-                    i++;
-            }
+
+            keys.delete("runAutoFillCode");
+            keys.delete("runAutoFillCode()");
+            keys.delete("propertyIsEnumerable()");
+            keys.delete("constructor()");
             
-            return keys;
+            return Array.from(keys);
         }
     }
 
@@ -132,6 +143,9 @@ class Script extends Component {
 
     runAutoFillCode(code, split) {
         if(this.instance == null) return 
+        code = code.replace(/ /gi, "");
+        code = code.replace(/if\(/gi, "");
+        console.log(code)
         return this.instance.runAutoFillCode(code, split);
     }
 }
