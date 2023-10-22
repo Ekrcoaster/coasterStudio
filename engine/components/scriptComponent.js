@@ -61,6 +61,14 @@ class Script extends Component {
             } catch {
                 return [];
             }
+
+            // filter out unwanted calls
+            for(let i = 0; i < keys.length; i) {
+                if(keys[i] == "runAutoFillCode")
+                    keys.splice(i, 1);
+                else
+                    i++;
+            }
             
             return keys;
         }

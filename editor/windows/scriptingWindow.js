@@ -91,8 +91,14 @@ class ScriptingWindow extends EditorWindow {
             soFar: ""
         };
 
-        let line = lineSplit[Math.min(lineSplit.length - 1, cursorY)].trim();
-        let split = line.split(".");
+        let line = lineSplit[Math.min(lineSplit.length - 1, cursorY)];
+
+        // figure out which part of the code we are working on
+        let activeStrips = line.replace(/\t/gi, " ").replace(/\;/gi, " ").split(" ");
+        cursorX = getXMinusWhiteSpace(cursorX, line);
+        let activeStrip = getActiveStrip(activeStrips, cursorX);
+
+        let split = activeStrip.strip.substring(0, activeStrip.local+1).split(".");
         if(split.length <= 1) return {
             options: [],
             soFar: ""
@@ -102,6 +108,24 @@ class ScriptingWindow extends EditorWindow {
         return {
             options: this.scriptAsset.runAutoFillCode(baseLine, split),
             soFar: soFar
+        }
+
+        function getXMinusWhiteSpace(x, line) {
+            let sub = 0;
+            for(let i = 0; i <= x; i++) {
+                if(line[i] == " " || line[i] == "\t" || line[i] == ";")
+                    sub++;
+            }
+            return x - sub;
+        }   
+
+        function getActiveStrip(strips, x) {
+            for(let i = 0; i < strips.length; i++) {
+                if(x - strips[i].length < 0)
+                    return {strip: strips[i], local: x};
+                x -= strips[i].length;
+            }
+            return {strip: strips[strips.length - 1], local: Infinity};
         }
     }
 
