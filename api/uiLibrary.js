@@ -399,6 +399,43 @@ class DrawImageOption {
     }
 }
 
+class RichTextToken {
+    text;
+    /**@type {Color} */
+    color;
+    size;
+    font;
+    afterMargin = 0;
+
+    /**@param {Color} color @param {FontTypes} font */
+    constructor(text, color, size, font) {
+        this.text = text;
+        this.color = color;
+        this.size = size;
+        this.font = font;
+        this.afterMargin = 0;
+    }
+    
+    setAfterMargin(margin) {
+        this.afterMargin = margin;
+        return this;
+    }
+
+    calculateSize(lastSize, lastFont) {
+        if(this.size != null) lastSize = this.size;
+        if(this.font != null) lastFont = this.font;
+
+        let space = UI_UTILITY.measureText(this.text, new DrawTextOption(lastSize, lastFont));
+        
+        return {
+            width: space.width,
+            height: space.actualHeight,
+            lastSize: lastSize,
+            lastFont: lastFont
+        }
+    }
+}
+
 const UI_LIBRARY = {
 
     /** Renders a rect using x1, y1, x2, y2
@@ -697,6 +734,11 @@ const UI_LIBRARY = {
             yOffset: yOffset,
             getLocalXOffsetOfLetter: (index) => {
                 return UI_UTILITY.measureText(text.substring(0, index), draw).width + xOffset;
+            },
+            getCharAtX: (globalX) => {
+                let local = globalX - (x1+xOffset);
+                let width = space.width;
+                return Math.floor(Math.max(0, Math.min(1, local / width)) * text.length)
             }
         }
     },
@@ -722,6 +764,82 @@ const UI_LIBRARY = {
     },
     restore() {
         ctx.restore();
+    },
+
+    /**
+     * 
+     * @param {RichTextToken[]} tokens 
+     * @param {Number} x1 
+     * @param {Number} y1 
+     * @param {Number} x2 
+     * @param {Number} y2 
+     * @param {DrawTextOption} draw 
+     */
+    drawRichText: function(tokens, x1, y1, x2, y2, draw) {
+        let space = UI_UTILITY.measureRichText(tokens, draw);
+
+        let xOffset = 0;
+        let yOffset = 0;
+
+        if(draw.horizontalAlign == "center")
+            xOffset = Math.max(0, ((x2-x1) - space.width)/2);
+        else if(draw.horizontalAlign == "right")
+            xOffset = Math.max(0, ((x2-x1) - space.width));
+
+        if(draw.verticalAlign == "center")
+            yOffset = Math.max(0, ((y2-y1) - space.height) /2);
+        else if(draw.verticalAlign == "bottom")
+            yOffset = Math.max(0, ((y2-y1) - space.height));
+
+        for(let i = 0; i < tokens.length; i++) {
+            let sp = space.individual[i];
+            let copy = new DrawTextOption(sp.lastSize, sp.lastFont, sp.lastColor, "center", "center");
+            UI_LIBRARY.drawText(tokens[i].text, sp.x+x1+xOffset, sp.y+y1+yOffset, sp.x+sp.width+x1+xOffset, sp.y + sp.height+y1+yOffset, copy);
+        }
+
+        return {
+            space: space,
+            getTokenAtX: function(globalX) {
+                // figure out the local X according to this
+                let local = globalX - (x1+xOffset);
+
+                // then, go token by token and find the one that the local X is inside of 
+                for(let i = 0; i < tokens.length; i++) {
+                    if(local >= space.individual[i].x && local <= space.individual[i].x + space.individual[i].width + tokens[i].afterMargin) {
+                        return {
+                            token: tokens[i],
+                            charIndex: calculateCharIndex(i),
+                            valid: true
+                        }
+                    }
+                        
+                }
+
+                // if the position is less than
+                if(local < 0) {
+                    return {
+                        token: tokens[0],
+                        charIndex: calculateCharIndex(0),
+                        valid: false
+                    }
+                }
+
+                return {
+                    token: tokens[tokens.length - 1],
+                    charIndex: calculateCharIndex(tokens.length - 1),
+                    valid: false
+                }
+
+                function calculateCharIndex(i) {
+                    // calculate the character and return
+                    // THIS ONLY WOKRS IF MONOSPACE
+                    let tokenLocal = local - space.individual[i].x;
+                    let tokenWidth = space.individual[i].width;
+
+                    return Math.floor(Math.max(0, Math.min(1, tokenLocal / tokenWidth)) * tokens[i].text.length);
+                }
+            }
+        };
     }
 }
 
@@ -811,5 +929,47 @@ const UI_UTILITY = {
     },
     distance: function(x1, y1, x2, y2) {
         return Math.sqrt(((y2 - y1) ** 2) + ((x2 - x1) ** 2));
+    },
+    /**@param {RichTextToken[]} tokens @param {DrawTextOption} draw  */
+    measureRichText(tokens, draw) {
+
+        let width = 0;
+        let height = 0;
+
+        let lastColor = draw.fillColor;
+        let lastSize = draw.size;
+        let lastFont = draw.font;
+
+        let individual = [];
+
+        for(let i = 0; i < tokens.length; i++) {
+            let oldW = width;
+            let oldH = height;
+            let size = tokens[i].calculateSize(lastSize, lastFont);
+            width += size.width;
+            if(size.height > height)
+                height = size.height;
+
+            // update the last properties
+            if(tokens[i].color != null) lastColor = tokens[i].color;    // color is updated here cause it has nothing to do with measuring text
+            lastSize = size.lastSize;
+            lastFont = size.lastFont;
+
+            size = {
+                ...size,
+                lastColor: lastColor,
+                x: oldW,
+                y: 0
+            }
+
+            individual.push(size);
+            width += tokens[i].afterMargin;
+        }
+
+        return {
+            width: width,
+            height: height,
+            individual: individual
+        }
     }
 }
