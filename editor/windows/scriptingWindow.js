@@ -20,7 +20,7 @@ class ScriptingWindow extends EditorWindow {
 
         let visualizedCode = this.visualizeCode(this.tempScriptCode);
 
-        let option = new MultilineStringFieldOption("any");
+        let option = new MultilineStringFieldOption("any").setRichText(true);
         let draw = new DrawTextOption(22, "default", "#ffffff", "left", "center");
         option.setOnRender((lineCount, lineIndex, x1, y1, x2, y2) => {
             lineCount = Math.max(10, lineCount);    // start with double digits
@@ -130,10 +130,13 @@ class ScriptingWindow extends EditorWindow {
     }
 
     visualizeCode(code) {
+        code = code.replace(/\t/gim, "\t<⌱c=tab m=25><⌱ m=0>");
         return code;
     }
 
     unVisualizeCode(code) {
+        code = code.replace(/\<⌱[a-zA-Z0-9\# =]*\>/gim, "");
+        console.log("removed", code)
         return code;
     }
 }

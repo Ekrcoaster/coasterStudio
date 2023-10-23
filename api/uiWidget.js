@@ -31,6 +31,8 @@ class StringFieldOption {
     overrideSelectMax = null;
 
     setCursorNextDraw = null;
+    
+    richText = false;
 
     /**@param {StringFieldFormatType} format */
     constructor(format) {
@@ -44,6 +46,7 @@ class StringFieldOption {
         this.selectable = true;
         this.overrideSelectMin = null;
         this.overrideSelectMax = null;
+        this.richText = false;
     }
 
     doesStringMatch(text) {
@@ -139,6 +142,11 @@ class StringFieldOption {
 
     setCursorPosNextDraw(cursor) {
         this.setCursorNextDraw = cursor;
+    }
+
+    setRichText(t) {
+        this.richText = t;
+        return this;
     }
 }
 
@@ -551,7 +559,30 @@ const UI_WIDGET = {
         meta.tempText = tempText;
 
         let cursorScreenPos = null;
-        let space = UI_LIBRARY.drawText(tempText, x1, y1, x2, y2, new DrawTextOption(draw.size, draw.font, draw.fillColor.setAlpha(isEditable ? 1 : 0.5), draw.horizontalAlign, draw.verticalAlign));
+
+        let space = {
+            width: 0,
+            getXAtChar: (cursor) => {},
+            getCharAtX: (x) => {}
+        }
+        
+        // draw the text and create the space
+        let tempDraw = new DrawTextOption(draw.size, draw.font, draw.fillColor.setAlpha(isEditable ? 1 : 0.5), draw.horizontalAlign, draw.verticalAlign);
+        if(option.richText) {
+            let tokens = UI_UTILITY.richTextPlainToTokens(tempText, true);
+            let temp = UI_LIBRARY.drawRichText(tokens, x1, y1, x2, y2, tempDraw);
+
+            space.width = temp.space.width;
+            space.getXAtChar = (cursor) => {
+                return temp.getXAtToken(cursor);
+            }
+            space.getCharAtX = (x) => {
+                return temp.getTokenAtX(x).charIndex;
+            }
+        } else {
+            space = UI_LIBRARY.drawText(tempText, x1, y1, x2, y2, tempDraw);
+        }
+        
 
         // if the space has been selected
         if((click && hover) || option.setCursorNextDraw != null) {
@@ -568,7 +599,7 @@ const UI_WIDGET = {
 
             // choose the cursor's position
             if(option.firstClickMethod == "normal" || wasActive) {
-                meta.cursor = Math.round(Math.max(0, Math.min(1, (mouse.x - x1) / ((x1+space.width)-x1))) * tempText.length);
+                meta.cursor = space.getCharAtX(mouse.x);
             } else if(!wasActive){
                 meta.cursor = tempText.length;
                 mouse.clickDown = false;
@@ -597,7 +628,7 @@ const UI_WIDGET = {
         // if the field is actually active, draw it
         if(meta.isActive) {
             // draw the cursor
-            cursorScreenPos = x1 + space.getLocalXOffsetOfLetter(meta.cursor);
+            cursorScreenPos = x1 + space.getXAtChar(meta.cursor);
             UI_LIBRARY.drawRectCoords(cursorScreenPos-1, y1, cursorScreenPos+1, y2, 0, COLORS.textCursor);
 
             widgetCacheData[id] = meta;
@@ -627,7 +658,7 @@ const UI_WIDGET = {
                 smallest = option.overrideSelectMin;
                 largest = option.overrideSelectMax;
             }
-            UI_LIBRARY.drawRectCoords(x1 + space.getLocalXOffsetOfLetter(smallest), y1, x1 + space.getLocalXOffsetOfLetter(largest), y2, 0, COLORS.textSelect);
+            UI_LIBRARY.drawRectCoords(x1 + space.getXAtChar(smallest), y1, x1 + space.getXAtChar(largest), y2, 0, COLORS.textSelect);
         }
 
         return {

@@ -732,13 +732,13 @@ const UI_LIBRARY = {
             height: space.height,
             xOffset: xOffset,
             yOffset: yOffset,
-            getLocalXOffsetOfLetter: (index) => {
+            getXAtChar: (index) => {
                 return UI_UTILITY.measureText(text.substring(0, index), draw).width + xOffset;
             },
             getCharAtX: (globalX) => {
                 let local = globalX - (x1+xOffset);
                 let width = space.width;
-                return Math.floor(Math.max(0, Math.min(1, local / width)) * text.length)
+                return Math.round(Math.max(0, Math.min(1, local / width)) * text.length)
             }
         }
     },
@@ -809,6 +809,7 @@ const UI_LIBRARY = {
                         return {
                             token: tokens[i],
                             charIndex: calculateCharIndex(i),
+                            getXAtChar: (char) => {return getXAtChar(i, char);},
                             valid: true
                         }
                     }
@@ -820,6 +821,7 @@ const UI_LIBRARY = {
                     return {
                         token: tokens[0],
                         charIndex: calculateCharIndex(0),
+                        getXAtChar: (char) => {return getXAtChar(0, char);},
                         valid: false
                     }
                 }
@@ -827,6 +829,7 @@ const UI_LIBRARY = {
                 return {
                     token: tokens[tokens.length - 1],
                     charIndex: calculateCharIndex(tokens.length - 1),
+                    getXAtChar: (char) => {return getXAtChar(tokens.length - 1, char);},
                     valid: false
                 }
 
@@ -836,10 +839,28 @@ const UI_LIBRARY = {
                     let tokenLocal = local - space.individual[i].x;
                     let tokenWidth = space.individual[i].width;
 
-                    return Math.floor(Math.max(0, Math.min(1, tokenLocal / tokenWidth)) * tokens[i].text.length);
+                    return Math.round(Math.max(0, Math.min(1, tokenLocal / tokenWidth)) * tokens[i].text.length);
                 }
+
+                
+            },
+            getXAtToken: function(globalCharIndex) {
+                for(let i = 0; i < tokens.length; i++) {
+                    if(globalCharIndex - tokens[i].text.length <= 0)
+                        return getXAtChar(i, globalCharIndex);
+                    globalCharIndex -= tokens[i].text.length;
+                }
+                return getXAtChar(tokens.length - 1, globalCharIndex);
             }
         };
+        
+        function getXAtChar(i, char) {
+            if(char == Infinity)
+                return space.individual[i].x + space.individual[i].width + tokens[i].afterMargin;
+            // THIS ONLY OWRKS FOR MONOSPACE
+            let temp = space.individual[i].x + Math.min(1, (char / tokens[i].text.length)) * space.individual[i].width;
+            return temp;
+        }
     }
 }
 
@@ -970,6 +991,84 @@ const UI_UTILITY = {
             width: width,
             height: height,
             individual: individual
+        }
+    },
+
+    /**
+     * This converts the rich text type <?   > to tokens. Each brick (<? >) is a token
+     * (⌱ can also be replaced with ?, this is so that a user can't accidentally create a rich text if not wanted)
+     * the <? > format is as follows, each type seperated by space:
+     *  - c=#ffffff       set the color
+     *  - s=25              set the size
+     *  - f=default         set the font
+     *  - m=10              set the after margin
+     * 
+     * For example:
+     *  - <? c=#ff00ff s=25 >
+     *  - <?f=default>
+     *  - <?c=#ff00ff>
+     *  - <? s=10 >
+     * @param {String} text
+     * @param {Boolean} onlyAcceptUnicode if true, <⌱ > is only valid
+     */
+    richTextPlainToTokens(text, onlyAcceptUnicode = false) {
+        let tempTokens = [];
+
+        let tempInside = "";
+        let tokenToFill = new RichTextToken("");
+        tempTokens.push(tokenToFill)
+        for(let i = 0; i < text.length; i++) {
+            // check if the string matches the <⌱ or <?
+            if(text[i] == "<" && ((text[i+1] == "?" && !onlyAcceptUnicode) || text[i+1] == "⌱")) {
+                tempInside = "<";
+            } else if(tempInside.length > 0) {
+                if(text[i] == ">") {
+                    tokenToFill = interpretCollected(tempInside);
+                    tempTokens.push(tokenToFill);
+                    tempInside = "";
+                } else {
+                    tempInside += text[i];
+                }
+            } else {
+                if(tokenToFill)
+                    tokenToFill.text += text[i];
+            }
+        }
+
+        return tempTokens;
+        
+        function interpretCollected(inside = "") {
+            let strip = inside.substring(2);
+            if(strip.length <= 2) return null;
+            let split = strip.split(" ");
+            if(split.length == 0) return null;
+
+            let token = new RichTextToken("");
+
+            // split up the inside and parse
+            for(let i = 0; i < split.length; i++) {
+                if(split[i].length == 0) continue;
+
+                let key = split[i][0];
+                let val = split[i].substring(2);
+
+                switch(key) {
+                    case "c":
+                        token.color = val;
+                    break;
+                    case "s":
+                        token.size = parseInt(val);
+                    break;
+                    case "f":
+                        token.font = val;
+                    break;
+                    case "m":
+                        token.afterMargin = parseInt(val);
+                    break;
+                }
+            }
+
+            return token;
         }
     }
 }
