@@ -458,6 +458,8 @@ const UI_WIDGET = {
 
         let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
         let meta = widgetCacheData[id] || {};
+        let characterTyped = null;
+        let overrideTypeSave = false;
 
         if(option.setCursorNextDraw != null)
             meta.cursor = meta.setCursorNextDraw;
@@ -483,6 +485,9 @@ const UI_WIDGET = {
                     if(tempText.substring(0, meta.cursor).length > 0)
                         keyboard.downFirst.delete(element);
 
+                    overrideTypeSave = true;
+                    characterTyped == "DELETE";
+
                     // if theres a selection, delete it
                     if(meta.select > -1) {
                         deleteSelected();
@@ -501,6 +506,8 @@ const UI_WIDGET = {
                 // well, then type a character
                 } else {
                     let character = keyboard.getAlphabeticNumbericSymbolic(element);
+                    characterTyped = character;
+
                     if(element == "TAB")
                         character = "\t";
                     // before we type a character, if there is an existing selection, delete it
@@ -635,8 +642,9 @@ const UI_WIDGET = {
 
             // try to save the text
             let trySave = (click && !mouse.isHoveringOver(x1, y1, x2, y2)) || keyboard.downFirst.has("ENTER");
-            if(option.saveMethod == "onType" && keyboard.downFirst.size > 0) trySave = true;
+            if(option.saveMethod == "onType" && (keyboard.downFirst.size > 0 || overrideTypeSave)) trySave = true;
             if(trySave) {
+                console.log("a")
                 if(option.doesStringMatch(meta.tempText))
                     text = meta.tempText;
 
@@ -671,7 +679,8 @@ const UI_WIDGET = {
             isActive: meta.isActive,
             select: meta.select,
             cursor: meta.cursor,
-            cursorScreenPos: cursorScreenPos
+            cursorScreenPos: cursorScreenPos,
+            characterTyped: characterTyped
         }
     },
 
@@ -704,6 +713,7 @@ const UI_WIDGET = {
         let cursorXScreenPos = null;
         let cursorYScreenPos = null;
         let cursorYScreenHeight = null;
+        let characterTyped = null;
 
         // setup draw consts
         const lineVerticalPadding = 5;
@@ -785,7 +795,8 @@ const UI_WIDGET = {
             cursorY: cursorY,
             cursorXScreenPos: cursorXScreenPos,
             cursorYScreenPos: cursorYScreenPos,
-            cursorYScreenHeight: cursorYScreenHeight
+            cursorYScreenHeight: cursorYScreenHeight,
+            characterTyped: characterTyped
         }
 
         // draw the contents of the scrollbox
@@ -817,6 +828,7 @@ const UI_WIDGET = {
                     cursorXScreenPos = res.cursorScreenPos;
                     cursorYScreenPos = y;
                     cursorYScreenHeight = height;
+                    characterTyped = res.characterTyped;
                 }
     
                 // if the line was changed

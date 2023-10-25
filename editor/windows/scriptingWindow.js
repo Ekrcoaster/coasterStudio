@@ -5,6 +5,8 @@ class ScriptingWindow extends EditorWindow {
 
     tempScriptCode;
 
+    reverseReference = {}
+
     constructor() {
         super("Scripting");
         this.scriptAsset = assets.getAsset("engine/internal/scripts/Rotator");
@@ -18,7 +20,7 @@ class ScriptingWindow extends EditorWindow {
 
         renderTab(x1, y2-tabHeight, x2);
 
-        let visualizedCode = this.visualizeCode(this.tempScriptCode);
+        let visualizedCode = this.createReverseReference(this.tempScriptCode);
 
         let option = new MultilineStringFieldOption("any").setRichText(true);
         let draw = new DrawTextOption(22, "default", "#ffffff", "left", "center");
@@ -32,8 +34,8 @@ class ScriptingWindow extends EditorWindow {
         });
         
         let codeRes = UI_WIDGET.multilineEditableText(this.container?.id + "code", visualizedCode, true, x1+5, y1+5, x2-5, y2-tabHeight-5, draw, option);
-        if(codeRes.applied) {
-            this.tempScriptCode = this.unVisualizeCode(codeRes.text);
+        if(false && codeRes.applied && codeRes.characterTyped != null) {
+            this.tempScriptCode = this.reAssembleWithReversedReference(codeRes.cursorY, codeRes.cursorX, codeRes.characterTyped);
 
             let autoFill = this.getAutofillOptions(codeRes.cursorX, codeRes.cursorY);
             if(autoFill.options.length > 0) {
@@ -129,14 +131,59 @@ class ScriptingWindow extends EditorWindow {
         }
     }
 
-    visualizeCode(code) {
-        code = code.replace(/\t/gim, "\t<⌱c=tab m=25><⌱ m=0>");
-        return code;
+    createReverseReference(code) {
+        //code = code.replace(/\t/gim, "\t<⌱c=tab m=25><⌱ m=0>");
+
+        this.reverseReference = {}
+        let split = code.split("\n");
+        for(let i = 0; i < split.length; i++) {
+            let temp = [];
+
+            for(let c = 0; c < split[i].length; c++) {
+                temp.push({"index": c, "letter": split[i][c]});
+            }
+
+            this.reverseReference[i] = temp;
+        }
+
+        let newCode = "";
+
+        for(let i in this.reverseReference) {
+            for(let c = 0; c < this.reverseReference[i].length; c++) {
+                let letter = this.reverseReference[i][c].letter;
+                // pre processing
+                newCode += preProcess(letter);
+
+                newCode += letter;
+            }
+            newCode += "\n";
+        }
+
+        return newCode;
+
+        function preProcess(ogLetter) {
+
+            if(ogLetter == "\t")
+                return "<⌱c=tab m=25><⌱ m=0>";
+
+            return "";
+        }
     }
 
-    unVisualizeCode(code) {
-        code = code.replace(/\<⌱[a-zA-Z0-9\# =]*\>/gim, "");
-        console.log("removed", code)
-        return code;
+    reAssembleWithReversedReference(changedLine, changedCharacter, newCharacter) {
+        let newCode = "";
+        for(let i in this.reverseReference) {
+            for(let c = 0; c < this.reverseReference[i].length; c++) {
+                let letter = this.reverseReference[i][c].letter;
+                newCode += letter;
+
+                if(changedLine == i && changedCharacter-2 == c) {
+                    newCode += newCharacter;
+                }
+            }
+            newCode += "\n";
+        }
+        console.log(newCode)
+        return newCode;
     }
 }

@@ -857,8 +857,9 @@ const UI_LIBRARY = {
         function getXAtChar(i, char) {
             if(char == Infinity)
                 return space.individual[i].x + space.individual[i].width + tokens[i].afterMargin;
+
             // THIS ONLY OWRKS FOR MONOSPACE
-            let temp = space.individual[i].x + Math.min(1, (char / tokens[i].text.length)) * space.individual[i].width;
+            let temp = space.individual[i].x + Math.min(1, tokens[i].text.length == 0 ? 0 : (char / tokens[i].text.length)) * space.individual[i].width;
             return temp;
         }
     }
