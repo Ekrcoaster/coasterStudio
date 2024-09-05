@@ -44,8 +44,8 @@ function ON_WINDOW_RENDER(windowName = "", windowID = "", x1 = 0, y1 = 0, x2 = 0
         }
 
         var leftWindow = WINDOW_TOOLS.getLeftWindow(windowObject);
-        WINDOW_TOOLS.setWeights(leftWindow, {"right": STORED_TOOL_SETTINGS.og-MOUSE.downDistance.x*(-3/INFO_CANVAS.width)});
-        WINDOW_TOOLS.setWeights(windowObject, {"left":STORED_TOOL_SETTINGS.og-MOUSE.downDistance.x*(-3/INFO_CANVAS.width)});
+        WINDOW_TOOLS.setWeights(leftWindow, {"right": STORED_TOOL_SETTINGS.og-staticUISpace.mouse.downDistance.x*(-3/INFO_CANVAS.width)});
+        WINDOW_TOOLS.setWeights(windowObject, {"left":STORED_TOOL_SETTINGS.og-staticUISpace.mouse.downDistance.x*(-3/INFO_CANVAS.width)});
     }
     if(originalY > 0 && UI_TOOLS.rectAbsolute(x1+5, y1-5, x2-5, y1+5, "rgba(0,0,0,0)", COLORS.normalTextColor, windowName + "_window_resize_vertical")) {
         if(wasToolInactive) {
@@ -55,7 +55,7 @@ function ON_WINDOW_RENDER(windowName = "", windowID = "", x1 = 0, y1 = 0, x2 = 0
             };
         }
 
-        WINDOW_TOOLS.setColumnHeights(windowObject, STORED_TOOL_SETTINGS.og-MOUSE.downDistance.y*(-2/INFO_CANVAS.height));
+        WINDOW_TOOLS.setColumnHeights(windowObject, STORED_TOOL_SETTINGS.og-staticUISpace.mouse.downDistance.y*(-2/INFO_CANVAS.height));
     }
     
     ctx.save();
@@ -76,7 +76,7 @@ function ON_WINDOW_RENDER(windowName = "", windowID = "", x1 = 0, y1 = 0, x2 = 0
     if(ACTIVE_TOOL == "") wasToolInactive = true;
 
     var isMouseIn =  UI_LOW_LEVEL.isMouseIn(x1+10, y1+10, x2-10, y2-10, 0);
-    if(isMouseIn) MOUSE.hoveringWindow = windowName;
+    if(isMouseIn) staticUISpace.mouse.hoveringWindow = windowName;
 
     switch(windowName) {
         case "scene_view":
@@ -170,11 +170,11 @@ function SCENE_VIEW(x1 = 0, y1 = 0, x2 = 0, y2 = 0, windowObject = WINDOW_TOOLS.
     UI_LOW_LEVEL.drawRectAbsolute(x1, y1, x2, y2, 0, SETTINGS.scene_view.showSkyColor ? SETTINGS.rendering.skyColor : COLORS.backgroundGray);
 
 
-    if(Math.abs(MOUSE.scroll.velocity) > 0 && isMouseIn) {
+    if(Math.abs(staticUISpace.mouse.scroll.velocity) > 0 && isMouseIn) {
         var oldZoom = WINDOW_DATA.scene_view.zoomLevel;
         var localMouse = {
-            x: windowObject.init.center.x - MOUSE.pos.x,
-            y: windowObject.init.center.y - MOUSE.pos.y
+            x: windowObject.init.center.x - staticUISpace.mouse.pos.x,
+            y: windowObject.init.center.y - staticUISpace.mouse.pos.y
         }
 
         WINDOW_DATA.scene_view.position.x += localMouse.x;
@@ -185,7 +185,7 @@ function SCENE_VIEW(x1 = 0, y1 = 0, x2 = 0, y2 = 0, windowObject = WINDOW_TOOLS.
             y: WINDOW_DATA.scene_view.position.y / oldZoom
         }
 
-        WINDOW_DATA.scene_view.zoomLevel += (MOUSE.scroll.velocity > 0 ? -0.1 : 0.1);
+        WINDOW_DATA.scene_view.zoomLevel += (staticUISpace.mouse.scroll.velocity > 0 ? -0.1 : 0.1);
         if(WINDOW_DATA.scene_view.zoomLevel < 0.1) WINDOW_DATA.scene_view.zoomLevel = 0.1;
 
         WINDOW_DATA.scene_view.position.x = porportion.x * WINDOW_DATA.scene_view.zoomLevel;
@@ -341,11 +341,11 @@ function SCENE_VIEW(x1 = 0, y1 = 0, x2 = 0, y2 = 0, windowObject = WINDOW_TOOLS.
 
 
 
-    if(MOUSE.isDown && isMouseIn) {
+    if(staticUISpace.mouse.isDown && isMouseIn) {
         if(ACTIVE_TOOL == "" || ACTIVE_TOOL == "scene_move") {
-            WINDOW_DATA.scene_view.position.x += MOUSE.vel.x;
-            WINDOW_DATA.scene_view.position.y += MOUSE.vel.y;
-            if(Math.abs(MOUSE.vel.x) > 1 || Math.abs(MOUSE.vel.y) > 1) ACTIVE_TOOL = "scene_move"
+            WINDOW_DATA.scene_view.position.x += staticUISpace.mouse.vel.x;
+            WINDOW_DATA.scene_view.position.y += staticUISpace.mouse.vel.y;
+            if(Math.abs(staticUISpace.mouse.vel.x) > 1 || Math.abs(staticUISpace.mouse.vel.y) > 1) ACTIVE_TOOL = "scene_move"
         }
     }
 
@@ -500,8 +500,8 @@ function ON_GIZMO_RENDER(input = {"position": {x: 0, y: 0, "active": {x: 0, y: 0
 
         UI_LOW_LEVEL.drawRectAbsolute(position.x-middleSize, position.y-middleSize, position.x+middleSize, position.y+middleSize, 0, "red", "red", 0, [{name: "drop-shadow", value: "0px 0px 10px black"}])
         if(UI_TOOLS.rectAbsolute(position.x-middleSize, position.y-middleSize, position.x+middleSize, position.y+middleSize, "lightgrey", "white", "MOVE_XY") || moveXY) {
-            position.x += MOUSE.vel.x;
-            position.y += MOUSE.vel.y;
+            position.x += staticUISpace.mouse.vel.x;
+            position.y += staticUISpace.mouse.vel.y;
             ACTIVE_TOOL = "MOVE_XY"
 
             if(SETTINGS.animation.autoKeyframe) {
@@ -521,7 +521,7 @@ function ON_GIZMO_RENDER(input = {"position": {x: 0, y: 0, "active": {x: 0, y: 0
             x1: 0, y1: 0, x2:arrowLength*middleSize*0.5, y2: 0
         });
         if(xArrow || moveX) {
-            position.x += MOUSE.vel.x;
+            position.x += staticUISpace.mouse.vel.x;
             ACTIVE_TOOL = "MOVE_X"
             
             if(SETTINGS.animation.autoKeyframe) {
@@ -539,7 +539,7 @@ function ON_GIZMO_RENDER(input = {"position": {x: 0, y: 0, "active": {x: 0, y: 0
             x1: 0, y1: -arrowLength*middleSize*0.6, x2:0, y2: 0
         });
         if(yArrow || moveY) {
-            position.y += MOUSE.vel.y;
+            position.y += staticUISpace.mouse.vel.y;
             ACTIVE_TOOL = "MOVE_Y"
 
             if(SETTINGS.animation.autoKeyframe) {
@@ -552,12 +552,12 @@ function ON_GIZMO_RENDER(input = {"position": {x: 0, y: 0, "active": {x: 0, y: 0
         UI_LOW_LEVEL.drawTriangle(position.x-(middleSize*arrowTipSize), position.y - (middleSize*arrowLength*1.34)-2, middleSize*2*arrowTipSize, middleSize*2*arrowTipSize, 0, yArrow ? "cyan" : "blue")
 
         /*if(UI_TOOLS.rectAbsolute(position.x - centerMoveSize, position.y - centerMoveSize, position.x + centerMoveSize, position.y + centerMoveSize, "white", "gray", "MOVE_XY")) {
-            position.x += MOUSE.vel.x;
-            position.y += MOUSE.vel.y;
+            position.x += staticUISpace.mouse.vel.x;
+            position.y += staticUISpace.mouse.vel.y;
         }
 
         if(UI_TOOLS.rectAbsolute(position.x+125*fixedScalar, position.y - centerMoveSize*1.5, position.x + 175*fixedScalar, position.y + centerMoveSize*1.5, "red", "pink", "MOVE_X")) {
-            position.x += MOUSE.vel.x;
+            position.x += staticUISpace.mouse.vel.x;
             UI_LOW_LEVEL.drawLine(-100, position.y, 10000, (position.y), "pink", 3)
         }
 
@@ -584,13 +584,13 @@ function ON_GIZMO_RENDER(input = {"position": {x: 0, y: 0, "active": {x: 0, y: 0
         /*var angle = rotation.z;
         angle = (90 - angle);
         UI_LOW_LEVEL.drawArc(position.x, position.y, radius, angle-10, angle+10, "", "yellow", 8);
-        if((UI_LOW_LEVEL.isMouseInRadius(position.x, position.y, radius+20, radius-20, angle-10, angle+10, 0) && MOUSE.isDown && ACTIVE_TOOL == "") || ACTIVE_TOOL == "ROTATE_Z") {
+        if((UI_LOW_LEVEL.isMouseInRadius(position.x, position.y, radius+20, radius-20, angle-10, angle+10, 0) && staticUISpace.mouse.isDown && ACTIVE_TOOL == "") || ACTIVE_TOOL == "ROTATE_Z") {
             rotation.z = 0-(UI_LOW_LEVEL.getMouseAngle(position.x, position.y)-180);
             ACTIVE_TOOL = "ROTATE_Z"
-            MOUSE.isClick = false;
+            staticUISpace.mouse.isClick = false;
         }*/
 
-        //UI_LOW_LEVEL.drawLine(position.x, position.y, MOUSE.pos.x, MOUSE.pos.y, tt ? "red" : "blue", 5);
+        //UI_LOW_LEVEL.drawLine(position.x, position.y, staticUISpace.mouse.pos.x, staticUISpace.mouse.pos.y, tt ? "red" : "blue", 5);
     }
 
     function drawScaleGizmo() {
@@ -602,8 +602,8 @@ function ON_GIZMO_RENDER(input = {"position": {x: 0, y: 0, "active": {x: 0, y: 0
         }
         UI_LOW_LEVEL.drawRectAbsolute(pos.x, pos.y, pos.x+40*sceneOffset.scale, pos.y+40*sceneOffset.scale, 0, "red", "red", 0, [{name: "drop-shadow", value: "0px 0px 10px black"}])
         if(UI_TOOLS.rectAbsolute(pos.x, pos.y, pos.x+40*sceneOffset.scale, pos.y+40*sceneOffset.scale, "lightgrey", "white", "SCALE_XY", 0) || KEYS_DOWN_UNTIL_CLICK.indexOf("s") > -1) {
-            scale.x += MOUSE.vel.x/150;
-            scale.y += MOUSE.vel.y/150;
+            scale.x += staticUISpace.mouse.vel.x/150;
+            scale.y += staticUISpace.mouse.vel.y/150;
 
             if(SETTINGS.animation.autoKeyframe) {
                 for(var i = 0; i < objectsInQuestion.length; i++) {
@@ -616,7 +616,7 @@ function ON_GIZMO_RENDER(input = {"position": {x: 0, y: 0, "active": {x: 0, y: 0
                 var ogPor = 1;
                 scale.y = scale.x;
             }
-           // position.x -= MOUSE.vel.x/1.25;
+           // position.x -= staticUISpace.mouse.vel.x/1.25;
         }
 
     }
@@ -716,7 +716,7 @@ function OUTLINER_VIEW(x1 = 0, y1 = 0, x2 = 0, y2 = 0, windowObject = WINDOW_TOO
                 ]
             }
             DETAILED_PANEL_TOOLS.registerRegion("outliner_" + i, {x1: x1+44, y1: y-15, x2: x2, y2: y+5}, options);
-            if(isMouseIn && MOUSE.postClick) {
+            if(isMouseIn && staticUISpace.mouse.postClick) {
                 calcualteSelection(OBJECTS[i].id, active_ui.typing.id == OBJECTS[i].id);
             }
 
@@ -855,7 +855,7 @@ function TIMELINE_VIEW(x1 = 0, y1 = 0, x2 = 0, y2 = 0, windowObject = WINDOW_TOO
     var framesNeededToFit = frameEnd - frameStart;
     if(framesNeededToFit < 0.6) framesNeededToFit = 0.6;
 
-    var weight = (MOUSE.pos.x-x1) / (x2-x1);
+    var weight = (staticUISpace.mouse.pos.x-x1) / (x2-x1);
 
     var isDone = false;
     var smallestCount = (x2-x1) / framesNeededToFit;
@@ -951,18 +951,18 @@ function TIMELINE_VIEW(x1 = 0, y1 = 0, x2 = 0, y2 = 0, windowObject = WINDOW_TOO
     UI_LOW_LEVEL.drawCircle(button.x2, button.y, button.radius, COLORS.backgroundGray);
     
     if(UI_TOOLS.rectAbsolute(button.x1-button.radius, button.y - button.radius, button.x1 + button.radius, button.y + button.radius, "rgba(0,0,0,0)", "rgba(0,0,0,0)", "ZOOM_MIN", 0)) {
-        settings.zoom.min = ((MOUSE.pos.x-10) / areaWidth);
+        settings.zoom.min = ((staticUISpace.mouse.pos.x-10) / areaWidth);
         UI_LOW_LEVEL.drawCircle(button.x1, button.y, button.radius, COLORS.hylightGray);
     }
 
     if(UI_TOOLS.rectAbsolute(button.x2-button.radius, button.y - button.radius, button.x2 + button.radius, button.y + button.radius, "rgba(0,0,0,0)", "rgba(0,0,0,0)", "ZOOM_MAX", 0)) {
-        settings.zoom.max = (MOUSE.pos.x / areaWidth);
+        settings.zoom.max = (staticUISpace.mouse.pos.x / areaWidth);
         UI_LOW_LEVEL.drawCircle(button.x2, button.y, button.radius, COLORS.hylightGray);
     }
 
     if(UI_TOOLS.rectAbsolute(((button.x1 + button.x2) / 2)-15, button.y - button.radius, ((button.x1 + button.x2) / 2) + 15, button.y + button.radius, COLORS.highlightOutline, COLORS.hylightGray, "ZOOM_SHIFT")) {
         var divide = (1600);
-        var desiredShift = MOUSE.vel.x / divide;
+        var desiredShift = staticUISpace.mouse.vel.x / divide;
         if(settings.zoom.min + desiredShift > 0 && settings.zoom.max+desiredShift < 1) {
             settings.zoom.min += desiredShift;
             settings.zoom.max += desiredShift;
@@ -974,17 +974,17 @@ function TIMELINE_VIEW(x1 = 0, y1 = 0, x2 = 0, y2 = 0, windowObject = WINDOW_TOO
     if(number.toString().length == 3) number += "0";
     UI_LOW_LEVEL.drawText(number + "s", x2, y1+30, 25, "white", "right", "center");
 
-    if(UI_LOW_LEVEL.isMouseIn(x1, y1+headerHeight, x2-4, y2-bottomHeight, 0) && MOUSE.isDown &&(ACTIVE_TOOL == "" || ACTIVE_TOOL == "KEY_CURRENT_SHIFT")) {
+    if(UI_LOW_LEVEL.isMouseIn(x1, y1+headerHeight, x2-4, y2-bottomHeight, 0) && staticUISpace.mouse.isDown &&(ACTIVE_TOOL == "" || ACTIVE_TOOL == "KEY_CURRENT_SHIFT")) {
         FRAMES.current = Math.round(((1-weight)*frameStart) + (weight*frameEnd));
         ACTIVE_TOOL = "KEY_CURRENT_SHIFT";
     }
 
-    if(MOUSE.hoveringWindow == "timeline_view") {
-        if(MOUSE.scroll.velocity > 0) {
+    if(staticUISpace.mouse.hoveringWindow == "timeline_view") {
+        if(staticUISpace.mouse.scroll.velocity > 0) {
             settings.zoom.min -= 0.03;
             settings.zoom.max += 0.03;
         }
-        if(MOUSE.scroll.velocity < 0) {
+        if(staticUISpace.mouse.scroll.velocity < 0) {
             var maxScroll = 0.1;
     
             settings.zoom.min += maxScroll * weight;
@@ -1124,7 +1124,7 @@ function PROPERTY_VIEW(x1 = 0, y1 = 0, x2 = 0, y2 = 0, windowObject = WINDOW_TOO
                                 "args": [property]
                             })
                             UI_LOW_LEVEL.drawCircle(spacingData.x2, height+3, 6, keyColor, COLORS.highlightOutline, 3);
-                            if(UI_LOW_LEVEL.isMouseIn(spacingData.x2 - 3, height, spacingData.x2 + 3, height + 4, 5) && MOUSE.isClick) {
+                            if(UI_LOW_LEVEL.isMouseIn(spacingData.x2 - 3, height, spacingData.x2 + 3, height + 4, 5) && staticUISpace.mouse.isClick) {
                                 property.keyFrame();
                             }
                         }
@@ -1324,7 +1324,7 @@ function PROPERTY_VIEW(x1 = 0, y1 = 0, x2 = 0, y2 = 0, windowObject = WINDOW_TOO
         UI_LOW_LEVEL.drawRectLocal(spacingData.x1, height, 6, predictedHeight, 0, "#40f6d0");
 
 
-        if(UI_TOOLS.rectAbsolute(spacingData.x1+16, height +5, x2 - 5-16, height + 35, "#151515", "white", "new_filter") && MOUSE.isClick) {
+        if(UI_TOOLS.rectAbsolute(spacingData.x1+16, height +5, x2 - 5-16, height + 35, "#151515", "white", "new_filter") && staticUISpace.mouse.isClick) {
             filters.push({"name": "blur", "value": "0px"});
 
             UNDO_TOOLS.addUndoStep(`splice OBJECTS.${selectedObject.id}.filters ${filters.length - 1} 1`);
@@ -1613,7 +1613,7 @@ function PROPERTY_VIEW(x1 = 0, y1 = 0, x2 = 0, y2 = 0, windowObject = WINDOW_TOO
     //onsole.log(UNDOS)
     applyPossibleUndo();
 
-    var mousePercent = (MOUSE.pos.y - y1) / (y2-y1);
+    var mousePercent = (staticUISpace.mouse.pos.y - y1) / (y2-y1);
         if(!isMouseIn) mousePercent = 0.5;
         mousePercent = (Math.max(0, Math.min(mousePercent, 1)));
 
@@ -1778,7 +1778,7 @@ function ON_OBJECT_RENDER(object = OBJECT_TOOLS.objectTemplate, sceneOffset = {"
         break;
     }
 
-    if(isInWindow && MOUSE.postClick && UI_LOW_LEVEL.isMouseIn(leftCorner.x, leftCorner.y, leftCorner.x + width, leftCorner.y + height, 0) && ACTIVE_TOOL == "") {
+    if(isInWindow && staticUISpace.mouse.postClick && UI_LOW_LEVEL.isMouseIn(leftCorner.x, leftCorner.y, leftCorner.x + width, leftCorner.y + height, 0) && ACTIVE_TOOL == "") {
         calcualteSelection(object.id);
         
     }
@@ -1815,8 +1815,8 @@ function ON_DETAILED_PANEL_RENDER() {
     if(linkedObject.items.length == 0 || linkedObject.items.length == null) {
         OPENED_PANEL = null;
         ACTIVE_TOOL = "";
-        MOUSE.isDown = false;
-        MOUSE.isClick = false;
+        staticUISpace.mouse.isDown = false;
+        staticUISpace.mouse.isClick = false;
         return;
     }
 
@@ -1854,11 +1854,11 @@ function ON_DETAILED_PANEL_RENDER() {
         UI_LOW_LEVEL.drawText(linkedObject.items[i].name, startX, OPENED_PANEL.pos.y - buffer - (i*itemHeight), textSize, "white", "left", "bottom");
     }
 
-    if(MOUSE.isDown) {
+    if(staticUISpace.mouse.isDown) {
         OPENED_PANEL = null;
         ACTIVE_TOOL = "";
-        MOUSE.isDown = false;
-        MOUSE.isClick = false;
+        staticUISpace.mouse.isDown = false;
+        staticUISpace.mouse.isClick = false;
     }
 }
 

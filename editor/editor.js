@@ -65,20 +65,20 @@ class Editor {
     }
 
     render(x1, y1, x2, y2) {
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption(COLORS.background));
+        staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption(COLORS.background));
         this.windowManager.render(x1, y1, x2, y2);
 
         if(this.activeModal != null) {
             this.activeModal.render(this.activeModal.x, this.activeModal.y, this.activeModal.x + this.activeModal.width, this.activeModal.y + this.activeModal.height);
             
-            if(this.activeModal != null && !mouse.isHoveringOver(this.activeModal.x, this.activeModal.y, this.activeModal.x + this.activeModal.width, this.activeModal.y + this.activeModal.height)
-                && mouse.clickDown) {
+            if(this.activeModal != null && !staticUISpace.mouse.isHoveringOver(this.activeModal.x, this.activeModal.y, this.activeModal.x + this.activeModal.width, this.activeModal.y + this.activeModal.height)
+                && staticUISpace.mouse.clickDown) {
                     this.closeActiveModal();
             }
         }
         
         if(engine.isPlaying)
-            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.playmodeTint);
+            staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, COLORS.playmodeTint);
     }
 
     /**
@@ -117,7 +117,7 @@ class Editor {
      * @param {GameObject} obj 
      */
     handleSelectClick(obj) {
-        if(keyboard.isShiftDown && false) // disabling for the time being, only single selection allowed
+        if(staticUISpace.keyboard.isShiftDown && false) // disabling for the time being, only single selection allowed
             this.setSelected(obj, !this.isSelected(obj));
         else 
             this.setOnlySelected(obj, !this.isSelected(obj) || this.selectedGameObjects.size > 1);
@@ -176,7 +176,7 @@ class Editor {
             this.activeModal.onClose("force", this.activeModal.data);
         }
         this.activeModal = modal;
-        mouse.setActiveTool(modal.id);
+        staticUISpace.mouse.setActiveTool(modal.id);
 
         let desiredPos = modal.calculateDesiredPosition();
         modal.x = desiredPos.x;
@@ -186,7 +186,7 @@ class Editor {
 
     closeActiveModal() {
         if(this.activeModal == null) return;
-        mouse.removeActiveTool(this.activeModal.id);
+        staticUISpace.mouse.removeActiveTool(this.activeModal.id);
         this.activeModal.onClose("natural", this.activeModal.data);
         this.activeModal = null;
     }
@@ -196,7 +196,7 @@ class Editor {
         if (ev.dataTransfer.items) {
             // Use DataTransferItemList interface to access the file(s)
             for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-                let hoveringWindow = this.windowManager.getWindowContainerAtScreenPos(mouse.x, mouse.y);
+                let hoveringWindow = this.windowManager.getWindowContainerAtScreenPos(staticUISpace.mouse.x, staticUISpace.mouse.y);
                 console.log(hoveringWindow)
                 hoveringWindow.onFileDrop(ev.dataTransfer.items[i].getAsFile());
             }

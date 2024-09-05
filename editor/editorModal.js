@@ -62,13 +62,13 @@ class EditorModal {
 
     calculateDesiredPosition() {
         if(this.desiredX == null)
-            this.desiredX = mouse.x-this.width/2;
+            this.desiredX = staticUISpace.mouse.x-this.width/2;
         let x = this.desiredX;
         if(x + this.width+this.borderPadding > canvas.width)
             x -= (x + this.width+this.borderPadding) - canvas.width;
 
         if(this.desiredY == null)
-            this.desiredY = mouse.y;
+            this.desiredY = staticUISpace.mouse.y;
         let y = this.desiredY;
         if(y + this.height+this.borderPadding > canvas.height)
             y -= (y + this.height+this.borderPadding) - canvas.height;
@@ -77,7 +77,7 @@ class EditorModal {
     }
 
     render(x1, y1, x2, y2) {
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.windowModalBackground());
+        staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, COLORS.windowModalBackground());
         this.onRender(x1, y1, x2, y2, this.data);
     }
 }

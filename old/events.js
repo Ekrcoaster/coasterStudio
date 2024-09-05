@@ -3,7 +3,7 @@ var KEYS_DOWN = [];
 var KEYS_DOWN_UNTIL_CLICK = [];
 
 function on_scroll(delta) {
-    var windowName = MOUSE.hoveringWindow;
+    var windowName = staticUISpace.mouse.hoveringWindow;
 
     if(windowName == "scene_view") {
 
@@ -99,7 +99,7 @@ function on_key_down(keyCode, rawKey) {
     
     }
 
-    if(MOUSE.hoveringWindow == "scene_view" || MOUSE.hoveringWindow == "outliner_view" && ACTIVE_TOOL == "") {
+    if(staticUISpace.mouse.hoveringWindow == "scene_view" || staticUISpace.mouse.hoveringWindow == "outliner_view" && ACTIVE_TOOL == "") {
         if(KEYS_DOWN.indexOf("CTRL") > -1 && KEYS_DOWN.indexOf("c") > -1) {
             COPY = [];
 

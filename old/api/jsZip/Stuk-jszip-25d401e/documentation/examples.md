@@ -43,7 +43,7 @@ They return the current JSZip instance so you can chain the calls.
 ```js
 // create a file
 zip.file("hello.txt", "Hello[p my)6cxsw2q");
-// oops, cat on keyboard. Fixing !
+// oops, cat on staticUISpace.keyboard. Fixing !
 zip.file("hello.txt", "Hello World\n");
 
 // create a file and a folder

@@ -13,7 +13,7 @@ class HierarchyWindow extends EditorWindow {
         const t = this;
         let scene = editor.activeScene;
         if(scene == null) {
-            UI_LIBRARY.drawText("No scene loaded!", x1, y1, x2, y2, new DrawTextOption(22, "default", "red", "center", "center"));
+            staticUISpace.ui.drawText("No scene loaded!", x1, y1, x2, y2, new DrawTextOption(22, "default", "red", "center", "center"));
             return;
         }
 
@@ -26,7 +26,7 @@ class HierarchyWindow extends EditorWindow {
             //issue: update position on root: 71 (null)
         }
 
-        let deselect = mouse.clickDown && mouse.isHoveringOver(x1, y, x2, Math.max(y, y2));
+        let deselect = staticUISpace.mouse.clickDown && staticUISpace.mouse.isHoveringOver(x1, y, x2, Math.max(y, y2));
 
         if(deselect)
             editor.handleSelectClick(null);
@@ -52,8 +52,8 @@ class HierarchyWindow extends EditorWindow {
             let depth = (d * 20);
 
             let hoveringGameObject = null;
-            if(mouse.mouseDrag?.id == "dragginggameobj")
-                hoveringGameObject = t.getHoveringOverGameObject(mouse.x, mouse.y);
+            if(staticUISpace.mouse.mouseDrag?.id == "dragginggameobj")
+                hoveringGameObject = t.getHoveringOverGameObject(staticUISpace.mouse.x, staticUISpace.mouse.y);
 
             let data = UI_WIDGET.hierarchyGameObject("hierarchyWindow " + obj.id, obj, metaData, x1 + depth, y, x2, obj.id == scene.header.id, editor.isSelected(obj), hoveringGameObject);
             if(obj.id != scene.header.id)
@@ -64,7 +64,7 @@ class HierarchyWindow extends EditorWindow {
 
 
             if(data.newExpandValue != metaData.drawChildren) {
-                if(keyboard.isAltDown) {
+                if(staticUISpace.keyboard.isAltDown) {
                     t.setChildrenOpen(obj, data.newExpandValue);
                 } else {
                     metaData.drawChildren = data.newExpandValue;
@@ -72,7 +72,7 @@ class HierarchyWindow extends EditorWindow {
                 }
             }
 
-            if(data.hover && mouse.getDownDistance() > 5 && obj.id != scene.header.id) {
+            if(data.hover && staticUISpace.mouse.getDownDistance() > 5 && obj.id != scene.header.id) {
                 startDragging(obj);
             } else if(data.click) {
                 editor.handleSelectClick(obj);
@@ -86,7 +86,7 @@ class HierarchyWindow extends EditorWindow {
         }
 
         function startDragging(obj) {
-            mouse.startDragging(new MouseDrag("dragginggameobj", (x, y, data, id) => {
+            staticUISpace.mouse.startDragging(new MouseDrag("dragginggameobj", (x, y, data, id) => {
                 UI_WIDGET.hierarchyGameObject("drag" + data.obj.id, data.obj, t.getMetaData(data.obj.id), x, y, data.ogWidth, false, false);
             }, (x, y, data, id) => {
                 let result = t.getHoveringOverGameObject(x, y);
@@ -135,11 +135,11 @@ class HierarchyWindow extends EditorWindow {
         let highestBar = 0;
         let betweenPadding = 4;
         for(let i = 0; i < this.cacheObjScreenPos.length; i++) {
-            if(UI_UTILITY.isInside(x, y, this.cacheObjScreenPos[i].x1, this.cacheObjScreenPos[i].y1, this.cacheObjScreenPos[i].x2, this.cacheObjScreenPos[i].y2, -betweenPadding)) {
+            if(staticUISpace.utility.isInside(x, y, this.cacheObjScreenPos[i].x1, this.cacheObjScreenPos[i].y1, this.cacheObjScreenPos[i].x2, this.cacheObjScreenPos[i].y2, -betweenPadding)) {
                 result.parent = this.cacheObjScreenPos[i].obj; 
                 return result;
             }
-            if(UI_UTILITY.isInside(x, y, this.cacheObjScreenPos[i].x1, this.cacheObjScreenPos[i].y1, this.cacheObjScreenPos[i].x2, this.cacheObjScreenPos[i].y2, betweenPadding)) {
+            if(staticUISpace.utility.isInside(x, y, this.cacheObjScreenPos[i].x1, this.cacheObjScreenPos[i].y1, this.cacheObjScreenPos[i].x2, this.cacheObjScreenPos[i].y2, betweenPadding)) {
                 if(y <= (this.cacheObjScreenPos[i].y1+this.cacheObjScreenPos[i].y2)/2) {
                     result.before = this.cacheObjScreenPos[i].obj;
                     return result;

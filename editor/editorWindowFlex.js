@@ -263,17 +263,17 @@ class EditorWindowFlex extends EditorWindowBase {
     debugRender(x1, y1, x2, y2, width, height, depth, maxDepth) {
         if(depth >= maxDepth) return;
         let color = new DrawShapeOption("#00000000","#2863ab42", 10);
-        if(mouse.isHoveringOver(x1, y1, x2, y2))
+        if(staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2))
             color = new DrawShapeOption("#2863ab42")
         if(this.insideDirection == "horizontal") {
             let avg = (y2+y1)/2;
-            UI_LIBRARY.drawRectCoords(x1, avg-height/3, x2, avg+height/3, 0, color);
-            UI_LIBRARY.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(22, "default", "black", "center", "center"));
+            staticUISpace.ui.drawRectCoords(x1, avg-height/3, x2, avg+height/3, 0, color);
+            staticUISpace.ui.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(22, "default", "black", "center", "center"));
         }
         if(this.insideDirection == "vertical") {
             let avg = (x2+x1)/2;
-            UI_LIBRARY.drawRectCoords(avg-width/3, y1, avg+width/3, y2, 0, color);
-            UI_LIBRARY.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(22, "default", "red", "center", "center"));
+            staticUISpace.ui.drawRectCoords(avg-width/3, y1, avg+width/3, y2, 0, color);
+            staticUISpace.ui.drawText(this.id, x1, avg-height/3, x2, avg+height/3, new DrawTextOption(22, "default", "red", "center", "center"));
         }
 
         let soFar = { x: x1, y: y1 };

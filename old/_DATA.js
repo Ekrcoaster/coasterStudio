@@ -2,7 +2,7 @@
 var ACTIVE_TOOL = "";
 var STORED_TOOL_SETTINGS = {};
 
-var MOUSE = {
+var staticUISpace.mouse = {
     "pos": {x: 0, y: 0},
     "vel": {x: 0, y: 0},
     "last": {x: 0, y: 0},

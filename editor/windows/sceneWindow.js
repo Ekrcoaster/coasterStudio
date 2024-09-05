@@ -20,7 +20,7 @@ class SceneWindow extends EditorWindow {
     }
 
     render(x1, y1, x2, y2, width, height) {
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.sceneBackgroundColor);
+        staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, COLORS.sceneBackgroundColor);
         let ogY1 = y1;
 
         y1 += 40;
@@ -51,39 +51,39 @@ class SceneWindow extends EditorWindow {
             }
         }
 
-        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, "scene" + this.container?.id);
-        let down = mouse.isToolDown("scene" + this.container?.id);
+        let hover = staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2, 0, "scene" + this.container?.id);
+        let down = staticUISpace.mouse.isToolDown("scene" + this.container?.id);
         
         // handle dragging 
         if(down && hover) {
             let hoveringObjects = this.getHoveringObjects();
-            if(mouse.clickDown) {
+            if(staticUISpace.mouse.clickDown) {
                 editor.handleSelectClick(hoveringObjects[0]?.target?.gameObject);
             }
 
             // save the screens' og position when clicked
-            if(mouse.clickDown) {
+            if(staticUISpace.mouse.clickDown) {
                 this.downScreenX = this.screenX;
                 this.downScreenY = this.screenY;
-                mouse.setActiveTool("scene" + this.container?.id);
+                staticUISpace.mouse.setActiveTool("scene" + this.container?.id);
             }
 
             // then calculate the new position based on how much it moved
-            let downDistances = mouse.getDownDistanceSeperate();
+            let downDistances = staticUISpace.mouse.getDownDistanceSeperate();
             let sensitivity = 1/this.tools.getRealPixelTileSize();
             if(this.downScreenX != null && this.downScreenY != null) {
                 this.screenX = this.downScreenX + downDistances.x * sensitivity;
                 this.screenY = this.downScreenY + downDistances.y * sensitivity;
             }
         } else {
-            mouse.removeActiveTool("scene" + this.container?.id);
+            staticUISpace.mouse.removeActiveTool("scene" + this.container?.id);
         }
 
         if(hover) {
-            this.changeScale(mouse.getScrollVelocity());
+            this.changeScale(staticUISpace.mouse.getScrollVelocity());
         }
 
-        UI_LIBRARY.drawRectCoords(x1, ogY1, x2, ogY1+40, 0, COLORS.windowDarkerBackground());
+        staticUISpace.ui.drawRectCoords(x1, ogY1, x2, ogY1+40, 0, COLORS.windowDarkerBackground());
         let res = UI_WIDGET.gamePlayingControl(x1, ogY1, x2-10, ogY1+40, engine.isPlaying);
         if(res.startPlaying)
             editor.startPlaying();
@@ -94,7 +94,7 @@ class SceneWindow extends EditorWindow {
     getHoveringObjects() {
         /**@type {RenderingComponent[]} */
         let hovering = [];
-        let mousePos = this.tools._screenSpaceToCoord(mouse.x, mouse.y);
+        let mousePos = this.tools._screenSpaceToCoord(staticUISpace.mouse.x, staticUISpace.mouse.y);
         for(let id in editor.allComponentsCache) {
             // ensure the object is active
             if(editor.allComponentsCache[id].target instanceof RenderingComponent && editor.allComponentsCache[id].target.gameObject.activeInHierarchy) {
@@ -107,15 +107,15 @@ class SceneWindow extends EditorWindow {
 
     changeScale(amt) {
         if(amt == 0) return;
-        let mousePos = this.tools._screenSpaceToCoord(mouse.x, mouse.y);
+        let mousePos = this.tools._screenSpaceToCoord(staticUISpace.mouse.x, staticUISpace.mouse.y);
 
-        this.screenScale += mouse.getScrollVelocity();
+        this.screenScale += staticUISpace.mouse.getScrollVelocity();
 
         if(this.screenScale <= 0.3)
             this.screenScale = 0.3;
 
-        //this.screenX -= mousePos.x * mouse.getScrollVelocity();
-        //this.screenY -= mousePos.y * mouse.getScrollVelocity();
+        //this.screenX -= mousePos.x * staticUISpace.mouse.getScrollVelocity();
+        //this.screenY -= mousePos.y * staticUISpace.mouse.getScrollVelocity();
     }
 
     renderGrid(x1, y1, x2, y2) {
@@ -125,17 +125,17 @@ class SceneWindow extends EditorWindow {
         // draw the horizontal lines
         for(let x = Math.floor(topLeft.x); x <= Math.ceil(bottomRight.x); x += 1) {
             let space = this.tools._coordToScreenSpace(x, 0, 0, 0);
-            UI_LIBRARY.drawLine(space.x, y1, space.x, y2, COLORS.sceneGridColor);
+            staticUISpace.ui.drawLine(space.x, y1, space.x, y2, COLORS.sceneGridColor);
         }
 
         // draw the vertical lines
         for(let y = Math.floor(topLeft.y); y <= Math.ceil(bottomRight.y); y += 1) {
             let space = this.tools._coordToScreenSpace(0, y, 0, 0);
-            UI_LIBRARY.drawLine(x1, space.y, x2, space.y, COLORS.sceneGridColor);
+            staticUISpace.ui.drawLine(x1, space.y, x2, space.y, COLORS.sceneGridColor);
         }
         
         let center = this.tools._coordToScreenSpace(0, 0, 0, 0);
-        UI_LIBRARY.drawRectCoords(center.x-10, center.y-10, center.x+10, center.y+10, 45, COLORS.sceneGridCenterColor);
+        staticUISpace.ui.drawRectCoords(center.x-10, center.y-10, center.x+10, center.y+10, 45, COLORS.sceneGridCenterColor);
     }
 
     tick() {

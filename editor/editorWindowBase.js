@@ -49,7 +49,7 @@ class EditorWindowBase {
     }
     
     isInsideLastScreenPos(x, y) {
-        return UI_UTILITY.isInside(x, y, this.lastScreenPos.x1, this.lastScreenPos.y1, this.lastScreenPos.x2, this.lastScreenPos.y2);
+        return staticUISpace.utility.isInside(x, y, this.lastScreenPos.x1, this.lastScreenPos.y1, this.lastScreenPos.x2, this.lastScreenPos.y2);
     }
     
     /**

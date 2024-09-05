@@ -25,15 +25,15 @@ window.onload = function(e) {
         RENDER();
         TIME += 0.001;
 
-        if(MOUSE.postClick) {
-            MOUSE.postClick = false;
+        if(staticUISpace.mouse.postClick) {
+            staticUISpace.mouse.postClick = false;
         }
-        if(MOUSE.isClick) {
-            MOUSE.postClick = true;
+        if(staticUISpace.mouse.isClick) {
+            staticUISpace.mouse.postClick = true;
         }
         
-        if(MOUSE.isDown && MOUSE.isClick) {
-            MOUSE.isClick = false;
+        if(staticUISpace.mouse.isDown && staticUISpace.mouse.isClick) {
+            staticUISpace.mouse.isClick = false;
         }
     }, 1);
 }
@@ -95,27 +95,27 @@ function INITIALIZE() {
 
 var lastFrameData = {};
 function TICK() {
-    MOUSE.vel.x = MOUSE.pos.x - MOUSE.last.x;
-    MOUSE.vel.y = MOUSE.pos.y - MOUSE.last.y;
-    MOUSE.last = MOUSE.pos;
+    staticUISpace.mouse.vel.x = staticUISpace.mouse.pos.x - staticUISpace.mouse.last.x;
+    staticUISpace.mouse.vel.y = staticUISpace.mouse.pos.y - staticUISpace.mouse.last.y;
+    staticUISpace.mouse.last = staticUISpace.mouse.pos;
 
-    if(MOUSE.isDown) {
-        MOUSE.holdingTime += 1;
+    if(staticUISpace.mouse.isDown) {
+        staticUISpace.mouse.holdingTime += 1;
     } else {
         ACTIVE_TOOL = "";
         STORED_TOOL_SETTINGS = {};
-        MOUSE.lastFree = MOUSE.pos;
+        staticUISpace.mouse.lastFree = staticUISpace.mouse.pos;
         UI_ClearDown();
-        MOUSE.holdingTime = 0;
+        staticUISpace.mouse.holdingTime = 0;
 
     }
-    MOUSE.downDistance.x = MOUSE.pos.x - MOUSE.lastFree.x;
-    MOUSE.downDistance.y = MOUSE.pos.y - MOUSE.lastFree.y;
+    staticUISpace.mouse.downDistance.x = staticUISpace.mouse.pos.x - staticUISpace.mouse.lastFree.x;
+    staticUISpace.mouse.downDistance.y = staticUISpace.mouse.pos.y - staticUISpace.mouse.lastFree.y;
 
-    MOUSE.scroll.velocity = MOUSE.scroll.level - MOUSE.scroll.last;
-    MOUSE.scroll.last = MOUSE.scroll.level;
+    staticUISpace.mouse.scroll.velocity = staticUISpace.mouse.scroll.level - staticUISpace.mouse.scroll.last;
+    staticUISpace.mouse.scroll.last = staticUISpace.mouse.scroll.level;
 
-    MOUSE.isHolding = MOUSE.holdingTime > 30;
+    staticUISpace.mouse.isHolding = staticUISpace.mouse.holdingTime > 30;
 
     if(lastFrameData.isPlaying != FRAMES.isPlaying || lastFrameData.frameRate != FRAMES.frameRate) {
         lastFrameData = copyJson(FRAMES);
@@ -129,14 +129,14 @@ function RENDER() {
     UI_LOW_LEVEL.drawRectAbsolute(0, 0, INFO_CANVAS.width, INFO_CANVAS.height, 0, "black");
     if(OPENED_PANEL != null) {
         lastMouse = {
-            "wasDown": MOUSE.isDown,
-            "wasClicked": MOUSE.isClick,
-            "wasPas": MOUSE.postClick
+            "wasDown": staticUISpace.mouse.isDown,
+            "wasClicked": staticUISpace.mouse.isClick,
+            "wasPas": staticUISpace.mouse.postClick
         }
 
-        MOUSE.isDown = false;
-        MOUSE.isClick = false;
-        MOUSE.postClick = false;
+        staticUISpace.mouse.isDown = false;
+        staticUISpace.mouse.isClick = false;
+        staticUISpace.mouse.postClick = false;
     }
 
     for(var i = 0; i < WINDOWS.length; i++) {
@@ -148,9 +148,9 @@ function RENDER() {
     }
 
     if(OPENED_PANEL != null) {
-        MOUSE.isDown = lastMouse.wasDown;
-        MOUSE.isClick = lastMouse.wasClicked;
-        MOUSE.postClick = lastMouse.wasPas;
+        staticUISpace.mouse.isDown = lastMouse.wasDown;
+        staticUISpace.mouse.isClick = lastMouse.wasClicked;
+        staticUISpace.mouse.postClick = lastMouse.wasPas;
         ON_DETAILED_PANEL_RENDER();
     }
 
@@ -173,7 +173,7 @@ function loadEvents() {
     
     canvas.addEventListener('mousemove', function(evt) {
         var mousePos = getMousePos(canvas, evt);
-        MOUSE.pos = mousePos;
+        staticUISpace.mouse.pos = mousePos;
         function getMousePos(canvas, evt) {
             var rect = canvas.getBoundingClientRect();
             return {
@@ -185,22 +185,22 @@ function loadEvents() {
     
     canvas.addEventListener("mousedown", function (evt) {
         if(evt.button == 0) {
-            MOUSE.isDown = true;
+            staticUISpace.mouse.isDown = true;
             KEYS_DOWN_UNTIL_CLICK = []
-            MOUSE.isClick = true;
+            staticUISpace.mouse.isClick = true;
         } else if(evt.button == 2) {
             DETAILED_PANEL_TOOLS.onRightClick();
         }
     });
     canvas.addEventListener("mouseup", function (evt) {
         if(evt.button == 0) {
-            MOUSE.isDown = false;
-            MOUSE.isClick = false;
+            staticUISpace.mouse.isDown = false;
+            staticUISpace.mouse.isClick = false;
         }
     });
     
     canvas.addEventListener("wheel", function(evt) {
-        MOUSE.scroll.level += evt.deltaY/100;
+        staticUISpace.mouse.scroll.level += evt.deltaY/100;
         on_scroll(evt.deltaY);
     });
     

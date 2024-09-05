@@ -229,7 +229,7 @@ class Asset {
 
     render(x1, y1, x2, y2) {
         let textHeight = 50;
-        UI_LIBRARY.drawText(this.name, x1, y2-textHeight, x2, y2, COLORS.assetWindowAssetText);
+        staticUISpace.ui.drawText(this.name, x1, y2-textHeight, x2, y2, COLORS.assetWindowAssetText);
         this.renderPreview(x1+textHeight/2, y1, x2-textHeight/2, y2-textHeight);
     }
 

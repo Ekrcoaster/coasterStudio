@@ -83,8 +83,8 @@ class EditorWindowContainer extends EditorWindowBase {
         windowSpace.y1 += t.headerHeight;
 
         let tabWindowDropIndex = -1;
-        let tabWindowDropType = this.windowDropPositionType(mouse.x, mouse.y);
-        if(tabWindowDropType == "tab") tabWindowDropIndex = this.calculateWindowDropIndex(mouse.x, mouse.y);
+        let tabWindowDropType = this.windowDropPositionType(staticUISpace.mouse.x, staticUISpace.mouse.y);
+        if(tabWindowDropType == "tab") tabWindowDropIndex = this.calculateWindowDropIndex(staticUISpace.mouse.x, staticUISpace.mouse.y);
 
         // actions
         let toSelect = this.activeWindowIndex;
@@ -107,7 +107,7 @@ class EditorWindowContainer extends EditorWindowBase {
         drawTabs(true, tabWindowDropIndex);
 
         if(windowToDraw < this.windows.length && windowToDraw > -1) {
-            UI_LIBRARY.drawRectCoords(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, 0, new DrawShapeOption(COLORS.windowBackground().getFillColor()).setRoundedCorners(10).makeMask());
+            staticUISpace.ui.drawRectCoords(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, 0, new DrawShapeOption(COLORS.windowBackground().getFillColor()).setRoundedCorners(10).makeMask());
             this.windows[windowToDraw].render(windowSpace.x1, windowSpace.y1, windowSpace.x2, windowSpace.y2, windowSpace.x2- windowSpace.x1, windowSpace.y2 - windowSpace.y1);
             this.windows[windowToDraw].postRender();
             //console.log(Date.now() - startTime + " for editor window " + this.windows[windowToDraw].name)
@@ -120,14 +120,14 @@ class EditorWindowContainer extends EditorWindowBase {
         this.activeWindowIndex = toSelect;
 
         // create the drawing
-        if(startDragging > -1 && mouse.mouseDrag == null)
+        if(startDragging > -1 && staticUISpace.mouse.mouseDrag == null)
             createWindowDrag(startDragging);
 
         // reset any hovering windows
         this.newWindowHoveringOverMe = null;
 
         if(editor.windowManager.fileDropActiveWindow == this)
-            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption("#ffffff32"));
+            staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption("#ffffff32"));
 
         /**
          * This will calculate the spacing for the tabs on the header, then provides a method to draw the tab.
@@ -150,7 +150,7 @@ class EditorWindowContainer extends EditorWindowBase {
                 // if there is a window being dragged and it is going to be inserted, then draw the insert
                 if(t.newWindowHoveringOverMe != null && i == insertIndex) {
                     offset += t.headerPadding.headerInsertPadding - t.headerPadding.headerInsertWidth/2;
-                    UI_LIBRARY.drawRectCoords(x1+offset, y1 + t.headerPadding.top, x1+offset+t.headerPadding.headerInsertWidth, y1+t.headerHeight-t.headerPadding.bottom, 0, COLORS.windowTabInsert);
+                    staticUISpace.ui.drawRectCoords(x1+offset, y1 + t.headerPadding.top, x1+offset+t.headerPadding.headerInsertWidth, y1+t.headerHeight-t.headerPadding.bottom, 0, COLORS.windowTabInsert);
                     offset += t.headerPadding.headerInsertPadding;
                 }
 
@@ -187,7 +187,7 @@ class EditorWindowContainer extends EditorWindowBase {
             if(!active && t.newWindowHoveringOverMe != null) {
                 if(insertIndex >= t.windows.length) {
                     offset += t.headerPadding.headerInsertPadding - t.headerPadding.headerInsertWidth/2;
-                    UI_LIBRARY.drawRectCoords(x1+offset, y1 + t.headerPadding.top, x1+offset+t.headerPadding.headerInsertWidth, y1+t.headerHeight-t.headerPadding.bottom, 0, COLORS.windowTabInsert);
+                    staticUISpace.ui.drawRectCoords(x1+offset, y1 + t.headerPadding.top, x1+offset+t.headerPadding.headerInsertWidth, y1+t.headerHeight-t.headerPadding.bottom, 0, COLORS.windowTabInsert);
                 }
             }
         }
@@ -204,7 +204,7 @@ class EditorWindowContainer extends EditorWindowBase {
             }
 
             function draw(x1, y1, x2, y2) {
-                UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.windowTabInsert);
+                staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, COLORS.windowTabInsert);
             }
         }
         
@@ -224,7 +224,7 @@ class EditorWindowContainer extends EditorWindowBase {
          * This is responsible for creating the window drag and rendering it
          */
         function createWindowDrag(index) {
-            mouse.startDragging(new MouseDrag(t.id + startDragging, (x, y, d, id) => {
+            staticUISpace.mouse.startDragging(new MouseDrag(t.id + startDragging, (x, y, d, id) => {
                 // draw the tab
                 let res = UI_WIDGET.windowTabLabel("tabLabel " + id, d.name, x, y, y+d.height, "active");
                 
@@ -356,7 +356,7 @@ class EditorWindowContainer extends EditorWindowBase {
 
     debugRender(x1, y1, x2, y2, width, height, depth, maxDepth) {
         if(depth >= maxDepth) return;
-        UI_LIBRARY.drawRectCoords(x1+50, y1+50, x2-50, y2-50, 0, new DrawShapeOption("#ffffff00", "#ab28281f", 10));
+        staticUISpace.ui.drawRectCoords(x1+50, y1+50, x2-50, y2-50, 0, new DrawShapeOption("#ffffff00", "#ab28281f", 10));
     }
 
     /**@param {File} file  */

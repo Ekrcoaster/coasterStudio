@@ -16,8 +16,8 @@ class EditorWindowManager {
     }
 
     render(x1, y1, x2, y2) {
-        if(mouse.fileDropHovering)
-            this.fileDropActiveWindow = this.getWindowContainerAtScreenPos(mouse.x, mouse.y);
+        if(staticUISpace.mouse.fileDropHovering)
+            this.fileDropActiveWindow = this.getWindowContainerAtScreenPos(staticUISpace.mouse.x, staticUISpace.mouse.y);
         else
             this.fileDropActiveWindow = null;
 

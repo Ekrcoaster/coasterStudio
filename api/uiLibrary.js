@@ -1,8 +1,12 @@
+
 class Color {
     r;
     g;
     b;
     a;
+
+    multiplyColor = 1;
+    addColor = 1;
 
     isInvalid;
 
@@ -44,7 +48,8 @@ class Color {
     }
 
     toHex() {
-        return `#${number(this.r)}${number(this.g)}${number(this.b)}${number(this.a*255)}`
+        let col = this.processColor();
+        return `#${number(col.r)}${number(col.g)}${number(col.b)}${number(col.a*255)}`
 
         function number(b) {
             let res = b.toString(16);
@@ -55,7 +60,17 @@ class Color {
     }
 
     toRGBA() {
-        return `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`;
+        let col = this.processColor();
+        return `rgba(${col.r}, ${col.g}, ${col.b}, ${col.a})`;
+    }
+
+    processColor() {
+        return {
+            r: this.r * this.multiplyColor + this.addColor,
+            g: this.g * this.multiplyColor + this.addColor,
+            b: this.b * this.multiplyColor + this.addColor,
+            a: this.a
+        }
     }
 
     clone() {
@@ -81,12 +96,23 @@ class Color {
         this.a = a;
         return this;
     }
+
+    setMultiply(mul) {
+        this.multiplyColor = mul;
+        return this;
+    }
+
+    setAdd(num) {
+        this.addColor = num;
+        return this;
+    }
     
     /**@returns {{hue: 0, sat: 0, val: 0}} */
     getHSV() {
-        let r = this.r / 255;
-        let g = this.g / 255;
-        let b = this.b / 255;
+        let col = this.processColor();
+        let r = col.r / 255;
+        let g = col.g / 255;
+        let b = col.b / 255;
 
     
         const max = Math.max(r, g, b);
@@ -162,11 +188,11 @@ class Color {
      * @returns 
      */
     lerp(other, time) {
-        return UI_UTILITY.lerpColor(this, other, time);
+        return staticUISpace.utility.lerpColor(this, other, time);
     }
 
     toJSON() {
-        return {r: this.r, g: this.g, b: this.b, a: this.a}
+        return {r: this.r, g: this.g, b: this.b, a: this.a, multiplyColor: this.multiplyColor}
     }
 }
 
@@ -194,12 +220,12 @@ class Gradient {
 
     createGradient(x1, y1, x2, y2, r) {
         if(this.type == "linear") {
-            let grad = ctx.createLinearGradient(x1, y1, x2, y2);
+            let grad = this.ctx.createLinearGradient(x1, y1, x2, y2);
             for(let i = 0; i < this.colorStops.length; i++)
                 grad.addColorStop(this.colorStops[i].pos, this.colorStops[i].color.toRGBA());
             return grad;
         } else {
-            let grad = ctx.createRadialGradient(x1, y1, r, x2, y2);
+            let grad = this.ctx.createRadialGradient(x1, y1, r, x2, y2);
             for(let i = 0; i < this.colorStops.length; i++)
                 grad.addColorStop(this.colorStops[i].pos, this.colorStops[i].color.toRGBA());
             return grad;
@@ -345,7 +371,7 @@ class DrawTextOption {
 
     getColor() { return this.fillColor.toRGBA();}
 
-    getFontForCTX() {
+    getFontForCtx() {
         return this.size + "px " + this.getFont();
     }
 
@@ -425,7 +451,7 @@ class RichTextToken {
         if(this.size != null) lastSize = this.size;
         if(this.font != null) lastFont = this.font;
 
-        let space = UI_UTILITY.measureText(this.text, new DrawTextOption(lastSize, lastFont));
+        let space = staticUISpace.utility.measureText(this.text, new DrawTextOption(lastSize, lastFont));
         
         return {
             width: space.width,
@@ -436,62 +462,73 @@ class RichTextToken {
     }
 }
 
-const UI_LIBRARY = {
+class UILibrary {
+    /**@type {CanvasRenderingContext2D} */
+    ctx;
+    canvas;
 
+    /**@type {UIUtility} */
+    utility;
+
+    constructor(ctx, canvas) {
+        this.ctx = ctx;
+        this.canvas = canvas;
+        this.utility = new UIUtility(ctx, canvas);
+    }
     /** Renders a rect using x1, y1, x2, y2
      * @param {Number} rotation 
      * @param {DrawShapeOption} shape 
      * @param {Filter[]} filters 
      */
-    drawRectCoords: function (x1, y1, x2, y2, rotation, shape, filters = []) {
+    drawRectCoords (x1, y1, x2, y2, rotation, shape, filters = []) {
         return this.drawPolygon([
             { x: x1, y: y1 },
             { x: x2, y: y1 },
             { x: x2, y: y2 },
             { x: x1, y: y2 }
         ], shape, filters);
-    },
+    }
 
     /** Draws a polygon with the given points
      * @param {{x: Number, y: Number}[]} points 
      * @param {DrawShapeOption} shape 
      * @param {Filter[]} filters 
      */
-    drawPolygon: function (points, shape, filters = []) {
+    drawPolygon (points, shape, filters = []) {
         if (points.length < 3) {
             console.trace("ERROR: Attempting to draw polygon with less than 3 points!");
             return;
         }
         if (shape == null) shape = new DrawShapeOption();
 
-        UI_UTILITY.compileFilters(filters);
+        this.utility.compileFilters(filters);
         let bounds = {x1: 0, y1: 0, x2: 0, y2: 0};
         if(shape.fillGradient != null || shape.outlineGradient != null) {
-            bounds = UI_UTILITY.calculateBounds(points);
+            bounds = this.utility.calculateBounds(points);
         }
-        ctx.strokeStyle = shape.getStrokeStyle(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
-        ctx.lineWidth = shape.getStrokeWidth();
-        ctx.fillStyle = shape.getFillColor(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
+        this.ctx.strokeStyle = shape.getStrokeStyle(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
+        this.ctx.lineWidth = shape.getStrokeWidth();
+        this.ctx.fillStyle = shape.getFillColor(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
 
-        //ctx.moveTo(points[0].x, points[0].y);
-        //ctx.beginPath();
+        //this.ctx.moveTo(points[0].x, points[0].y);
+        //this.ctx.beginPath();
         //for (let i = 0; i < points.length; i++)
-        //    ctx.lineTo(points[i].x, points[i].y);
+        //    this.ctx.lineTo(points[i].x, points[i].y);
 
         let path = drawRoundPoly();
 
         // if we are drawing an outline, then go back to the first point and draw a line (so all sides have a line)
         if (shape.shouldStroke()) {
-            //ctx.lineTo(points[0].x, points[0].y);
-            ctx.stroke(path);
+            //this.ctx.lineTo(points[0].x, points[0].y);
+            this.ctx.stroke(path);
         }
 
         if (shape.shouldFill())
-            ctx.fill(path);
+            this.ctx.fill(path);
         
         if(shape.isMask) {
-            ctx.save();
-            ctx.clip(path);
+            this.ctx.save();
+            this.ctx.clip(path);
         }
             
         function drawRoundPoly() {
@@ -548,7 +585,7 @@ const UI_LIBRARY = {
                 last = points[i];
                 lastIndex = i;
             }
-            path.closePath();
+        path.closePath();
             return path;
         }
 
@@ -589,45 +626,45 @@ const UI_LIBRARY = {
                     corners.push([start, thisPoint, end])
                 }
             
-                ctx.moveTo(corners[0][0].x, corners[0][0].y)
+                this.ctx.moveTo(corners[0][0].x, corners[0][0].y)
                 for (let [start, ctrl, end] of corners) {
-                    ctx.lineTo(start.x, start.y)
-                    ctx.quadraticCurveTo(ctrl.x, ctrl.y, end.x, end.y)
+                    this.ctx.lineTo(start.x, start.y)
+                    this.ctx.quadraticCurveTo(ctrl.x, ctrl.y, end.x, end.y)
                 }
             
-                ctx.closePath()
+                this.ctx.closePath()
             }
-    },
+    }
     /** Draws a polygon with the given points
      * @param {{x: Number, y: Number}[]} points 
      * @param {DrawShapeOption} shape 
      * @param {Filter[]} filters 
      */
-    drawEllipse: function (x, y, width, height, shape, filters = []) {
+    drawEllipse (x, y, width, height, shape, filters = []) {
         if (shape == null) shape = new DrawShapeOption();
 
-        UI_UTILITY.compileFilters(filters);
-        ctx.strokeStyle = shape.getStrokeStyle();
-        ctx.lineWidth = shape.getStrokeWidth();
-        ctx.fillStyle = shape.getFillColor();
+        this.utility.compileFilters(filters);
+        this.ctx.strokeStyle = shape.getStrokeStyle();
+        this.ctx.lineWidth = shape.getStrokeWidth();
+        this.ctx.fillStyle = shape.getFillColor();
 
         let path = new Path2D();
         path.ellipse(x, y, width/2, height/2, 0, 0, Math.PI*2);
 
         // if we are drawing an outline, then go back to the first point and draw a line (so all sides have a line)
         if (shape.shouldStroke()) {
-            //ctx.lineTo(points[0].x, points[0].y);
-            ctx.stroke(path);
+            //this.ctx.lineTo(points[0].x, points[0].y);
+            this.ctx.stroke(path);
         }
 
         if (shape.shouldFill())
-            ctx.fill(path);
+            this.ctx.fill(path);
         
         if(shape.isMask) {
-            ctx.save();
-            ctx.clip(path);
+            this.ctx.save();
+            this.ctx.clip(path);
         }
-    },
+    }
     /**
      * 
      * @param {Number} x1 
@@ -639,23 +676,23 @@ const UI_LIBRARY = {
      * @param {Color} bottomLeft 
      * @param {Color} bottomRight 
      */
-    drawGradientSquare: function(x1, y1, x2, y2, topLeft, topRight, bottomLeft, bottomRight) {
+    drawGradientSquare(x1, y1, x2, y2, topLeft, topRight, bottomLeft, bottomRight) {
         topLeft = new Color(topLeft);
         topRight = new Color(topRight);
         bottomLeft = new Color(bottomLeft);
         bottomRight = new Color(bottomRight);
         for(let y = y1; y < y2; y++) {
             let percent = (y-y1)/(y2-y1);
-            let left = UI_UTILITY.lerpColor(topLeft, bottomLeft, percent).toRGBA();
-            let right = UI_UTILITY.lerpColor(topRight, bottomRight, percent).toRGBA();
-            ctx.fillStyle = ctx.createLinearGradient(x1, y1, x2, y1);
-            ctx.fillStyle.addColorStop(0, left);
-            ctx.fillStyle.addColorStop(1, right);
-            ctx.beginPath();
-            ctx.fillRect(x1, y, (x2-x1), 1);
-            ctx.fill();
+            let left = this.utility.lerpColor(topLeft, bottomLeft, percent).toRGBA();
+            let right = this.utility.lerpColor(topRight, bottomRight, percent).toRGBA();
+            this.ctx.fillStyle = this.ctx.createLinearGradient(x1, y1, x2, y1);
+            this.ctx.fillStyle.addColorStop(0, left);
+            this.ctx.fillStyle.addColorStop(1, right);
+            this.ctx.beginPath();
+            this.ctx.fillRect(x1, y, (x2-x1), 1);
+            this.ctx.fill();
         }
-    },
+    }
     /**
      * 
      * @param {ImageAsset} imageAsset 
@@ -665,7 +702,7 @@ const UI_LIBRARY = {
      * @param {Number} y2 
      * @param {DrawImageOption} draw
      */
-    drawImage: function(imageAsset, x1, y1, x2, y2, angle, draw) {
+    drawImage(imageAsset, x1, y1, x2, y2, angle, draw) {
         if(draw == null) draw = new DrawImageOption();
         if(!imageAsset.isLoaded) { return; };
         if(imageAsset.image == null)
@@ -675,18 +712,18 @@ const UI_LIBRARY = {
             x: draw.uvs[0].x * imageAsset.width,
             y: draw.uvs[0].y * imageAsset.height
         }
-        ctx.translate((x1+x2)/2, (y1+y2)/2);
-        ctx.rotate(-angle * DEGREE_TO_RADIANS);
-        ctx.translate((x1+x2)/-2, (y1+y2)/-2);
-        ctx.drawImage(imageAsset.image, 
+        this.ctx.translate((x1+x2)/2, (y1+y2)/2);
+        this.ctx.rotate(-angle * DEGREE_TO_RADIANS);
+        this.ctx.translate((x1+x2)/-2, (y1+y2)/-2);
+        this.ctx.drawImage(imageAsset.image, 
             firstCorner.x,
             firstCorner.y,
             draw.uvs[1].x * (imageAsset.width - firstCorner.x),
             draw.uvs[1].y * (imageAsset.height - firstCorner.y),
             x1, y1, (x2-x1), (y2-y1));
-        ctx.resetTransform();
+        this.ctx.resetTransform();
             
-    },
+    }
     /**
      * 
      * @param {String} text 
@@ -694,14 +731,14 @@ const UI_LIBRARY = {
      * @param {Number} y 
      * @param {DrawTextOption} draw 
      */
-    drawText: function(text, x1, y1, x2, y2, draw) {
+    drawText(text, x1, y1, x2, y2, draw) {
         if(draw == null) throw "Draw cannot be null for text!";
-        let space = UI_UTILITY.measureText(text, draw);
+        let space = this.utility.measureText(text, draw);
 
         // draw the space box
         if(draw.debugBoxes) {
-            ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-            ctx.fillRect(x1, y1, x2-x1, y2-y1);
+            this.ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+            this.ctx.fillRect(x1, y1, x2-x1, y2-y1);
         }
 
         let xOffset = 0;
@@ -719,13 +756,15 @@ const UI_LIBRARY = {
 
         // draw the text box
         if(draw.debugBoxes) {
-            ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
-            ctx.fillRect(xOffset+x1, y1+yOffset, x2-x1-xOffset*2, y2-y1-yOffset*2);
+            this.ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+            this.ctx.fillRect(xOffset+x1, y1+yOffset, x2-x1-xOffset*2, y2-y1-yOffset*2);
         }
 
-        ctx.font = draw.getFontForCTX();
-        ctx.fillStyle = draw.getColor();
-        ctx.fillText(text, x1+xOffset, y1+yOffset, x2-x1);
+        this.ctx.font = draw.getFontForCtx();
+        this.ctx.fillStyle = draw.getColor();
+        this.ctx.fillText(text, x1+xOffset, y1+yOffset, x2-x1);
+
+        const t = this;
 
         return {
             width: space.width,
@@ -733,7 +772,7 @@ const UI_LIBRARY = {
             xOffset: xOffset,
             yOffset: yOffset,
             getXAtChar: (index) => {
-                return UI_UTILITY.measureText(text.substring(0, index), draw).width + xOffset;
+                return t.utility.measureText(text.substring(0, index), draw).width + xOffset;
             },
             getCharAtX: (globalX) => {
                 let local = globalX - (x1+xOffset);
@@ -741,7 +780,7 @@ const UI_LIBRARY = {
                 return Math.round(Math.max(0, Math.min(1, local / width)) * text.length)
             }
         }
-    },
+    }
     /**
      * 
      * @param {Number} x1 
@@ -750,21 +789,21 @@ const UI_LIBRARY = {
      * @param {Number} y2 
      * @param {DrawLineOption} draw 
      */
-    drawLine: function(x1, y1, x2, y2, draw) {
+    drawLine(x1, y1, x2, y2, draw) {
         if(draw == null) draw = new DrawLineOption();
 
-        ctx.strokeStyle = draw.getStrokeStyle();
-        ctx.lineWidth = draw.getStrokeWidth();
-        ctx.lineCap = draw.getLineCap();
+        this.ctx.strokeStyle = draw.getStrokeStyle();
+        this.ctx.lineWidth = draw.getStrokeWidth();
+        this.ctx.lineCap = draw.getLineCap();
         
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-    },
+        this.ctx.beginPath();
+        this.ctx.moveTo(x1, y1);
+        this.ctx.lineTo(x2, y2);
+        this.ctx.stroke();
+    }
     restore() {
-        ctx.restore();
-    },
+        this.ctx.restore();
+    }
 
     /**
      * 
@@ -775,8 +814,8 @@ const UI_LIBRARY = {
      * @param {Number} y2 
      * @param {DrawTextOption} draw 
      */
-    drawRichText: function(tokens, x1, y1, x2, y2, draw) {
-        let space = UI_UTILITY.measureRichText(tokens, draw);
+    drawRichText(tokens, x1, y1, x2, y2, draw) {
+        let space = this.utility.measureRichText(tokens, draw);
 
         let xOffset = 0;
         let yOffset = 0;
@@ -794,12 +833,12 @@ const UI_LIBRARY = {
         for(let i = 0; i < tokens.length; i++) {
             let sp = space.individual[i];
             let copy = new DrawTextOption(sp.lastSize, sp.lastFont, sp.lastColor, "center", "center");
-            UI_LIBRARY.drawText(tokens[i].text, sp.x+x1+xOffset, sp.y+y1+yOffset, sp.x+sp.width+x1+xOffset, sp.y + sp.height+y1+yOffset, copy);
+            this.drawText(tokens[i].text, sp.x+x1+xOffset, sp.y+y1+yOffset, sp.x+sp.width+x1+xOffset, sp.y + sp.height+y1+yOffset, copy);
         }
 
         return {
             space: space,
-            getTokenAtX: function(globalX) {
+            getTokenAtX(globalX) {
                 // figure out the local X according to this
                 let local = globalX - (x1+xOffset);
 
@@ -844,7 +883,7 @@ const UI_LIBRARY = {
 
                 
             },
-            getXAtToken: function(globalCharIndex) {
+            getXAtToken(globalCharIndex) {
                 for(let i = 0; i < tokens.length; i++) {
                     if(globalCharIndex - tokens[i].text.length <= 0)
                         return getXAtChar(i, globalCharIndex);
@@ -865,22 +904,31 @@ const UI_LIBRARY = {
     }
 }
 
-const UI_UTILITY = {
-    isInside: function (x, y, x1, y1, x2, y2, padding = 0) {
+class UIUtility {
+    /**@type {CanvasRenderingContext2D} */
+    ctx;
+    canvas;
+
+    constructor(ctx, canvas) {
+        this.ctx = ctx;
+        this.canvas = canvas;
+    }
+
+    isInside (x, y, x1, y1, x2, y2, padding = 0) {
         if (x2 < x1) throw "x2 is less than x1 when trying to calculate isInside";
         if (y2 < y1) throw "y2 is less than y1 when trying to calculate isInside";
 
         return x >= x1 - padding && x <= x2 + padding &&
             y >= y1 - padding && y <= y2 + padding;
-    },
+    }
     /**
     * @param {String} text 
     * @param {DrawTextOption} draw 
     */
-    measureText: function(text, draw) {
+    measureText(text, draw) {
         if(draw == null) throw "Draw cannot be null for text!";
-        ctx.font = draw.getFontForCTX();
-        let data = ctx.measureText(text);
+        this.ctx.font = draw.getFontForCtx();
+        let data = this.ctx.measureText(text);
 
         return {
             "width": data.width, 
@@ -888,24 +936,24 @@ const UI_UTILITY = {
             "actualHeight": data.actualBoundingBoxAscent + data.actualBoundingBoxDescent,
             "coasterHeight": data.fontBoundingBoxDescent - data.fontBoundingBoxAscent
         }
-    },
+    }
     /**@param {Filter[]} filters */
-    compileFilters: function(filters = []) {
+    compileFilters(filters = []) {
         let build = "";
         for(let i = 0; i < filters.length; i++) {
             build += filters[i].toString() + " ";
         }
-        ctx.filter = build.trim();
-    },
-    getAngleBetweenPoints: function(pointAX, pointAY, pointBX, pointBY) {
+        this.ctx.filter = build.trim();
+    }
+    getAngleBetweenPoints(pointAX, pointAY, pointBX, pointBY) {
         let mousePos = {
             x: pointBX - pointAX,
             y: pointBY - pointAY
         }
         
         return Math.atan2(mousePos.x, mousePos.y)* (180/Math.PI);
-    },
-    calculateBounds: function(points) {
+    }
+    calculateBounds(points) {
         let minX = Infinity;
         let minY = Infinity;
         let maxX = -Infinity;
@@ -931,27 +979,28 @@ const UI_UTILITY = {
             x2: maxX,
             y2: maxY
         }
-    },
+    }
     lerp(a, b, amt) {
         return a + (b-a)*amt;
-    },
+    }
     /**
      * lersp between 2 colors
      * @param {Color} a 
      * @param {Color} b 
      * @param {Number} amount 
      */
-    lerpColor: function(a, b, amount) { 
+    lerpColor(a, b, amount) { 
+        const t = this;
         return new Color({
-            r: UI_UTILITY.lerp(a.r, b.r, amount),
-            g: UI_UTILITY.lerp(a.g, b.g, amount),
-            b: UI_UTILITY.lerp(a.b, b.b, amount),
-            a: UI_UTILITY.lerp(a.a, b.a, amount)
+            r: t.lerp(a.r, b.r, amount),
+            g: t.lerp(a.g, b.g, amount),
+            b: t.lerp(a.b, b.b, amount),
+            a: t.lerp(a.a, b.a, amount)
         });
-    },
-    distance: function(x1, y1, x2, y2) {
+    }
+    distance(x1, y1, x2, y2) {
         return Math.sqrt(((y2 - y1) ** 2) + ((x2 - x1) ** 2));
-    },
+    }
     /**@param {RichTextToken[]} tokens @param {DrawTextOption} draw  */
     measureRichText(tokens, draw) {
 
@@ -993,7 +1042,7 @@ const UI_UTILITY = {
             height: height,
             individual: individual
         }
-    },
+    }
 
     /**
      * This converts the rich text type <?   > to tokens. Each brick (<? >) is a token

@@ -26,10 +26,10 @@ class ScriptingWindow extends EditorWindow {
         let draw = new DrawTextOption(22, "default", "#ffffff", "left", "center");
         option.setOnRender((lineCount, lineIndex, x1, y1, x2, y2) => {
             lineCount = Math.max(10, lineCount);    // start with double digits
-            let longest = UI_UTILITY.measureText(lineCount + "", draw);
+            let longest = staticUISpace.utility.measureText(lineCount + "", draw);
             let w = longest.width + 10+2;
-            UI_LIBRARY.drawRectCoords(x1-1, y1-1, x1+w+3, y2+1, 0, COLORS.windowEvenDarkerBackground().setStrokeWidth(0).setRoundedCorners(0));
-            UI_LIBRARY.drawText((lineIndex+1) + "", x1, y1, x1+w, y2, new DrawTextOption(22, "default", "#ffffff6f", "right", "center"));
+            staticUISpace.ui.drawRectCoords(x1-1, y1-1, x1+w+3, y2+1, 0, COLORS.windowEvenDarkerBackground().setStrokeWidth(0).setRoundedCorners(0));
+            staticUISpace.ui.drawText((lineIndex+1) + "", x1, y1, x1+w, y2, new DrawTextOption(22, "default", "#ffffff6f", "right", "center"));
             return w+5;
         });
         
@@ -65,7 +65,7 @@ class ScriptingWindow extends EditorWindow {
         }
 
         function renderTab(x1, y, x2) {
-            UI_LIBRARY.drawRectCoords(x1, y, x2, y+tabHeight, 0, COLORS.windowDarkerBackground());
+            staticUISpace.ui.drawRectCoords(x1, y, x2, y+tabHeight, 0, COLORS.windowDarkerBackground());
 
             let padding = 5;
             x1+= padding;

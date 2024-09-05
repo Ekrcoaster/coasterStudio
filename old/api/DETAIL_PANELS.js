@@ -70,7 +70,7 @@ const DETAILED_PANEL_TOOLS = {
         }
 
         if(possiblePanels.length > 0) {
-            DETAILED_PANEL_TOOLS.OpenPanel(MOUSE.pos.x, MOUSE.pos.y, 140, possiblePanels[possiblePanels.length - 1]);
+            DETAILED_PANEL_TOOLS.OpenPanel(staticUISpace.mouse.pos.x, staticUISpace.mouse.pos.y, 140, possiblePanels[possiblePanels.length - 1]);
         }
         DETAILED_PANELS = []
     },

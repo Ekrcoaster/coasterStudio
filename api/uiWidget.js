@@ -207,23 +207,23 @@ class DropdownItem {
     /** @param {ImageAsset} image  */
     setImageIcon(image) {
         this.onIconRender = (x1, y1, x2, y2) => {
-            UI_LIBRARY.drawImage(image, x1, y1, x2, y2, 0, new DrawImageOption());
+            staticUISpace.ui.drawImage(image, x1, y1, x2, y2, 0, new DrawImageOption());
         }
         return this;
     }
 
     render(x1, y1, x2, y2, isHovering, isSelected) {
         if(isHovering)
-            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.dropdownHoverBackground);
+            staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, COLORS.dropdownHoverBackground);
         if(isSelected)
-            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.dropdownSelectedBackground);
+            staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, COLORS.dropdownSelectedBackground);
 
         let offset = 5;
         if(this.onIconRender != null) {
             this.onIconRender(x1+offset+5, y1+6, x1+(y2-y1)-5, y2-6);
             offset += (y2-y1);
         }
-        UI_LIBRARY.drawText(this.label, x1+offset, y1, x2, y2, COLORS.dropdownItemText);
+        staticUISpace.ui.drawText(this.label, x1+offset, y1, x2, y2, COLORS.dropdownItemText);
     }
 }
 
@@ -253,24 +253,24 @@ const UI_WIDGET = {
             y2 = axis + width;
         }
 
-        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 10, id);
-        let down = mouse.isToolDown(id) && hover;
+        let hover = staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2, 10, id);
+        let down = staticUISpace.mouse.isToolDown(id) && hover;
 
         let color = COLORS.windowResizeHandleDefault;
         if (down) {
             color = COLORS.windowResizeHandlePress;
-            mouse.setActiveTool(id, { ogWholeSpaceMin: wholeSpaceMin, ogWholeSpaceMax: wholeSpaceMax });
-        } else if (mouse.isHoveringOver(x1, y1, x2, y2, 10) && (mouse.activeTool == id || mouseOffset.activeTool == null)) {
+            staticUISpace.mouse.setActiveTool(id, { ogWholeSpaceMin: wholeSpaceMin, ogWholeSpaceMax: wholeSpaceMax });
+        } else if (staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2, 10) && (staticUISpace.mouse.activeTool == id || mouseOffset.activeTool == null)) {
             color = COLORS.windowResizeHandleHover;
         } else {
-            mouse.removeActiveTool(id);
+            staticUISpace.mouse.removeActiveTool(id);
         }
 
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, color);
+        staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, color);
 
         let newPercent = 0;
         if (down) {
-            newPercent = ((type == "x-axis" ? mouse.y - mouseOffset : mouse.x - mouseOffset) - mouse.activeToolInitData.ogWholeSpaceMin) / (mouse.activeToolInitData.ogWholeSpaceMax - mouse.activeToolInitData.ogWholeSpaceMin);
+            newPercent = ((type == "x-axis" ? staticUISpace.mouse.y - mouseOffset : staticUISpace.mouse.x - mouseOffset) - staticUISpace.mouse.activeToolInitData.ogWholeSpaceMin) / (staticUISpace.mouse.activeToolInitData.ogWholeSpaceMax - staticUISpace.mouse.activeToolInitData.ogWholeSpaceMin);
             if (newPercent > 1) newPercent = 1;
             if (newPercent < 0) newPercent = 0;
         }
@@ -293,13 +293,13 @@ const UI_WIDGET = {
      * @returns 
      */
     windowTabLabel: function (id, name, x1, y1, y2, state) {
-        let size = UI_UTILITY.measureText(this.name, COLORS.windowTabLabel);
+        let size = staticUISpace.utility.measureText(this.name, COLORS.windowTabLabel);
         let myLength = Math.max(100, size.width+20);
         let x2 = x1 + myLength;
         let color = COLORS.windowTabDefault;
 
-        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 10, id);
-        let down = mouse.isToolFirstUp(id) && hover;
+        let hover = staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2, 10, id);
+        let down = staticUISpace.mouse.isToolFirstUp(id) && hover;
 
         if (hover)
             color = COLORS.windowTabHover;
@@ -314,14 +314,14 @@ const UI_WIDGET = {
             hover: hover,
             setActive: down,
             myLength: myLength,
-            downDistance: mouse.getDownDistance(),
+            downDistance: staticUISpace.mouse.getDownDistance(),
             render: () => {
-                UI_LIBRARY.drawRectCoords(x1, y1, x2, y2 + (state || down ? 5 : 10), 0, color);
+                staticUISpace.ui.drawRectCoords(x1, y1, x2, y2 + (state || down ? 5 : 10), 0, color);
         
                 if(state)
-                    UI_LIBRARY.drawRectCoords(x1, y2, x2, y2+10+color.outlineWidth, 0, new DrawShapeOption(color.fillColor));
+                    staticUISpace.ui.drawRectCoords(x1, y2, x2, y2+10+color.outlineWidth, 0, new DrawShapeOption(color.fillColor));
 
-                UI_LIBRARY.drawText(name, x1, y1, x2, y2, COLORS.windowTabLabel);
+                staticUISpace.ui.drawText(name, x1, y1, x2, y2, COLORS.windowTabLabel);
             }
         }
     },
@@ -341,22 +341,22 @@ const UI_WIDGET = {
         let height = isScene ? 40 : 30;
 
         if(isScene)
-            UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSceneGameObjectBackground);
+            staticUISpace.ui.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSceneGameObjectBackground);
         else if(isSelected)
-            UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSelect);
+            staticUISpace.ui.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSelect);
 
         if(hoveringGameObject?.parent?.id == obj.id) {
-            UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSelect);
+            staticUISpace.ui.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.hierarchyWindowSelect);
         }
         if(hoveringGameObject?.before?.id == obj.id) {
-            UI_LIBRARY.drawRectCoords(x1, y1-3, x2, y1+3, 0, COLORS.hierarchyWindowSelect);
+            staticUISpace.ui.drawRectCoords(x1, y1-3, x2, y1+3, 0, COLORS.hierarchyWindowSelect);
         }
         if(hoveringGameObject?.after?.id == obj.id) {
-            UI_LIBRARY.drawRectCoords(x1, y1+height-3, x2, y1+height+3, 0, COLORS.hierarchyWindowSelect);
+            staticUISpace.ui.drawRectCoords(x1, y1+height-3, x2, y1+height+3, 0, COLORS.hierarchyWindowSelect);
         }
 
-        let hover = mouse.isHoveringOver(x1, y1, x2, y1+height, 0, id);
-        let click = mouse.isToolFirstUp(id) && hover;
+        let hover = staticUISpace.mouse.isHoveringOver(x1, y1, x2, y1+height, 0, id);
+        let click = staticUISpace.mouse.isToolFirstUp(id) && hover;
 
         let change = meta.drawChildren;
         let offset = isScene ? 2 : height+2;
@@ -391,8 +391,8 @@ const UI_WIDGET = {
      * @param {DrawShapeOption} hoverColor 
      */
     dropdownHandle: function(id, x1, y1, x2, y2, isDown, normalColor, hoverColor) {
-        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
-        let click = mouse.isToolFirstUp(id) && hover;
+        let hover = staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
+        let click = staticUISpace.mouse.isToolFirstUp(id) && hover;
 
         let padding = 10;
 
@@ -407,7 +407,7 @@ const UI_WIDGET = {
                 {x: x1+padding, y: y2-padding}]
         }
         
-        UI_LIBRARY.drawPolygon(points, hover ? hoverColor : normalColor);
+        staticUISpace.ui.drawPolygon(points, hover ? hoverColor : normalColor);
 
         if(click)
             isDown = !isDown;
@@ -429,8 +429,8 @@ const UI_WIDGET = {
      * */
     inspectorComponent: function(id, x1, y1, x2, component, editor) {
         let height = 30;
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.inspectorComponentHeader);
-        UI_LIBRARY.drawText(component.name, x1, y1, x2, y1+height, COLORS.inspectorComponentHeaderText);
+        staticUISpace.ui.drawRectCoords(x1, y1, x2, y1+height, 0, COLORS.inspectorComponentHeader);
+        staticUISpace.ui.drawText(component.name, x1, y1, x2, y1+height, COLORS.inspectorComponentHeaderText);
 
         let expanded = this.dropdownHandle(id + "dropdown", x2-height, y1, x2, y1+height, editor.isExpanded, COLORS.normalDropdownHandle, COLORS.hoverDropdownHandle);
         if(expanded != editor.isExpanded)
@@ -438,7 +438,7 @@ const UI_WIDGET = {
 
         if(editor.isExpanded) {
             let calculatedHeight = editor.calculateExpandedHeight();
-            UI_LIBRARY.drawRectCoords(x1, y1+height, x2, y1+height+calculatedHeight, 0, COLORS.inspectorComponentBox);
+            staticUISpace.ui.drawRectCoords(x1, y1+height, x2, y1+height+calculatedHeight, 0, COLORS.inspectorComponentBox);
             editor.onRender(x1+14, y1+height+2, x2-2, y1+height+calculatedHeight, (x2-2)-(x1+25), calculatedHeight-4);
             height += calculatedHeight;
         }
@@ -456,7 +456,7 @@ const UI_WIDGET = {
     editableText: function(id, text, isEditable, x1, y1, x2, y2, draw, option) {
         if(option == null) option = new StringFieldOption();
 
-        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
+        let hover = staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
         let meta = widgetCacheData[id] || {};
         let characterTyped = null;
         let overrideTypeSave = false;
@@ -467,23 +467,23 @@ const UI_WIDGET = {
         let appliedChange = false;
         // even if we want a double click, if we are active we should still cancel from a single outside click
         if(meta.isActive) option.clickMethod = "single";
-        let click = (option.clickMethod == "single" ? mouse.isToolDown(id) : mouse.isToolDoubleClick(id)) && isEditable;
+        let click = (option.clickMethod == "single" ? staticUISpace.mouse.isToolDown(id) : staticUISpace.mouse.isToolDoubleClick(id)) && isEditable;
 
         let tempText = text;
         if(meta.tempText != null) tempText = meta.tempText;
 
         // if the text box is active
         if(meta.isActive) {
-            // handle the keyboard downs
+            // handle the staticUISpace.keyboard downs
             // doing this as a loop since any character could be entered
-            keyboard.downFirst.forEach(element => {
+            staticUISpace.keyboard.downFirst.forEach(element => {
                 let first = tempText.substring(0, meta.cursor);
                 let last = tempText.substring(meta.cursor);
 
                 // check for deletions
                 if(element == "DELETE") {
                     if(tempText.substring(0, meta.cursor).length > 0)
-                        keyboard.downFirst.delete(element);
+                        staticUISpace.keyboard.downFirst.delete(element);
 
                     overrideTypeSave = true;
                     characterTyped == "DELETE";
@@ -499,13 +499,13 @@ const UI_WIDGET = {
                     }
 
                 // alt + A shortcut
-                } else if(element == "A" && keyboard.isCtrlDown) {
+                } else if(element == "A" && staticUISpace.keyboard.isCtrlDown) {
                     meta.select = 0;
                     meta.cursor = tempText.length;
                 
                 // well, then type a character
                 } else {
-                    let character = keyboard.getAlphabeticNumbericSymbolic(element);
+                    let character = staticUISpace.keyboard.getAlphabeticNumbericSymbolic(element);
                     characterTyped = character;
 
                     if(element == "TAB")
@@ -526,7 +526,7 @@ const UI_WIDGET = {
                 // if the left arrow is being pressed, shift the cursor left
                 if(element == "ARROWLEFT") {
                     // but if the user is holding shift, then mark the original point as the selection origin
-                    if(keyboard.isShiftDown) {
+                    if(staticUISpace.keyboard.isShiftDown) {
                         if(meta.select == -1)
                             meta.select = meta.cursor;
                     } else {
@@ -535,13 +535,13 @@ const UI_WIDGET = {
                     meta.cursor--;
                     if(meta.cursor < 0) meta.cursor = 0;
                     else
-                        keyboard.downFirst.delete(element);
+                        staticUISpace.keyboard.downFirst.delete(element);
                 }
 
                 // if the right arrow is being pressed, shift the cursor right
                 if(element == "ARROWRIGHT") {
                     // but if the user is holding shift, then mark the original point as the selection origin
-                    if(keyboard.isShiftDown) {
+                    if(staticUISpace.keyboard.isShiftDown) {
                         if(meta.select == -1)
                             meta.select = meta.cursor;
                     } else {
@@ -550,7 +550,7 @@ const UI_WIDGET = {
                     meta.cursor++;
                     if(meta.cursor > tempText.length) meta.cursor = tempText.length;
                     else
-                        keyboard.downFirst.delete(element);
+                        staticUISpace.keyboard.downFirst.delete(element);
                 }
 
                 function deleteSelected() {
@@ -576,8 +576,8 @@ const UI_WIDGET = {
         // draw the text and create the space
         let tempDraw = new DrawTextOption(draw.size, draw.font, draw.fillColor.setAlpha(isEditable ? 1 : 0.5), draw.horizontalAlign, draw.verticalAlign);
         if(option.richText) {
-            let tokens = UI_UTILITY.richTextPlainToTokens(tempText, true);
-            let temp = UI_LIBRARY.drawRichText(tokens, x1, y1, x2, y2, tempDraw);
+            let tokens = staticUISpace.utility.richTextPlainToTokens(tempText, true);
+            let temp = staticUISpace.ui.drawRichText(tokens, x1, y1, x2, y2, tempDraw);
 
             space.width = temp.space.width;
             space.getXAtChar = (cursor) => {
@@ -587,7 +587,7 @@ const UI_WIDGET = {
                 return temp.getTokenAtX(x).charIndex;
             }
         } else {
-            space = UI_LIBRARY.drawText(tempText, x1, y1, x2, y2, tempDraw);
+            space = staticUISpace.ui.drawText(tempText, x1, y1, x2, y2, tempDraw);
         }
         
 
@@ -597,7 +597,7 @@ const UI_WIDGET = {
             meta.isActive = true;
 
             // handle create or destroy selection
-            if(option.selectable && (keyboard.isShiftDown || mouse.getDownDistance() > 3)) {
+            if(option.selectable && (staticUISpace.keyboard.isShiftDown || staticUISpace.mouse.getDownDistance() > 3)) {
                 if(meta.select == -1)
                     meta.select = meta.cursor;
             } else {
@@ -606,16 +606,16 @@ const UI_WIDGET = {
 
             // choose the cursor's position
             if(option.firstClickMethod == "normal" || wasActive) {
-                meta.cursor = space.getCharAtX(mouse.x);
+                meta.cursor = space.getCharAtX(staticUISpace.mouse.x);
             } else if(!wasActive){
                 meta.cursor = tempText.length;
-                mouse.clickDown = false;
+                staticUISpace.mouse.clickDown = false;
                 meta.select = 0;
             }
             if(meta.tempText == null) meta.tempText = text;
             
             // select a whole word on double click
-            if(mouse.doubleClickFirstDown && option.selectable) {
+            if(staticUISpace.mouse.doubleClickFirstDown && option.selectable) {
                 let startOfWord = meta.select == -1 ? meta.cursor : meta.select;
                 for(startOfWord; startOfWord >= 0; startOfWord--) {
                     if(tempText[startOfWord] == null || !alphabet.has(tempText[startOfWord].toLowerCase()))
@@ -628,7 +628,7 @@ const UI_WIDGET = {
                 }
                 meta.select = startOfWord+1;
                 meta.cursor = endOfWord;
-                mouse.down = false;
+                staticUISpace.mouse.down = false;
             }
         }
 
@@ -636,13 +636,13 @@ const UI_WIDGET = {
         if(meta.isActive) {
             // draw the cursor
             cursorScreenPos = x1 + space.getXAtChar(meta.cursor);
-            UI_LIBRARY.drawRectCoords(cursorScreenPos-1, y1, cursorScreenPos+1, y2, 0, COLORS.textCursor);
+            staticUISpace.ui.drawRectCoords(cursorScreenPos-1, y1, cursorScreenPos+1, y2, 0, COLORS.textCursor);
 
             widgetCacheData[id] = meta;
 
             // try to save the text
-            let trySave = (click && !mouse.isHoveringOver(x1, y1, x2, y2)) || keyboard.downFirst.has("ENTER");
-            if(option.saveMethod == "onType" && (keyboard.downFirst.size > 0 || overrideTypeSave)) trySave = true;
+            let trySave = (click && !staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2)) || staticUISpace.keyboard.downFirst.has("ENTER");
+            if(option.saveMethod == "onType" && (staticUISpace.keyboard.downFirst.size > 0 || overrideTypeSave)) trySave = true;
             if(trySave) {
                 console.log("a")
                 if(option.doesStringMatch(meta.tempText))
@@ -651,7 +651,7 @@ const UI_WIDGET = {
                 if(option.saveMethod == "onType")
                     widgetCacheData[id].tempText = null;
                 
-                if(option.saveMethod == "onDone" || (click && !mouse.isHoveringOver(x1, y1, x2, y2)))
+                if(option.saveMethod == "onDone" || (click && !staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2)))
                     delete widgetCacheData[id];
                 
                 appliedChange = true;
@@ -666,7 +666,7 @@ const UI_WIDGET = {
                 smallest = option.overrideSelectMin;
                 largest = option.overrideSelectMax;
             }
-            UI_LIBRARY.drawRectCoords(x1 + space.getXAtChar(smallest), y1, x1 + space.getXAtChar(largest), y2, 0, COLORS.textSelect);
+            staticUISpace.ui.drawRectCoords(x1 + space.getXAtChar(smallest), y1, x1 + space.getXAtChar(largest), y2, 0, COLORS.textSelect);
         }
 
         return {
@@ -720,7 +720,7 @@ const UI_WIDGET = {
         const lineMargin = 1;
 
         // draw background color
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
+        staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground);
 
         // calculate bounds
         let textWidth = 0;
@@ -740,8 +740,8 @@ const UI_WIDGET = {
         // handle a selection delete before the lines are drawn... cause editableText will override DELETE!
         let toSelectCursorX;
         let toSelectCursorY;
-        if(meta.selectCursorX > -1 && keyboard.downFirst.has("DELETE")) {
-            keyboard.downFirst.delete("DELETE");
+        if(meta.selectCursorX > -1 && staticUISpace.keyboard.downFirst.has("DELETE")) {
+            staticUISpace.keyboard.downFirst.delete("DELETE");
 
             let first = Object.keys(selectionData)[0];
             toSelectCursorX = selectionData[first].min;
@@ -804,7 +804,7 @@ const UI_WIDGET = {
             let y = y1+yOffset;
             // go line by line and draw everything
             for(let i = 0; i < lines.length; i++) {
-                let space = UI_UTILITY.measureText(lines[i], draw);
+                let space = staticUISpace.utility.measureText(lines[i], draw);
                 
                 let height = space.fontHeight+lineVerticalPadding;
                 let realX1 = x1 + option.onRender(lines.length, i, x1, y, x2, y+height)+xOffset;
@@ -824,7 +824,7 @@ const UI_WIDGET = {
                 if(res.isActive) {
                     cursorX = res.cursor;
                     cursorY = i;
-                    UI_LIBRARY.drawRectCoords(x1, y, x2, y+height, 0, new DrawShapeOption("#ffffff13"));
+                    staticUISpace.ui.drawRectCoords(x1, y, x2, y+height, 0, new DrawShapeOption("#ffffff13"));
                     cursorXScreenPos = res.cursorScreenPos;
                     cursorYScreenPos = y;
                     cursorYScreenHeight = height;
@@ -844,7 +844,7 @@ const UI_WIDGET = {
         // handle the commands (such as enter, delete, etc)
         function handleCommands() {
             // enter should insert a new line character
-            if(keyboard.downFirst.has("ENTER")) {
+            if(staticUISpace.keyboard.downFirst.has("ENTER")) {
                 // insert a newline
                 lines[cursorY] = lines[cursorY].substring(0, cursorX) + "\n" + lines[cursorY].substring(cursorX);
 
@@ -866,7 +866,7 @@ const UI_WIDGET = {
             }
 
             // delete should add the delete char to the end of the last line
-            if(cursorX == 0 && cursorY > 0 && keyboard.downFirst.has("DELETE")) {
+            if(cursorX == 0 && cursorY > 0 && staticUISpace.keyboard.downFirst.has("DELETE")) {
                 lines[cursorY-1]+=newLineDeleterChar;
                 changeLineSelection(cursorY, cursorY-1);
                 widgetCacheData[id + (cursorY-1)].cursor = lines[cursorY-1].length-3;
@@ -877,20 +877,20 @@ const UI_WIDGET = {
             let newCursorX = -1;
 
             // move up
-            if(cursorY > 0 && keyboard.downFirst.has("ARROWUP")) {
+            if(cursorY > 0 && staticUISpace.keyboard.downFirst.has("ARROWUP")) {
                 newCursorY = cursorY - 1;
             }
             // move down
-            if(cursorY <= lines.length - 1 && keyboard.downFirst.has("ARROWDOWN")) {
+            if(cursorY <= lines.length - 1 && staticUISpace.keyboard.downFirst.has("ARROWDOWN")) {
                 newCursorY = cursorY + 1;
             }
             // move left
-            if(cursorY > 0 && cursorX == 0 && keyboard.downFirst.has("ARROWLEFT")) {
+            if(cursorY > 0 && cursorX == 0 && staticUISpace.keyboard.downFirst.has("ARROWLEFT")) {
                 newCursorY = cursorY - 1;
                 newCursorX = lines[newCursorY].length;
             }
             // move right
-            if(cursorY <= lines.length - 1 && cursorX == lines[cursorY].length && keyboard.downFirst.has("ARROWRIGHT")) {
+            if(cursorY <= lines.length - 1 && cursorX == lines[cursorY].length && staticUISpace.keyboard.downFirst.has("ARROWRIGHT")) {
                 newCursorY = cursorY + 1;
                 newCursorX = 0;
             }
@@ -902,18 +902,18 @@ const UI_WIDGET = {
             }
 
             // handle selecting
-            if((keyboard.isShiftDown && mouse.clickDown) || mouse.getDownDistance() > 3) {
+            if((staticUISpace.keyboard.isShiftDown && staticUISpace.mouse.clickDown) || staticUISpace.mouse.getDownDistance() > 3) {
                 if(meta.selectCursorX == -1) {
                     meta.selectCursorX = cursorX;
                     meta.selectCursorY = cursorY;
                 }
-            } else if(mouse.clickDown) {
+            } else if(staticUISpace.mouse.clickDown) {
                 meta.selectCursorX = -1;
                 meta.selectCursorY = -1;
             }
 
             // select a whole word on double click
-            if(mouse.doubleClickFirstDown) {
+            if(staticUISpace.mouse.doubleClickFirstDown) {
                 let line = lines[cursorY];
                 let startOfWord = meta.selectCursorX == -1 ? cursorX : meta.selectCursorX;
                 for(startOfWord; startOfWord >= 0; startOfWord--) {
@@ -931,8 +931,8 @@ const UI_WIDGET = {
                 cursorX = endOfWord;
                 widgetCacheData[id + (cursorY)].cursor = cursorX;
                 meta.selectCursorY = cursorY;
-                mouse.down = false;
-                mouse.clickDown = false;
+                staticUISpace.mouse.down = false;
+                staticUISpace.mouse.clickDown = false;
             }
         }
 
@@ -946,7 +946,7 @@ const UI_WIDGET = {
 
         function calculateTextBounds() {
             for(let i = 0; i < lines.length; i++) {
-                let space = UI_UTILITY.measureText(lines[i], draw);
+                let space = staticUISpace.utility.measureText(lines[i], draw);
                 if(space.width > textWidth)
                     textWidth = space.width;
                 textHeight += space.fontHeight + lineVerticalPadding + lineMargin;
@@ -995,13 +995,13 @@ const UI_WIDGET = {
     editorGUIString: function(id, label, text, isEditable, x1, y1, x2, y2, option, divide = 2) {
         let labelOffset = UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, divide);
         
-        UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground.setAlpha(isEditable ? 1 : 0.5));
+        staticUISpace.ui.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, COLORS.stringEditorTextBackground.setAlpha(isEditable ? 1 : 0.5));
         return UI_WIDGET.editableText(id, text, isEditable, x1+3+labelOffset, y1+3, x2-3, y2-3, COLORS.stringEditorText, option);
     },
     editorGUILabelPre: function(label, x1, y1, x2, y2, divide = 2) {
         if(label) {
             let labelOffset = (x2-x1)/divide;
-            UI_LIBRARY.drawText(label, x1, y1, x2 -labelOffset, y2, COLORS.inspectorLabel);
+            staticUISpace.ui.drawText(label, x1, y1, x2 -labelOffset, y2, COLORS.inspectorLabel);
             return labelOffset;
         }
         return 0;
@@ -1044,8 +1044,8 @@ const UI_WIDGET = {
     editorGUIColor: function(id, label, color, isEditable, x1, y1, x2, y2) {
         let labelOffset = UI_WIDGET.editorGUILabelPre(label, x1, y1, x2, y2, 2);
 
-        let hover = mouse.isHoveringOver(x1+labelOffset, y1, x2, y2, 0, id);
-        let down = mouse.isToolDown(id);
+        let hover = staticUISpace.mouse.isHoveringOver(x1+labelOffset, y1, x2, y2, 0, id);
+        let down = staticUISpace.mouse.isToolDown(id);
 
         let meta = widgetCacheData[id] || {};
 
@@ -1058,7 +1058,7 @@ const UI_WIDGET = {
             widgetCacheData[id] = meta;
         }
 
-        UI_LIBRARY.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, new DrawShapeOption(color, COLORS.stringEditorTextBackground.outlineColor, COLORS.stringEditorTextBackground.outlineWidth).setRoundedCorners(10));
+        staticUISpace.ui.drawRectCoords(x1+labelOffset, y1, x2, y2, 0, new DrawShapeOption(color, COLORS.stringEditorTextBackground.outlineColor, COLORS.stringEditorTextBackground.outlineWidth).setRoundedCorners(10));
 
         return color;
 
@@ -1089,13 +1089,13 @@ const UI_WIDGET = {
 
                 function handleWheel(isMouseFree, wheelSpace = {x: 0, y: 0, yOffset: 0, radius: 0}) {
                 
-                    UI_LIBRARY.drawImage(assets.getAsset("editor/colorWheel"), 
+                    staticUISpace.ui.drawImage(assets.getAsset("editor/colorWheel"), 
                         wheelSpace.x-wheelSpace.radius, wheelSpace.y-wheelSpace.radius+wheelSpace.yOffset,
                         wheelSpace.x+wheelSpace.radius, wheelSpace.y+wheelSpace.radius+wheelSpace.yOffset, 0)
 
-                    let hoverInWheel = mouse.isHoveringOver(wheelSpace.x-wheelSpace.radius, wheelSpace.y-wheelSpace.radius+wheelSpace.yOffset, wheelSpace.x+wheelSpace.radius, wheelSpace.y+wheelSpace.radius+wheelSpace.yOffset);
-                    if(hoverInWheel && mouse.down && isMouseFree) {
-                        data.hue = 180-mouse.angleTo(wheelSpace.x, wheelSpace.y+wheelSpace.yOffset)+90;
+                    let hoverInWheel = staticUISpace.mouse.isHoveringOver(wheelSpace.x-wheelSpace.radius, wheelSpace.y-wheelSpace.radius+wheelSpace.yOffset, wheelSpace.x+wheelSpace.radius, wheelSpace.y+wheelSpace.radius+wheelSpace.yOffset);
+                    if(hoverInWheel && staticUISpace.mouse.down && isMouseFree) {
+                        data.hue = 180-staticUISpace.mouse.angleTo(wheelSpace.x, wheelSpace.y+wheelSpace.yOffset)+90;
                         data.color.setHSV(data.hue, data.sat, data.val);
                     }
 
@@ -1105,17 +1105,17 @@ const UI_WIDGET = {
                         "radius": 30
                     }
 
-                    UI_LIBRARY.drawEllipse(hueGizmo.x, hueGizmo.y,
+                    staticUISpace.ui.drawEllipse(hueGizmo.x, hueGizmo.y,
                         hueGizmo.radius, hueGizmo.radius, COLORS.colorPickerHueRotate);
                 }
 
                 function handleSatBox(space = {centerX: 0, centerY: 0, size: 0}) {
-                    UI_LIBRARY.drawGradientSquare(space.centerX-space.size, space.centerY-space.size,
+                    staticUISpace.ui.drawGradientSquare(space.centerX-space.size, space.centerY-space.size,
                         space.centerX + space.size, space.centerY+space.size, "#ffffff", new Color().setHSV(data.hue, 1, 1), "#000000", "#000000");
                     
                     let hoverInWheel = {
-                        x: (mouse.x - space.centerX-space.size) / -(space.size*2),
-                        y: (mouse.y - space.centerY-space.size) / -(space.size*2),
+                        x: (staticUISpace.mouse.x - space.centerX-space.size) / -(space.size*2),
+                        y: (staticUISpace.mouse.y - space.centerY-space.size) / -(space.size*2),
                     };
 
                     let isInside = (hoverInWheel.x >= 0 && hoverInWheel.x <= 1) && (hoverInWheel.y >= 0 && hoverInWheel.y <= 1) || data.movingInsideGizmo;
@@ -1123,13 +1123,13 @@ const UI_WIDGET = {
                     hoverInWheel.x = Math.min(1, Math.max(0, hoverInWheel.x));
                     hoverInWheel.y = Math.min(1, Math.max(0, hoverInWheel.y));
 
-                    if(isInside && mouse.down) {
+                    if(isInside && staticUISpace.mouse.down) {
                         data.sat = (1-hoverInWheel.x);
                         data.val = (hoverInWheel.y);
                         data.movingInsideGizmo = true;
                         data.color.setHSV(data.hue, data.sat, data.val);
                     }
-                    if(!mouse.down)
+                    if(!staticUISpace.mouse.down)
                         data.movingInsideGizmo = false;
 
                     let satLightGizmo = {
@@ -1137,31 +1137,31 @@ const UI_WIDGET = {
                         y: space.centerY-space.size + (space.size * 2 * (1-data.val)),
                         radius: 10
                     }
-                    UI_LIBRARY.drawRectCoords(satLightGizmo.x-satLightGizmo.radius, satLightGizmo.y-satLightGizmo.radius,
+                    staticUISpace.ui.drawRectCoords(satLightGizmo.x-satLightGizmo.radius, satLightGizmo.y-satLightGizmo.radius,
                         satLightGizmo.x+satLightGizmo.radius, satLightGizmo.y+satLightGizmo.radius, 0, COLORS.colorPickerHueRotate);
 
                     return !isInside;
                 }
 
                 function handleColorPreview(wheelHeight) {
-                    UI_LIBRARY.drawRectCoords(
+                    staticUISpace.ui.drawRectCoords(
                         x1+10, 
                         wheelHeight, 
                         (x2+x1)/2,
                         wheelHeight + 40,
                         0, new DrawShapeOption(data.color).setRoundedCorners(20, 0, 0, 20));
 
-                    UI_LIBRARY.drawRectCoords(
+                    staticUISpace.ui.drawRectCoords(
                         (x2+x1)/2,
                         wheelHeight, 
                         x2-10,
                         wheelHeight + 40,
                         0, new DrawShapeOption(data.initColor).setRoundedCorners(0, 20, 20, 0));
 
-                    if(mouse.isHoveringOver((x2+x1)/2,
+                    if(staticUISpace.mouse.isHoveringOver((x2+x1)/2,
                         wheelHeight, 
                         x2-10,
-                        wheelHeight + 40,) && mouse.clickDown) {
+                        wheelHeight + 40,) && staticUISpace.mouse.clickDown) {
                             data.color.setR(data.initColor.r);
                             data.color.setG(data.initColor.g);
                             data.color.setB(data.initColor.b);
@@ -1185,15 +1185,15 @@ const UI_WIDGET = {
     },
 
     toggle: function(id, isOn, isEditable, x1, y1, x2, y2) {
-        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
-        let click = mouse.isToolFirstUp(id);
+        let hover = staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2, 0, id);
+        let click = staticUISpace.mouse.isToolFirstUp(id);
 
         if(click && hover && isEditable)
             isOn = !isOn;
 
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.toggleBoxEmpty.setAlpha(isEditable ? 0.8 : 0.5));
+        staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, COLORS.toggleBoxEmpty.setAlpha(isEditable ? 0.8 : 0.5));
         if(isOn)
-            UI_LIBRARY.drawRectCoords(x1+2, y1+2, x2-2, y2-2, 0, COLORS.toggleBoxFull.setAlpha(isEditable ? 0.8 : 0.5));
+            staticUISpace.ui.drawRectCoords(x1+2, y1+2, x2-2, y2-2, 0, COLORS.toggleBoxFull.setAlpha(isEditable ? 0.8 : 0.5));
 
         return {
             isOn: isOn
@@ -1212,8 +1212,8 @@ const UI_WIDGET = {
      * @param {ImageAsset} optionalIcon
      */
     button: function(text, x1, y1, x2, y2, optionalTextDraw, optionalBackgroundDraw, optionalIcon) {
-        let hover = mouse.isHoveringOver(x1, y1, x2, y2, 0, "button" + text);
-        let click = mouse.isToolFirstUp("button" + text);
+        let hover = staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2, 0, "button" + text);
+        let click = staticUISpace.mouse.isToolFirstUp("button" + text);
 
         if(optionalTextDraw == null)
             optionalTextDraw = new DrawTextOption(22, "default", "#ffffffa2", optionalIcon == null ? "center" : "left", "center");
@@ -1227,12 +1227,12 @@ const UI_WIDGET = {
             iconSpace = (y2-y1);
         
         if(optionalBackgroundDraw != null)
-            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, optionalBackgroundDraw);
+            staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, optionalBackgroundDraw);
 
-        UI_LIBRARY.drawText(text, x1+iconSpace+5, y1, x2, y2, optionalTextDraw);
+        staticUISpace.ui.drawText(text, x1+iconSpace+5, y1, x2, y2, optionalTextDraw);
 
         if(optionalIcon != null) {
-            UI_LIBRARY.drawImage(optionalIcon, x1+3, y1+3, x1+iconSpace-3, y2-3, 0, new DrawImageOption());
+            staticUISpace.ui.drawImage(optionalIcon, x1+3, y1+3, x1+iconSpace-3, y2-3, 0, new DrawImageOption());
         }
 
         return click && hover;
@@ -1263,16 +1263,16 @@ const UI_WIDGET = {
      * @param {Number} y2 
      */
     dropdown: function(id, options, selectedIndex, isEditable, x1, y1, x2, y2) {
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground.setAlpha(isEditable ? 1 : 0.5));
+        staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, COLORS.stringEditorTextBackground.setAlpha(isEditable ? 1 : 0.5));
         if(selectedIndex > -1 && options[selectedIndex] != null) {
             options[selectedIndex].render(x1, y1, x2, y2, false, false);
         }
 
-        let hover = isEditable && mouse.isHoveringOver(x1, y1, x2, y2, 0);
-        let click = mouse.isToolFirstUp(id);
+        let hover = isEditable && staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2, 0);
+        let click = staticUISpace.mouse.isToolFirstUp(id);
 
 
-        UI_LIBRARY.drawEllipse(x2-(y2-y1) / 2, (y1+y2)/2, (y2-y1) / 2, (y2-y1) / 2, hover ? COLORS.hoverDropdownHandle : COLORS.normalDropdownHandle);
+        staticUISpace.ui.drawEllipse(x2-(y2-y1) / 2, (y1+y2)/2, (y2-y1) / 2, (y2-y1) / 2, hover ? COLORS.hoverDropdownHandle : COLORS.normalDropdownHandle);
 
         if(click && hover) {
             UI_WIDGET.popUpDropdownList(id, options, selectedIndex, x1, y1, x2, y2, (i) => {
@@ -1306,14 +1306,14 @@ const UI_WIDGET = {
     popUpDropdownList: function(id, options, selectedIndex, x1, y1, x2, y2, onSelect = (index) => {}) {
         let itemHeight = 45;
 
-        mouse.clickUp = false;
+        staticUISpace.mouse.clickUp = false;
         editor.createModal(new EditorModal(id, (x2-x1), itemHeight * options.length, {
             selectedIndex: selectedIndex
         }, (x1, y1, x2, y2, data) => {
             for(let i = 0; i < options.length; i++) {
                 let y= y1 + (itemHeight * i);
-                let hoveringMe = mouse.isHoveringOver(x1, y, x2, y+itemHeight);
-                let click = mouse.clickUp;
+                let hoveringMe = staticUISpace.mouse.isHoveringOver(x1, y, x2, y+itemHeight);
+                let click = staticUISpace.mouse.clickUp;
                 options[i].render(x1, y, x2, y+itemHeight, hoveringMe, i == selectedIndex);
            
 
@@ -1344,14 +1344,14 @@ const UI_WIDGET = {
         let horizontalOverflow = contentWidth > (x2-x1);
         let verticalOverflow = contentHeight > (y2-y1);
 
-        let hovering = mouse.isHoveringOver(x1, y1, x2, y2);
+        let hovering = staticUISpace.mouse.isHoveringOver(x1, y1, x2, y2);
 
         if(horizontalOverflow || verticalOverflow)
-            UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption("alpha").makeMask());
+            staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption("alpha").makeMask());
         
         if(horizontalOverflow) {
             if(hovering) {
-                scrollPos.x += mouse.getScrollVelocity() * -90;
+                scrollPos.x += staticUISpace.mouse.getScrollVelocity() * -90;
                 
                 // handle overflow for x
                 if(scrollPos.x > 0)
@@ -1363,7 +1363,7 @@ const UI_WIDGET = {
             }
         } else if(verticalOverflow) {
             if(hovering) {
-                scrollPos.y += mouse.getScrollVelocity() * -90;
+                scrollPos.y += staticUISpace.mouse.getScrollVelocity() * -90;
 
                 // handle overflow for y
                 if(scrollPos.y > 0)
@@ -1381,7 +1381,7 @@ const UI_WIDGET = {
         onRender(scrollPos.x, scrollPos.y);
 
         if(horizontalOverflow || verticalOverflow)
-            UI_LIBRARY.restore();
+            staticUISpace.ui.restore();
 
         return scrollPos;
     },

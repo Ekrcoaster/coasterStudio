@@ -53,7 +53,7 @@ class InspectorWindow extends EditorWindow {
 
         function drawHeader(y) {
             let height = 40;
-            //UI_LIBRARY.drawRectCoords(x1, y, x2, y+height, 0, COLORS.windowDarkerBackground());
+            //staticUISpace.ui.drawRectCoords(x1, y, x2, y+height, 0, COLORS.windowDarkerBackground());
 
             // create the toggle for the isActive
             let nameAndEnableHeight = 35;

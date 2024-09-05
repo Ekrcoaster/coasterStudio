@@ -90,7 +90,7 @@ class SceneRendererTools {
      */
     text(text, x, y, width, height, draw) {
         let center = this._coordToScreenSpace(x, y, width, height);
-        UI_LIBRARY.drawText(text, center.x, center.y, center.x + center.width, center.y + center.height, draw);
+        staticUISpace.ui.drawText(text, center.x, center.y, center.x + center.width, center.y + center.height, draw);
     }
 
     /**
@@ -114,24 +114,24 @@ class SceneRendererTools {
         function renderCenter() {
             // setup the grabbing
             let hoverID = "moveXY" + id;
-            let hover = mouse.isHoveringOver(centerSquare.x1, centerSquare.y1, centerSquare.x2, centerSquare.y2, 0, hoverID);
-            let down = mouse.isToolDown(hoverID);
+            let hover = staticUISpace.mouse.isHoveringOver(centerSquare.x1, centerSquare.y1, centerSquare.x2, centerSquare.y2, 0, hoverID);
+            let down = staticUISpace.mouse.isToolDown(hoverID);
 
             // if we are being grabbed, set the active tool and calculate the new position
             if(hover && down) {
-                mouse.setActiveTool(hoverID);
+                staticUISpace.mouse.setActiveTool(hoverID);
                 // handle the offset
                 let old = position;
-                position = new Vector2(t._screenSpaceToCoord(mouse.x, mouse.y));
-                let offset = mouse.activeToolInitData[hoverID] || position.subtractNew(old);
-                mouse.activeToolInitData[hoverID] = offset;
+                position = new Vector2(t._screenSpaceToCoord(staticUISpace.mouse.x, staticUISpace.mouse.y));
+                let offset = staticUISpace.mouse.activeToolInitData[hoverID] || position.subtractNew(old);
+                staticUISpace.mouse.activeToolInitData[hoverID] = offset;
                 position.subtract(offset);
             } else {
-                mouse.removeActiveTool(hoverID);
+                staticUISpace.mouse.removeActiveTool(hoverID);
             }
     
             // then draw the square
-            UI_LIBRARY.drawRectCoords(centerSquare.x1, centerSquare.y1, 
+            staticUISpace.ui.drawRectCoords(centerSquare.x1, centerSquare.y1, 
                 centerSquare.x2, centerSquare.y2, 0, hover ? COLORS.moveGizmoCenterHover : COLORS.moveGizmoCenterNormal);
         }
 
@@ -159,30 +159,30 @@ class SceneRendererTools {
 
             // setup the grab stutff
             let hoverID = "move" + (isX ? "x" : "y") + id;
-            let hover = mouse.isHoveringOver(space.x1, space.y1, space.x2, space.y2, 0, hoverID);
-            let down = mouse.isToolDown(hoverID);
+            let hover = staticUISpace.mouse.isHoveringOver(space.x1, space.y1, space.x2, space.y2, 0, hoverID);
+            let down = staticUISpace.mouse.isToolDown(hoverID);
             
             // if we are being grabbed, set the active tool and apply
             if(hover && down) {
-                mouse.setActiveTool(hoverID);
+                staticUISpace.mouse.setActiveTool(hoverID);
                 let old = position;
-                position = new Vector2(t._screenSpaceToCoord(mouse.x, mouse.y));
-                let offset = mouse.activeToolInitData[hoverID] || position.subtractNew(old);
-                mouse.activeToolInitData[hoverID] = offset;
+                position = new Vector2(t._screenSpaceToCoord(staticUISpace.mouse.x, staticUISpace.mouse.y));
+                let offset = staticUISpace.mouse.activeToolInitData[hoverID] || position.subtractNew(old);
+                staticUISpace.mouse.activeToolInitData[hoverID] = offset;
                 position.subtract(offset);
                 if(isX)
                     position.y = old.y;
                 else
                     position.x = old.x;
             } else {
-                mouse.removeActiveTool(hoverID);
+                staticUISpace.mouse.removeActiveTool(hoverID);
             }
 
             // then draw the arrow
             if(isX) {
                 let arrowSideWidth = (space.y2-space.y1) * arrowSideWidthPercent;
                 let arrowWidth = (space.y2-space.y1);
-                UI_LIBRARY.drawPolygon([
+                staticUISpace.ui.drawPolygon([
                     {x: space.x1, y: space.y1 +arrowSideWidth},
                     {x: space.x2-arrowWidth, y: space.y1 +arrowSideWidth},
                     {x: space.x2-arrowWidth, y: space.y1},
@@ -194,7 +194,7 @@ class SceneRendererTools {
             } else {
                 let arrowSideWidth = (space.x2-space.x1) * arrowSideWidthPercent;
                 let arrowWidth = (space.x2-space.x1);
-                UI_LIBRARY.drawPolygon([
+                staticUISpace.ui.drawPolygon([
                     {x: space.x1 + arrowSideWidth, y: space.y1},
                     {x: space.x1 + arrowSideWidth, y: space.y2 - arrowWidth},
                     {x: space.x1, y: space.y2 - arrowWidth},
@@ -212,25 +212,25 @@ class SceneRendererTools {
         let screenSpace = this._coordToScreenSpace(position.x, position.y);
 
         let radius = 150*size;
-        let mouseDist = mouse.distanceTo(screenSpace.x, screenSpace.y);
-        let hover = (mouseDist > radius-10 && mouseDist < radius+10 && mouse.activeTool == null) || mouse.activeTool == id;
-        let down = mouse.isToolDown(id);
+        let mouseDist = staticUISpace.mouse.distanceTo(screenSpace.x, screenSpace.y);
+        let hover = (mouseDist > radius-10 && mouseDist < radius+10 && staticUISpace.mouse.activeTool == null) || staticUISpace.mouse.activeTool == id;
+        let down = staticUISpace.mouse.isToolDown(id);
         
-        UI_LIBRARY.drawEllipse(screenSpace.x, screenSpace.y, radius*2, radius*2, (hover) ? COLORS.rotateGizmoHover : COLORS.rotateGizmoNormal);
+        staticUISpace.ui.drawEllipse(screenSpace.x, screenSpace.y, radius*2, radius*2, (hover) ? COLORS.rotateGizmoHover : COLORS.rotateGizmoNormal);
 
         if(hover && down) {
-            mouse.setActiveTool(id);
+            staticUISpace.mouse.setActiveTool(id);
 
-            let newAngle = mouse.angleTo(screenSpace.x, screenSpace.y);
-            let offset = mouse.activeToolInitData[id] || (newAngle - angle);
+            let newAngle = staticUISpace.mouse.angleTo(screenSpace.x, screenSpace.y);
+            let offset = staticUISpace.mouse.activeToolInitData[id] || (newAngle - angle);
             if(offset < -180)
                 offset += 360;
             if(offset > 180)
                 offset -= 360;
-            mouse.activeToolInitData[id] = offset;
+            staticUISpace.mouse.activeToolInitData[id] = offset;
             angle = newAngle - offset;
         } else {
-            mouse.removeActiveTool(id);
+            staticUISpace.mouse.removeActiveTool(id);
         }
 
         return angle;        
@@ -246,23 +246,23 @@ class SceneRendererTools {
         space.x2 = space.x1 + 30;
         space.y2 = space.y1 + 30;
 
-        let hover = mouse.isHoveringOver(space.x1, space.y1, space.x2, space.y2, 0, id);
-        let down = mouse.isToolDown(id);
+        let hover = staticUISpace.mouse.isHoveringOver(space.x1, space.y1, space.x2, space.y2, 0, id);
+        let down = staticUISpace.mouse.isToolDown(id);
 
-        UI_LIBRARY.drawRectCoords(space.x1, space.y1, space.x2, space.y2, 0, hover ? COLORS.moveGizmoCenterHover : COLORS.moveGizmoCenterNormal);
+        staticUISpace.ui.drawRectCoords(space.x1, space.y1, space.x2, space.y2, 0, hover ? COLORS.moveGizmoCenterHover : COLORS.moveGizmoCenterNormal);
 
         if(hover && down) {
-            mouse.setActiveTool(id);
+            staticUISpace.mouse.setActiveTool(id);
 
-            let og = mouse.activeToolInitData[id] || scale;
-            mouse.activeToolInitData[id] = og;
+            let og = staticUISpace.mouse.activeToolInitData[id] || scale;
+            staticUISpace.mouse.activeToolInitData[id] = og;
 
-            scale = new Vector2(mouse.getDownDistanceSeperate()).scale(1 /this.pixelTileSize).add(og);
-            if(keyboard.isShiftDown)
+            scale = new Vector2(staticUISpace.mouse.getDownDistanceSeperate()).scale(1 /this.pixelTileSize).add(og);
+            if(staticUISpace.keyboard.isShiftDown)
                 scale.x = scale.y;
 
         } else {
-            mouse.removeActiveTool(id);
+            staticUISpace.mouse.removeActiveTool(id);
         }
 
         return scale;    
@@ -276,13 +276,13 @@ class SceneRendererTools {
             convertedPoints.push({x: space.x, y: space.y});
         }
 
-        UI_LIBRARY.drawPolygon(convertedPoints, draw);
+        staticUISpace.ui.drawPolygon(convertedPoints, draw);
     }
     /**@param {ImageAsset} image @param {{x: 0, y: 0}[]} points @param {DrawImageOption} draw */
     image(image, x1, y1, x2, y2, rotation, draw) {
         let leftTop = this._coordToScreenSpace(x1, y1);
         let bottomRight = this._coordToScreenSpace(x2, y2);
 
-        UI_LIBRARY.drawImage(image, leftTop.x, leftTop.y, bottomRight.x, bottomRight.y, rotation, draw);
+        staticUISpace.ui.drawImage(image, leftTop.x, leftTop.y, bottomRight.x, bottomRight.y, rotation, draw);
     }
 }

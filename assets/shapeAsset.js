@@ -22,6 +22,6 @@ class ShapeAsset extends Asset {
             newPoints.push(this.bounds.transformPointToNewBounds(this.points[i].x, this.points[i].y, x1, y1, x2, y2));
         }
 
-        UI_LIBRARY.drawPolygon(newPoints, new DrawShapeOption("#1d6ea0", "#2aabb5", 5));
+        staticUISpace.ui.drawPolygon(newPoints, new DrawShapeOption("#1d6ea0", "#2aabb5", 5));
     }
 }

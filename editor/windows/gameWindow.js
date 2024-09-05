@@ -15,9 +15,9 @@ class GameWindow extends EditorWindow {
     render(x1, y1, x2, y2, width, height) {
         let scene = editor.activeScene;
         
-        UI_LIBRARY.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption(scene.controller.backgroundColor));
+        staticUISpace.ui.drawRectCoords(x1, y1, x2, y2, 0, new DrawShapeOption(scene.controller.backgroundColor));
         if(scene.activeCamera == null) {
-            UI_LIBRARY.drawText("No Active Camera", x1, y1, x2, y2, new DrawTextOption(35, "default", "#ffffff", "center", "center"));
+            staticUISpace.ui.drawText("No Active Camera", x1, y1, x2, y2, new DrawTextOption(35, "default", "#ffffff", "center", "center"));
         }
         let cam = scene.activeCamera;
         let camPos = cam.transform.getWorldPosition();
@@ -59,13 +59,13 @@ class GameWindow extends EditorWindow {
         }
 
         if(topBarHeight > 2) {
-            UI_LIBRARY.drawRectCoords(x1, y1, x2, y1+topBarHeight, 0, this.barColor);
-            UI_LIBRARY.drawRectCoords(x1, y2-topBarHeight, x2, y2, 0, this.barColor);
+            staticUISpace.ui.drawRectCoords(x1, y1, x2, y1+topBarHeight, 0, this.barColor);
+            staticUISpace.ui.drawRectCoords(x1, y2-topBarHeight, x2, y2, 0, this.barColor);
         }
 
         if(leftBarHeight > 2) {
-            UI_LIBRARY.drawRectCoords(x1, y1, x1+leftBarHeight, y2, 0, this.barColor);
-            UI_LIBRARY.drawRectCoords(x2-leftBarHeight, y1, x2, y2, 0, this.barColor);
+            staticUISpace.ui.drawRectCoords(x1, y1, x1+leftBarHeight, y2, 0, this.barColor);
+            staticUISpace.ui.drawRectCoords(x2-leftBarHeight, y1, x2, y2, 0, this.barColor);
         }
     }
 }

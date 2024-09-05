@@ -22,7 +22,7 @@ var UI_TOOLS = {
             DETAILED_PANEL_TOOLS.registerRegion(detailPanel, {x1: x1, y1: y1, x2: x2, y2: y2});
         if(boundsExtension == null) boundsExtension = {x1: 0, y1: 0, x2: 0, y2: 0};
         var isMouseIn = UI_LOW_LEVEL.isMouseIn(x1 + boundsExtension.x1, y1 + boundsExtension.y1, x2 + boundsExtension.x2, y2 + boundsExtension.y2, buffer) || ACTIVE_TOOL == toolID;
-        isMouseIn = isMouseIn && MOUSE.isDown;
+        isMouseIn = isMouseIn && staticUISpace.mouse.isDown;
 
         if(ACTIVE_TOOL != "" && ACTIVE_TOOL != toolID) {
             isMouseIn = false;
@@ -40,9 +40,9 @@ var UI_TOOLS = {
 
     rotateArc: function(originX, originY, radius, inputAngle, angelRange, toolID = "", snapAmount = 1, fillColor = "", outlineColor = "", outlineThickness = 0, filters = [], keyboardShortcut = "", isMouseInWindow) {
         UI_LOW_LEVEL.drawArc(originX, originY, radius, inputAngle-(angelRange/2), angelRange, fillColor, outlineColor, outlineThickness, filters);
-        if((ACTIVE_TOOL == "" && UI_LOW_LEVEL.isMouseInRadius(originX, originY, radius, radius, inputAngle-(angelRange/2), inputAngle+(angelRange/2), 25) && MOUSE.isDown) || ACTIVE_TOOL == toolID || KEYS_DOWN_UNTIL_CLICK.indexOf(keyboardShortcut) > -1 && isMouseInWindow) {
+        if((ACTIVE_TOOL == "" && UI_LOW_LEVEL.isMouseInRadius(originX, originY, radius, radius, inputAngle-(angelRange/2), inputAngle+(angelRange/2), 25) && staticUISpace.mouse.isDown) || ACTIVE_TOOL == toolID || KEYS_DOWN_UNTIL_CLICK.indexOf(keyboardShortcut) > -1 && isMouseInWindow) {
             var angle = UI_LOW_LEVEL.getMouseAngle(originX, originY);
-            MOUSE.isClick = false;
+            staticUISpace.mouse.isClick = false;
             ACTIVE_TOOL = toolID;
             if(KEYS_DOWN.indexOf("CTRL") > -1) {
                 angle = Math.round(angle/snapAmount)*snapAmount;
@@ -64,8 +64,8 @@ var UI_TOOLS = {
         if(!allowIFToolBusy) {
             if(ACTIVE_TOOL != "") mouseIn = false;
         }
-        //console.log(MOUSE.pos, {"x": x, "y": y})
-        var shouldActivate = mouseIn && MOUSE.isDown;
+        //console.log(staticUISpace.mouse.pos, {"x": x, "y": y})
+        var shouldActivate = mouseIn && staticUISpace.mouse.isDown;
         if(shouldActivate) {
             if(down.indexOf(iconID) > -1) {
                 shouldActivate = false;
@@ -84,7 +84,7 @@ var UI_TOOLS = {
         if(!allowIFToolBusy) {
             if(ACTIVE_TOOL != "") mouseIn = false;
         }
-        var shouldActivate = mouseIn && MOUSE.isDown;
+        var shouldActivate = mouseIn && staticUISpace.mouse.isDown;
         if(forceSelectID.length > 0) {
             if(down.indexOf(forceSelectID) > -1) {
                 shouldActivate = false;
@@ -136,8 +136,8 @@ var UI_TOOLS = {
         
         UI_LOW_LEVEL.drawText(drawLetters.join(""), x, y, size, color, align);
         var isMouseIn = UI_LOW_LEVEL.isMouseIn(spaceTaken.x1, spaceTaken.y1, spaceTaken.x2, spaceTaken.y2, 0);
-        if(isMouseIn && MOUSE.isClick && isInteractable) {
-            var percentage = (MOUSE.pos.x - spaceTaken.x1)/(spaceTaken.x2-spaceTaken.x1);
+        if(isMouseIn && staticUISpace.mouse.isClick && isInteractable) {
+            var percentage = (staticUISpace.mouse.pos.x - spaceTaken.x1)/(spaceTaken.x2-spaceTaken.x1);
             var key = Math.round(percentage*inputText.length);
             active_ui.typing= {
                 "key": key,
@@ -147,7 +147,7 @@ var UI_TOOLS = {
             }
         }
 
-        if(MOUSE.isClick && !isMouseIn && active_ui.typing.id == uniqueKey) {
+        if(staticUISpace.mouse.isClick && !isMouseIn && active_ui.typing.id == uniqueKey) {
             active_ui.typing = {};
         }
 
@@ -158,7 +158,7 @@ var UI_TOOLS = {
     toggleBox: function(x, y, size, isOn) {
         UI_LOW_LEVEL.drawRectLocal(x, y, size, size, 0, isOn ? "grey": "rgba(194,222,255,0)", "white", 3);
 
-        if(MOUSE.isClick && UI_LOW_LEVEL.isMouseIn(x, y, x+size, y+size, 3)) {
+        if(staticUISpace.mouse.isClick && UI_LOW_LEVEL.isMouseIn(x, y, x+size, y+size, 3)) {
             isOn = !isOn;
         }
         return isOn;
@@ -204,7 +204,7 @@ var UI_TOOLS = {
                 }
                 if(UI_LOW_LEVEL.isMouseIn(item.x1, item.y1, item.x2, item.y2, 0)) {
                     UI_LOW_LEVEL.drawRectAbsolute(item.x1, item.y1, item.x2, item.y2, 0, COLORS.hylightGray);
-                    if(MOUSE.isClick) {
+                    if(staticUISpace.mouse.isClick) {
                         inputIndex = i;
                         active_ui.dropDown = {};
                     }
@@ -296,9 +296,9 @@ var UI_TOOLS = {
             }
 
             active_ui.textField.textSoFar = inputValue;
-            if(MOUSE.isClick && isInRange) {
+            if(staticUISpace.mouse.isClick && isInRange) {
                 active_ui.textField.cursorPoint = calculateCursorPosition();
-            } else if(MOUSE.isDown) {
+            } else if(staticUISpace.mouse.isDown) {
                 active_ui.textField.selection = calculateCursorPosition();
             }
 
@@ -345,7 +345,7 @@ var UI_TOOLS = {
             
             UI_LOW_LEVEL.drawRectLocal(calculations.x1 + letterDistance, y1, 2, calculations.height, 0, `rgba(184, 234, 255, ${((Math.sin(TIME*40)/2)+ 1)})`)
         } else {
-            if(MOUSE.isClick && isInRange) {
+            if(staticUISpace.mouse.isClick && isInRange) {
                 ACTIVE_TOOL = uniqueKey;
                 active_ui.textField = {
                     "id": uniqueKey,
@@ -357,13 +357,13 @@ var UI_TOOLS = {
             }
         }
         
-        if(MOUSE.isClick && !isInRange && active_ui.textField.id == uniqueKey) {
+        if(staticUISpace.mouse.isClick && !isInRange && active_ui.textField.id == uniqueKey) {
             active_ui.textField = {};
 
         }
 
         function calculateCursorPosition() {
-            var n = Math.round((MOUSE.pos.x - calculations.x1) / (calculations.x2 - calculations.x1)*inputValue.length);
+            var n = Math.round((staticUISpace.mouse.pos.x - calculations.x1) / (calculations.x2 - calculations.x1)*inputValue.length);
             if(n > inputValue.length) n = inputValue.length;
             return n;
         }
@@ -471,11 +471,11 @@ var UI_TOOLS = {
                 active_ui.chooserDropdown = {}
             }
 
-            if(MOUSE.postClick) {
+            if(staticUISpace.mouse.postClick) {
                 active_ui.chooserDropdown = {}
             }
         } else {
-            if(UI_LOW_LEVEL.isMouseIn(x1, y1, x1 + width, y1 + height, 0) && MOUSE.isClick && ACTIVE_TOOL == "") {
+            if(UI_LOW_LEVEL.isMouseIn(x1, y1, x1 + width, y1 + height, 0) && staticUISpace.mouse.isClick && ACTIVE_TOOL == "") {
                 active_ui.chooserDropdown = {
                     "id": key,
                     "invert": ((y1 / INFO_CANVAS.height) > 0.5) ? -1 : 1,
@@ -491,11 +491,11 @@ var UI_TOOLS = {
                     "type": data
                 }
                 ACTIVE_TOOL = "a"
-                MOUSE.isClick = false;
-                MOUSE.postClick = false;
-                MOUSE.isDown = false;
-                MOUSE.isClick = false;
-                MOUSE.postClick = false;
+                staticUISpace.mouse.isClick = false;
+                staticUISpace.mouse.postClick = false;
+                staticUISpace.mouse.isDown = false;
+                staticUISpace.mouse.isClick = false;
+                staticUISpace.mouse.postClick = false;
             }
         }
         return inputValue;
@@ -525,13 +525,13 @@ var UI_TOOLS = {
                 active_ui.colorField.overrideColor = null;
             }
 
-            if(MOUSE.postClick) {
+            if(staticUISpace.mouse.postClick) {
                 if(isInRange || !active_ui.colorField.isMouseInBox) {
                     active_ui.colorField = {}
                 }
             }
         } else {
-            if(MOUSE.isClick && isInRange && ACTIVE_TOOL == "") {
+            if(staticUISpace.mouse.isClick && isInRange && ACTIVE_TOOL == "") {
                 var hsl = hexToHSL(inputHex);
                 active_ui.colorField = {
                     "id": uniqueKey,
@@ -551,8 +551,8 @@ var UI_TOOLS = {
                     "isMouseInBox": true
                 }
                 
-                MOUSE.isClick = false;
-                MOUSE.postClick = false;
+                staticUISpace.mouse.isClick = false;
+                staticUISpace.mouse.postClick = false;
             }
         }
 
@@ -569,20 +569,20 @@ var UI_TOOLS = {
 
         if(active_ui.imgField.key == key) {
             inputID = active_ui.imgField.input;
-            if(!active_ui.imgField.isMouseIn && MOUSE.postClick) {
+            if(!active_ui.imgField.isMouseIn && staticUISpace.mouse.postClick) {
                 active_ui.imgField = {}
             }
         } else {
-            if(isMouseIn && MOUSE.isClick && ACTIVE_TOOL == "") {
+            if(isMouseIn && staticUISpace.mouse.isClick && ACTIVE_TOOL == "") {
                 active_ui.imgField = {
                     "key": key,
                     "input": inputID,
                     "lastTool": "",
                     "isMouseIn": false
                 }
-                MOUSE.isDown = false;
-                MOUSE.isClick = false;
-                MOUSE.postClick = false;
+                staticUISpace.mouse.isDown = false;
+                staticUISpace.mouse.isClick = false;
+                staticUISpace.mouse.postClick = false;
             }
         }
         return inputID;
@@ -742,7 +742,7 @@ function lateUIRenderer() {
             var isInHueRange = UI_LOW_LEVEL.isMouseInRadius(colorWheelSpace.centerX - colorWheel.xOffset, colorWheelSpace.centerY, colorWheel.radius+20, colorWheel.radius-20) && ACTIVE_TOOL == "";
             UI_LOW_LEVEL.drawCircle(hueGizmo.x, hueGizmo.y, hueGizmo.radius, "rgba(0,0,0,0.5)", isInHueRange ? "#3f3f3f" : "#1c1c1c", 4);
             //handleToolUsage
-            if(((isInHueRange) || ACTIVE_TOOL == "colorWheelHue") && MOUSE.isDown) {
+            if(((isInHueRange) || ACTIVE_TOOL == "colorWheelHue") && staticUISpace.mouse.isDown) {
                 var mouseAngle = UI_LOW_LEVEL.getMouseAngle(colorWheelSpace.centerX - colorWheel.xOffset, colorWheelSpace.centerY);
                 var snapColors = [1, 46, 88, 116, 146, 208, 272, 331];
                 if(KEYS_DOWN.indexOf("CTRL") > -1) {
@@ -790,10 +790,10 @@ function lateUIRenderer() {
             var isInSatVal = UI_LOW_LEVEL.isMouseIn(satValBox.x1, satValBox.y1, satValBox.x2, satValBox.y2, 0) && ACTIVE_TOOL == "";
             UI_LOW_LEVEL.drawCircle((satValHandle.x + satValHandle.x + satValHandle.width) / 2, (satValHandle.y + satValHandle.y + satValHandle.height) / 2, satValHandle.width, "rgba(0,0,0,0.5)",  isInSatVal ? "#3f3f3f" : "#1c1c1c", 4);
             //handleToolUsage
-            if(((isInSatVal) || ACTIVE_TOOL == "colorWheelSatVal") && MOUSE.isDown) {
+            if(((isInSatVal) || ACTIVE_TOOL == "colorWheelSatVal") && staticUISpace.mouse.isDown) {
                 ACTIVE_TOOL = "colorWheelSatVal";
-                colorWheel.currentSat = Math.max(0, Math.min(100, ((MOUSE.pos.x - satValBox.x1) / (satValBox.x2 - satValBox.x1))*100));
-                colorWheel.currentVal = Math.max(0, Math.min(100, (1-((MOUSE.pos.y - satValBox.y1) / (satValBox.y2 - satValBox.y1)))*100));
+                colorWheel.currentSat = Math.max(0, Math.min(100, ((staticUISpace.mouse.pos.x - satValBox.x1) / (satValBox.x2 - satValBox.x1))*100));
+                colorWheel.currentVal = Math.max(0, Math.min(100, (1-((staticUISpace.mouse.pos.y - satValBox.y1) / (satValBox.y2 - satValBox.y1)))*100));
             }
 
             //APPLY CHANGES
@@ -835,9 +835,9 @@ function lateUIRenderer() {
                     if(savedColors.length < 40) {
                         if(UI_TOOLS.buttonImage(IMAGES.ICONS.plus, x, y, spacing.x-2, spacing.y-3)) {
                             savedColors.push(myData.color);
-                            MOUSE.isClick = false;
-                            MOUSE.isDown = false;
-                            MOUSE.postClick = false;
+                            staticUISpace.mouse.isClick = false;
+                            staticUISpace.mouse.isDown = false;
+                            staticUISpace.mouse.postClick = false;
                         }
                         
                     }
@@ -923,7 +923,7 @@ function lateUIRenderer() {
                 if(imageName.length > 10) imageName = imageName.substring(0, 10) + "..."
                 UI_LOW_LEVEL.drawText(imageName, (x2+x1)/2, y2-20, 20, COLORS.normalTextColor, "center", "center", [{"name": "drop-shadow", "value": "0px 0px 15px black"},{"name": "drop-shadow", "value": "0px 0px 15px black"},{"name": "drop-shadow", "value": "0px 0px 15px black"}]);
             
-                if(UI_LOW_LEVEL.isMouseIn(x1, y1, x2, y2, 0) && MOUSE.isClick) {
+                if(UI_LOW_LEVEL.isMouseIn(x1, y1, x2, y2, 0) && staticUISpace.mouse.isClick) {
                     myData.input = images[imageKeys[i]];
                 }
             } else {
@@ -1113,8 +1113,8 @@ var UI_LOW_LEVEL = {
 
     isMouseIn: function(x1, y1, x2, y2, buffer = 0) {
         //this.drawRectAbsolute(x1, y1, x2, y2, "red")
-        if(MOUSE.pos.x >= x1-buffer && MOUSE.pos.x <= x2+buffer) {
-            if(MOUSE.pos.y >= y1-buffer && MOUSE.pos.y <= y2+buffer) {
+        if(staticUISpace.mouse.pos.x >= x1-buffer && staticUISpace.mouse.pos.x <= x2+buffer) {
+            if(staticUISpace.mouse.pos.y >= y1-buffer && staticUISpace.mouse.pos.y <= y2+buffer) {
                 return true;
             }
         }
@@ -1142,7 +1142,7 @@ var UI_LOW_LEVEL = {
         //if(angle < 0) angle += 360;
         //while(angle < 0) angle += 360;
 
-        var distance = Math.sqrt(((MOUSE.pos.x - originX)*(MOUSE.pos.x - originX)) + ((MOUSE.pos.y - originY)*(MOUSE.pos.y - originY)));
+        var distance = Math.sqrt(((staticUISpace.mouse.pos.x - originX)*(staticUISpace.mouse.pos.x - originX)) + ((staticUISpace.mouse.pos.y - originY)*(staticUISpace.mouse.pos.y - originY)));
 
         if(distance >= minRadius-buffer && distance <= maxRadius+buffer) {
             var a = maxAngle-minAngle;
@@ -1166,7 +1166,7 @@ var UI_LOW_LEVEL = {
     },
 
     getMouseAngle: function(originX, originY) {
-        return this.getAngleBetweenPoints(originX, originY, MOUSE.pos.x, MOUSE.pos.y)
+        return this.getAngleBetweenPoints(originX, originY, staticUISpace.mouse.pos.x, staticUISpace.mouse.pos.y)
     },
 
     getAngleBetweenPoints: function(pointAX, pointAY, pointBX, pointBY) {
