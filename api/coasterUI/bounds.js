@@ -29,6 +29,8 @@ class Bounds {
 
     /**@param {...Point} points  */
     addPoints(...points) {
+        if(Array.isArray(points[0]))
+            return this.addPoints(...points[0]);
         for(let i = 0; i < points.length; i++) {
             this.addPoint(points[i].x, points[i].y);
         }

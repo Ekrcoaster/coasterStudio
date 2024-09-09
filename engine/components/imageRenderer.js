@@ -51,7 +51,7 @@ class ImageRenderer extends RenderingComponent {
     }
 
     getBounds() {
-        return new Bounds(this.getWorldPoints(1));
+        return new Bounds().addPoints(this.getWorldPoints(1));
     }
 
     saveSerialize() {

@@ -61,12 +61,12 @@ class ShapeRenderer extends RenderingComponent {
         this.shape = shape;
 
         let points = this.getWorldPoints();
-        this.bounds = new Bounds(points);
+        this.bounds = new Bounds().addPoints(points);
     }
 
     getBounds() {
         let points = this.getWorldPoints();
-        this.bounds = new Bounds(points);
+        this.bounds = new Bounds().addPoints(points);
         return this.bounds;
     }
 

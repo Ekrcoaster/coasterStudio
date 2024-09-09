@@ -8,7 +8,7 @@ class ShapeAsset extends Asset {
     constructor(points = []) {
         super();
         this.points = points;
-        this.bounds = new Bounds(this.points);
+        this.bounds = new Bounds().addPoints(this.points);
     }
 
     addPoint(x, y) {
